@@ -13,36 +13,36 @@ import annotations
 
 def render(obj):
     """
-    Render a frame or a movie
+    Render an image or a movie
     """
 
     if 'times' in obj:
         movie(obj)
     else:
-        frame(obj)
+        image(obj)
 
 
-def frame(frame):
+def image(image):
     """
-    Renders a single frame
+    Renders a single image
     """
-    common.checkMandatoryArgs(['size', 't'], frame)
+    common.checkMandatoryArgs(['size', 't'], image)
 
-    if 't' in frame:
-        common.t = frame['t']
+    if 't' in image:
+        common.t = image['t']
         common.timestep = None
-    if 'time-unit' in frame:
-        common.setTimeUnit(frame['time-unit'])
+    if 'time-unit' in image:
+        common.setTimeUnit(image['time-unit'])
 
-    items, results = _buildResults(frame)
+    items, results = _buildResults(image)
 
     window = chigger.RenderWindow(
         *results,
-        size = frame['size'],
+        size = image['size'],
         chigger = True)
 
-    if 'output' in frame:
-        window.write(frame['output'])
+    if 'output' in image:
+        window.write(image['output'])
     else:
         window.start()
 
