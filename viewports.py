@@ -1,5 +1,6 @@
 import vtk
 import chigger
+import filters
 import relap7
 import common
 import mooseutils
@@ -72,6 +73,44 @@ class ViewportRELAP7(Viewport):
 
     def result(self):
         return self.relap7_result
+
+    def update(self, time):
+        self.exodus_reader.setOptions(time = time, timestep = None)
+
+
+class ViewportExodus(Viewport):
+    """
+    Exodus result
+    """
+    MAP = {
+        'blocks': 'block',
+    }
+
+    def __init__(self, viewport):
+        super(ViewportExodus, self).__init__(viewport)
+
+        if 'viewport' not in viewport:
+            viewport['viewport'] = [0, 0, 1, 1]
+        common.checkMandatoryArgs(['name', 'variable', 'file', 'camera'], viewport)
+
+        self.name = viewport.pop('name')
+        self.camera = common.buildCamera(viewport.pop('camera'))
+
+        self.exodus_file = viewport.pop('file')
+        self.exodus_reader = chigger.exodus.ExodusReader(
+            self.exodus_file,
+            variables = [viewport['variable']],
+            time = common.t,
+            timestep = common.timestep)
+
+        args = common.remap(viewport, self.MAP)
+        args['camera'] = self.camera
+
+        self.exodus_result = chigger.exodus.ExodusResult(self.exodus_reader, **args)
+        OBJECTS[self.name] = self
+
+    def result(self):
+        return self.exodus_result
 
     def update(self, time):
         self.exodus_reader.setOptions(time = time, timestep = None)
