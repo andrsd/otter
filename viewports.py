@@ -285,7 +285,7 @@ class ViewportPlotOverTime(Viewport):
         return self.graph
 
     def update(self, time):
-        n = self.line_times.index(time)
+        n = self.times.index(time)
         for i, ln in enumerate(self.lines):
             ln.setOptions(x = self.times[:n], y = self.values[i][:n])
 
