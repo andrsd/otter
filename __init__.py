@@ -89,7 +89,7 @@ def movie(movie):
 
     chigger.utils.img2mov(
         '{}/{}'.format(location, frame),
-        '{}/{}'.format(location, movie['file']),
+        movie['file'],
         duration = movie['duration'],
         num_threads = 12)
 
