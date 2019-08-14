@@ -194,8 +194,13 @@ class ViewportPlotOverTime(Viewport):
         self.lines = []
         self.values = []
         for var in viewport['variables']:
+            if 'scale' in var:
+                scale = var.pop('scale')
+            else:
+                scale = 1.
+
             var_name = var.pop('name')
-            data_y = self.csv(var_name).tolist()
+            data_y = self.csv(var_name).multiply(scale).tolist()
 
             if common.times is None:
                 vals = data_y
