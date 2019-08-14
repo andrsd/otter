@@ -3,8 +3,6 @@
 import os
 import sys
 import chigger
-import relap7
-import numpy
 import common
 import viewports
 import colorbars
