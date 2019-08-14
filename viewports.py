@@ -106,6 +106,15 @@ class ViewportExodus(Viewport):
         args = common.remap(viewport, self.MAP)
         args['camera'] = self.camera
 
+        if 'filters' in viewport:
+            items = viewport['filters']
+            self.filters = []
+            for item in items:
+                filter = filters.buildFilter(item)
+                if filter != None:
+                    self.filters.append(filter)
+            args['filters'] = self.filters
+
         self.exodus_result = chigger.exodus.ExodusResult(self.exodus_reader, **args)
         OBJECTS[self.name] = self
 
