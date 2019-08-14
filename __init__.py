@@ -55,6 +55,7 @@ def movie(movie):
         common.setTimeUnit(movie['time-unit'])
     common.times = movie.pop('times')
     common.t = 0
+    common.timestep = None
     location = movie.pop('location')
     frame = movie.pop('frame')
 
