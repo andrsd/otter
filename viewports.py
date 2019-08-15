@@ -37,7 +37,7 @@ class Viewport(object):
         pass
 
 
-class ViewportRELAP7(Viewport):
+class ViewportRELAP7Result(Viewport):
     """
     RELAP-7 result
     """
@@ -46,7 +46,7 @@ class ViewportRELAP7(Viewport):
     }
 
     def __init__(self, viewport):
-        super(ViewportRELAP7, self).__init__(viewport)
+        super(ViewportRELAP7Result, self).__init__(viewport)
 
         if 'viewport' not in viewport:
             viewport['viewport'] = [0, 0, 1, 1]
@@ -78,7 +78,7 @@ class ViewportRELAP7(Viewport):
         self.exodus_reader.setOptions(time = time, timestep = None)
 
 
-class ViewportExodus(Viewport):
+class ViewportExodusResult(Viewport):
     """
     Exodus result
     """
@@ -87,7 +87,7 @@ class ViewportExodus(Viewport):
     }
 
     def __init__(self, viewport):
-        super(ViewportExodus, self).__init__(viewport)
+        super(ViewportExodusResult, self).__init__(viewport)
 
         if 'viewport' not in viewport:
             viewport['viewport'] = [0, 0, 1, 1]
