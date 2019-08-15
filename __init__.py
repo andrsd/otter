@@ -24,7 +24,7 @@ def image(image):
     """
     Renders a single image
     """
-    common.checkMandatoryArgs(['size', 't'], image)
+    common.checkMandatoryArgs(['size'], image)
 
     if 't' in image:
         common.t = image['t']
