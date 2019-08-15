@@ -36,6 +36,40 @@ class Viewport(object):
         """
         pass
 
+class ViewportRELAP7Model(Viewport):
+    """
+    RELAP-7 model
+    """
+    MAP = {
+        'blocks': 'block',
+        'background-color': 'background'
+    }
+
+    def __init__(self, viewport):
+        super(ViewportRELAP7Model, self).__init__(viewport)
+
+        if 'viewport' not in viewport:
+            viewport['viewport'] = [0, 0, 1, 1]
+        common.checkMandatoryArgs(['name', 'input-file', 'camera'], viewport)
+
+        self.name = viewport.pop('name')
+        self.camera = common.buildCamera(viewport.pop('camera'))
+
+        self.input_file = viewport.pop('input-file')
+        self.input_reader = relap7.InputReader(self.input_file)
+
+        args = common.remap(viewport, self.MAP)
+        args['camera'] = self.camera
+
+        self.model = relap7.Model(self.input_reader, **args)
+        OBJECTS[self.name] = self
+
+    def result(self):
+        return self.model
+
+    def update(self, time):
+        pass
+
 
 class ViewportRELAP7Result(Viewport):
     """
