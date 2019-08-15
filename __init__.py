@@ -24,6 +24,9 @@ def image(image):
     """
     Renders a single image
     """
+
+    IMAGE_MAP = {}
+
     common.checkMandatoryArgs(['size'], image)
 
     if 't' in image:
@@ -34,10 +37,9 @@ def image(image):
 
     items, results = _buildResults(image)
 
-    window = chigger.RenderWindow(
-        *results,
-        size = image['size'],
-        chigger = True)
+    args = common.remap(image, IMAGE_MAP)
+    args['chigger'] = True
+    window = chigger.RenderWindow(*results, **args)
 
     if 'output' in image:
         window.write(image['output'])
@@ -49,6 +51,9 @@ def movie(movie):
     """
     Renders a movie
     """
+
+    MOVIE_MAP = {}
+
     common.checkMandatoryArgs(['size', 'file', 'duration', 'location', 'frame'], movie)
 
     if 'time-unit' in movie:
@@ -69,10 +74,9 @@ def movie(movie):
 
     items, results = _buildResults(movie)
 
-    window = chigger.RenderWindow(
-        *results,
-        size = movie['size'],
-        chigger = True)
+    args = common.remap(movie, MOVIE_MAP)
+    args['chigger'] = True
+    window = chigger.RenderWindow(*results, **args)
 
     i = 0
     for t in common.times:
