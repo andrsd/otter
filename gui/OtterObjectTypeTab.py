@@ -64,6 +64,10 @@ class OtterObjectTypeTab(QWidget):
             si.setEditable(False)
             if 'hint' in item:
                 si.setToolTip(item['hint'])
+            if item['req']:
+                font = si.font()
+                font.setBold(True)
+                si.setFont(font)
             model.setItem(i, 0, si)
 
             val = item['value']
