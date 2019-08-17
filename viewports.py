@@ -92,10 +92,17 @@ class ViewportRELAP7Result(Viewport):
         self.input_file = viewport.pop('input-file')
         self.input_reader = relap7.InputReader(self.input_file)
 
+        var_name = viewport['variable']
+        vars = [var_name]
+        if var_name == 'T' or var_name == 'p':
+            junction_names = self.input_reader.getJunctionNames()
+            for jname in junction_names:
+                vars.append("{}:{}".format(jname, var_name))
+
         self.exodus_file = viewport.pop('exodus-file')
         self.exodus_reader = chigger.exodus.ExodusReader(
             self.exodus_file,
-            variables = [viewport['variable']],
+            variables = vars,
             time = common.t,
             timestep = common.timestep)
 
