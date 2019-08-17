@@ -28,3 +28,10 @@ class OtterViewportsTab(OtterObjectsTab):
 
     def onAdd(self, type):
         pass
+
+    def toText(self):
+        str = ""
+        str += "viewports = [\n"
+        str += "]\n"
+
+        return str

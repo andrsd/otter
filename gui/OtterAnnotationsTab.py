@@ -26,3 +26,10 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
     def onAddAnnotation(self, type):
         pass
+
+    def toText(self):
+        str = ""
+        str += "annotations = [\n"
+        str += "]\n"
+
+        return str

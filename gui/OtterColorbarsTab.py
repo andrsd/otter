@@ -100,3 +100,10 @@ class OtterColorbarsTab(OtterObjectsTab):
             child = QStandardItem(str(val))
             child.setEditable(True)
         parent.setChild(idx, 1, child)
+
+    def toText(self):
+        str = ""
+        str += "colorbars = [\n"
+        str += "]\n"
+
+        return str

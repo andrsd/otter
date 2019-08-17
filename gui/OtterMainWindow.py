@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QTabWidget
+from PyQt5.QtCore import QFile, QTextStream
 from OtterObjectTypeTab import OtterObjectTypeTab
 from OtterViewportsTab import OtterViewportsTab
 from OtterColorbarsTab import OtterColorbarsTab
@@ -53,7 +54,26 @@ class OtterMainWindow(QMainWindow):
         pass
 
     def onSaveInputFile(self):
-        pass
+        file = QFile("tmp")
+        if file.open(QFile.WriteOnly | QFile.Text):
+            out = QTextStream(file)
+
+            out << "#!/usr/bin/env python2\n"
+            out << "\n"
+            out << "import otter\n"
+            out << "import numpy\n"
+            out << "import relap7\n"
+            out << "\n"
+            out << self.tabViewports.toText()
+            out << "\n"
+            out << self.tabColorBars.toText()
+            out << "\n"
+            out << self.tabAnnotations.toText()
+            out << "\n"
+            out << self.tabType.toText()
+
+            file.flush()
+            file.close()
 
     def onSaveInputFileAs(self):
         pass

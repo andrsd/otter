@@ -89,3 +89,38 @@ class OtterObjectTypeTab(QWidget):
             model.setItem(i, 1, si)
         model.sort(0, Qt.AscendingOrder)
         return model
+
+    def toText(self):
+        idx = self.ctlType.currentIndex()
+        if idx == self.IDX_IMAGE:
+            obj_type = 'image'
+            model = self.modelImage
+        elif idx == self.IDX_MOVIE:
+            obj_type = 'movie'
+            model = self.modelMovie
+
+        str = ""
+        str += "{} = {{\n".format(obj_type)
+        for idx in range(model.rowCount()):
+            name = model.item(idx, 0).text()
+            value = model.item(idx, 1).text()
+            if value != "":
+                if value[0] == '[' and value[-1] == ']':
+                    str += "    '{}': {},\n".format(name, value)
+                elif value[0] == '(' and value[-1] == ')':
+                    str += "    '{}': {},\n".format(name, value)
+                else:
+                    try:
+                        int(value)
+                        str += "    '{}': {},\n".format(name, value)
+                    except ValueError:
+                        str += "    '{}': '{}',\n".format(name, value)
+
+        str += "    'viewports': viewports,\n"
+        str += "    'colorbars': colorbars,\n"
+        str += "    'annotations': annotations\n"
+        str += "}\n"
+        str += "\n"
+        str += "otter.render({})\n".format(obj_type)
+
+        return str
