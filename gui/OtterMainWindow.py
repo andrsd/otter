@@ -2,7 +2,9 @@
 
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QTabWidget
 from OtterObjectTypeTab import OtterObjectTypeTab
-from OtterObjectsTab import OtterObjectsTab
+from OtterViewportsTab import OtterViewportsTab
+from OtterColorbarsTab import OtterColorbarsTab
+from OtterAnnotationsTab import OtterAnnotationsTab
 
 class OtterMainWindow(QMainWindow):
 
@@ -30,13 +32,13 @@ class OtterMainWindow(QMainWindow):
         self.tabType = OtterObjectTypeTab(self)
         self.ctlObjType.addTab(self.tabType, "Type")
 
-        self.tabViewports = OtterObjectsTab(self, OtterObjectsTab.VIEWPORTS)
+        self.tabViewports = OtterViewportsTab(self)
         self.ctlObjType.addTab(self.tabViewports, self.tabViewports.name())
 
-        self.tabColorBars = OtterObjectsTab(self, OtterObjectsTab.COLORBARS)
+        self.tabColorBars = OtterColorbarsTab(self)
         self.ctlObjType.addTab(self.tabColorBars, self.tabColorBars.name())
 
-        self.tabAnnotations = OtterObjectsTab(self, OtterObjectsTab.ANNOTATIONS)
+        self.tabAnnotations = OtterAnnotationsTab(self)
         self.ctlObjType.addTab(self.tabAnnotations, self.tabAnnotations.name())
 
         layout.addWidget(self.ctlObjType)
