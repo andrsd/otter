@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
@@ -86,4 +87,5 @@ class OtterObjectTypeTab(QWidget):
                 si = QStandardItem(str(val))
                 si.setEditable(True)
             model.setItem(i, 1, si)
+        model.sort(0, Qt.AscendingOrder)
         return model
