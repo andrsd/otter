@@ -27,6 +27,25 @@ class OtterViewportsTab(OtterObjectsTab):
         return btn
 
     def onAdd(self, type):
+        if type == self.EXODUS:
+            self.addExodusResult()
+        elif type == self.RELAP7_RESULT:
+            self.addRELAP7Result()
+        elif type == self.PLOT_OVER_TIME:
+            self.addPlotOverLine()
+        elif type == self.VPP_PLOT:
+            self.addVPPPlot()
+
+    def addExodusResult(self):
+        pass
+
+    def addRELAP7Result(self):
+        pass
+
+    def addPlotOverLine(self):
+        pass
+
+    def addVPPPlot(self):
         pass
 
     def toText(self):

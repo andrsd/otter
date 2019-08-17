@@ -18,13 +18,27 @@ class OtterAnnotationsTab(OtterObjectsTab):
     def buildAddButton(self):
         btn = QPushButton("Add", self)
         mnu = QMenu("Add", self)
-        mnu.addAction("Text", lambda : self.onAddAnnotation(self.TEXT))
-        mnu.addAction("Image", lambda : self.onAddAnnotation(self.IMAGE))
-        mnu.addAction("Time", lambda : self.onAddAnnotation(self.TIME))
+        mnu.addAction("Text", lambda : self.onAdd(self.TEXT))
+        mnu.addAction("Image", lambda : self.onAdd(self.IMAGE))
+        mnu.addAction("Time", lambda : self.onAdd(self.TIME))
         btn.setMenu(mnu)
         return btn
 
-    def onAddAnnotation(self, type):
+    def onAdd(self, type):
+        if type == self.TEXT:
+            self.addTextAnnotation()
+        elif type == self.IMAGE:
+            self.addImageAnnotation()
+        elif type == self.TIME:
+            self.addTimeAnnotation()
+
+    def addTextAnnotation(self):
+        pass
+
+    def addImageAnnotation(self):
+        pass
+
+    def addTimeAnnotation(self):
         pass
 
     def toText(self):

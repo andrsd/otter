@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
+from PyQt5.QtGui import QStandardItem, QBrush, QColor
 from OtterObjectsTab import OtterObjectsTab
 
 class OtterColorbarsTab(OtterObjectsTab):
@@ -26,13 +26,6 @@ class OtterColorbarsTab(OtterObjectsTab):
 
     def __init__(self, parent):
         super(OtterColorbarsTab, self).__init__(parent)
-
-        self.model = QStandardItemModel(0, 2, self)
-        self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
-        self.model.sort(0, Qt.AscendingOrder)
-        self.ctlObjects.setModel(self.model)
-        self.ctlObjects.setRootIsDecorated(False)
-        self.ctlObjects.setIndentation(14)
 
     def name(self):
         return "CBs"
