@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QTabWidget
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QTabWidget, QFileDialog
 from PyQt5.QtCore import QFile, QTextStream
 from OtterObjectTypeTab import OtterObjectTypeTab
 from OtterViewportsTab import OtterViewportsTab
@@ -11,6 +11,7 @@ class OtterMainWindow(QMainWindow):
 
     def __init__(self):
         super(OtterMainWindow, self).__init__()
+        self.file = QFile()
         self.setupMenuBar()
         self.setupWidgets()
         self.setMinimumSize(300, 400)
@@ -54,9 +55,23 @@ class OtterMainWindow(QMainWindow):
         pass
 
     def onSaveInputFile(self):
-        file = QFile("tmp")
-        if file.open(QFile.WriteOnly | QFile.Text):
-            out = QTextStream(file)
+        if self.file.fileName() == "":
+            file_name = QFileDialog.getSaveFileName(self, 'Save File')
+            if file_name[0]:
+                self.file.setFileName(file_name[0])
+            else:
+                return
+        self.saveIntoFile()
+
+    def onSaveInputFileAs(self):
+        file_name = QFileDialog.getSaveFileName(self, 'Save File As')
+        if file_name[0]:
+            self.file.setFileName(file_name[0])
+            self.saveIntoFile()
+
+    def saveIntoFile(self):
+        if self.file.open(QFile.WriteOnly | QFile.Text):
+            out = QTextStream(self.file)
 
             out << "#!/usr/bin/env python2\n"
             out << "\n"
@@ -72,8 +87,5 @@ class OtterMainWindow(QMainWindow):
             out << "\n"
             out << self.tabType.toText()
 
-            file.flush()
-            file.close()
-
-    def onSaveInputFileAs(self):
-        pass
+            self.file.flush()
+            self.file.close()
