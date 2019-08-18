@@ -3,6 +3,8 @@
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from OtterWindowModifiedObserver import OtterWindowModifiedObserver
+import chigger
 import re
 
 class OtterObjectTypeTab(QWidget):
@@ -50,6 +52,15 @@ class OtterObjectTypeTab(QWidget):
 
         self.onTypeChanged(0)
 
+        self.windowObserver = OtterWindowModifiedObserver()
+        self.windowObserver.resized.connect(self.onWindowResized)
+
+        args = self.args()
+        args['chigger'] = True
+        args['observers'] = [ self.windowObserver ]
+        self.chiggerWindow = chigger.RenderWindow(*[], **args)
+        self.chiggerWindow.update()
+
     def onTypeChanged(self, idx):
         if idx == self.IDX_IMAGE:
             self.ctlParams.setModel(self.modelImage)
@@ -60,7 +71,9 @@ class OtterObjectTypeTab(QWidget):
 
     def populateModels(self):
         self.modelImage = self.populateParams(self.PARAMS_IMAGE)
+        self.modelImage.itemChanged.connect(self.onParamChanged)
         self.modelMovie = self.populateParams(self.PARAMS_MOVIE)
+        self.modelMovie.itemChanged.connect(self.onParamChanged)
 
     def populateParams(self, params):
         model = QStandardItemModel(len(params), 2, self)
@@ -95,6 +108,25 @@ class OtterObjectTypeTab(QWidget):
         model.sort(0, Qt.AscendingOrder)
         return model
 
+    def onParamChanged(self, item):
+        model = item.model()
+        row = item.row()
+        name = model.item(row, 0).text().encode("ascii")
+        value = item.text().encode("ascii")
+        param = self.toPython(value)
+        self.chiggerWindow.setOption(name, param)
+        self.chiggerWindow.update()
+
+    def setSizeParam(self, model, width, height):
+        results = model.findItems('size')
+        if len(results) == 1:
+            item = results[0]
+            model.item(item.row(), 1).setText("[{}, {}]".format(width, height))
+
+    def onWindowResized(self, width, height):
+        self.setSizeParam(self.modelImage, width, height)
+        self.setSizeParam(self.modelMovie, width, height)
+
     def model(self):
         idx = self.ctlType.currentIndex()
         if idx == self.IDX_IMAGE:
@@ -103,6 +135,19 @@ class OtterObjectTypeTab(QWidget):
             return self.modelMovie
         else:
             return None
+
+    def toPython(self, value):
+        if value[0] == '[' and value[-1] == ']':
+            str_array = re.findall('\d+', value)
+            return [ int(val) for val in str_array]
+        elif value[0] == '(' and value[-1] == ')':
+            str_array = re.findall('\d+', value)
+            return [ int(val) for val in str_array]
+        else:
+            try:
+                return int(value)
+            except ValueError:
+                return value
 
     def args(self):
         """
@@ -114,18 +159,7 @@ class OtterObjectTypeTab(QWidget):
             name = model.item(idx, 0).text().encode("ascii")
             value = model.item(idx, 1).text().encode("ascii")
             if value != "":
-                if value[0] == '[' and value[-1] == ']':
-                    str_array = re.findall('\d+', value)
-                    args[name] = [ int(val) for val in str_array]
-                elif value[0] == '(' and value[-1] == ')':
-                    str_array = re.findall('\d+', value)
-                    args[name] = [ int(val) for val in str_array]
-                else:
-                    try:
-                        args[name] = int(value)
-                    except ValueError:
-                        args[name] = value
-                        pass
+                args[name] = self.toPython(value)
 
         return args
 
