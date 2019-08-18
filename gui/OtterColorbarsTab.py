@@ -62,6 +62,7 @@ class OtterColorbarsTab(OtterObjectsTab):
 
         self.ctlObjects.expand(si.index())
         self.model.sort(0, Qt.AscendingOrder)
+        self.modified.emit()
 
     def buildChildParam(self, idx, parent, item):
         child = QStandardItem(item['name'])

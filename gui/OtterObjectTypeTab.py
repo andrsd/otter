@@ -1,10 +1,12 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 class OtterObjectTypeTab(QWidget):
+
+    modified = pyqtSignal()
 
     PARAMS_IMAGE = [
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of the rendered image', 'req': True },
@@ -50,8 +52,10 @@ class OtterObjectTypeTab(QWidget):
     def onTypeChanged(self, idx):
         if idx == self.IDX_IMAGE:
             self.ctlParams.setModel(self.modelImage)
+            self.modified.emit()
         elif idx == self.IDX_MOVIE:
             self.ctlParams.setModel(self.modelMovie)
+            self.modified.emit()
 
     def populateModels(self):
         self.modelImage = self.populateParams(self.PARAMS_IMAGE)

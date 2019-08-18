@@ -1,10 +1,12 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from PyQt5.QtGui import QStandardItemModel
 
 class OtterObjectsTab(QWidget):
+
+    modified = pyqtSignal()
 
     INDENT = 14
 
@@ -21,9 +23,13 @@ class OtterObjectsTab(QWidget):
         self.model = QStandardItemModel(0, 2, self)
         self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
         self.model.sort(0, Qt.AscendingOrder)
+        self.model.itemChanged.connect(self.onItemChanged)
 
         self.ctlObjects = QTreeView(self)
         self.ctlObjects.setModel(self.model)
         self.ctlObjects.setRootIsDecorated(False)
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         layout.addWidget(self.ctlObjects)
+
+    def onItemChanged(self, item):
+        self.modified.emit()

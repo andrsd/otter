@@ -13,6 +13,7 @@ class OtterMainWindow(QMainWindow):
     def __init__(self):
         super(OtterMainWindow, self).__init__()
         self.file = QFile()
+        self.modified = False
         self.setupMenuBar()
         self.setupWidgets()
         self.setTitle()
@@ -34,15 +35,19 @@ class OtterMainWindow(QMainWindow):
         self.ctlObjType = QTabWidget(self)
 
         self.tabType = OtterObjectTypeTab(self)
+        self.tabType.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabType, "Type")
 
         self.tabViewports = OtterViewportsTab(self)
+        self.tabViewports.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabViewports, self.tabViewports.name())
 
         self.tabColorBars = OtterColorbarsTab(self)
+        self.tabColorBars.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabColorBars, self.tabColorBars.name())
 
         self.tabAnnotations = OtterAnnotationsTab(self)
+        self.tabAnnotations.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabAnnotations, self.tabAnnotations.name())
 
         layout.addWidget(self.ctlObjType)
@@ -50,9 +55,15 @@ class OtterMainWindow(QMainWindow):
         w.setLayout(layout)
         self.setCentralWidget(w)
 
+    def setModified(self):
+        self.modified = True
+        self.setTitle()
+
     def setTitle(self):
         if self.file.fileName():
             title = os.path.basename(self.file.fileName())
+            if self.modified:
+                title += " *"
         else:
             title = "Untitled"
         self.setWindowTitle(title)
@@ -68,17 +79,19 @@ class OtterMainWindow(QMainWindow):
             file_name = QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
                 self.file.setFileName(file_name[0])
-                self.setTitle()
             else:
                 return
         self.saveIntoFile()
+        self.modified = False
+        self.setTitle()
 
     def onSaveInputFileAs(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save File As')
         if file_name[0]:
             self.file.setFileName(file_name[0])
-            self.setTitle()
             self.saveIntoFile()
+            self.modified = False
+            self.setTitle()
 
     def saveIntoFile(self):
         if self.file.open(QFile.WriteOnly | QFile.Text):
