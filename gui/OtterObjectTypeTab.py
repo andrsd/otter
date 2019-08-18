@@ -3,6 +3,7 @@
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+import re
 
 class OtterObjectTypeTab(QWidget):
 
@@ -94,31 +95,55 @@ class OtterObjectTypeTab(QWidget):
         model.sort(0, Qt.AscendingOrder)
         return model
 
+    def model(self):
+        idx = self.ctlType.currentIndex()
+        if idx == self.IDX_IMAGE:
+            return self.modelImage
+        elif idx == self.IDX_MOVIE:
+            return self.modelMovie
+        else:
+            return None
+
+    def args(self):
+        """
+        Return dict that will be used to build a chigger object
+        """
+        model = self.model()
+        args = {}
+        for idx in range(model.rowCount()):
+            name = model.item(idx, 0).text().encode("ascii")
+            value = model.item(idx, 1).text().encode("ascii")
+            if value != "":
+                if value[0] == '[' and value[-1] == ']':
+                    str_array = re.findall('\d+', value)
+                    args[name] = [ int(val) for val in str_array]
+                elif value[0] == '(' and value[-1] == ')':
+                    str_array = re.findall('\d+', value)
+                    args[name] = [ int(val) for val in str_array]
+                else:
+                    try:
+                        args[name] = int(value)
+                    except ValueError:
+                        args[name] = value
+                        pass
+
+        return args
+
     def toText(self):
+        model = self.model()
         idx = self.ctlType.currentIndex()
         if idx == self.IDX_IMAGE:
             obj_type = 'image'
-            model = self.modelImage
         elif idx == self.IDX_MOVIE:
             obj_type = 'movie'
-            model = self.modelMovie
 
         str = ""
         str += "{} = {{\n".format(obj_type)
-        for idx in range(model.rowCount()):
-            name = model.item(idx, 0).text()
-            value = model.item(idx, 1).text()
-            if value != "":
-                if value[0] == '[' and value[-1] == ']':
-                    str += "    '{}': {},\n".format(name, value)
-                elif value[0] == '(' and value[-1] == ')':
-                    str += "    '{}': {},\n".format(name, value)
-                else:
-                    try:
-                        int(value)
-                        str += "    '{}': {},\n".format(name, value)
-                    except ValueError:
-                        str += "    '{}': '{}',\n".format(name, value)
+        for name, value in self.args().iteritems():
+            if isinstance(value, basestring):
+                str += "    '{}': '{}',\n".format(name, value)
+            else:
+                str += "    '{}': {},\n".format(name, value)
 
         str += "    'viewports': viewports,\n"
         str += "    'colorbars': colorbars,\n"
