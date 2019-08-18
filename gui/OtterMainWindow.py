@@ -6,6 +6,7 @@ from OtterObjectTypeTab import OtterObjectTypeTab
 from OtterViewportsTab import OtterViewportsTab
 from OtterColorbarsTab import OtterColorbarsTab
 from OtterAnnotationsTab import OtterAnnotationsTab
+import os
 
 class OtterMainWindow(QMainWindow):
 
@@ -14,6 +15,7 @@ class OtterMainWindow(QMainWindow):
         self.file = QFile()
         self.setupMenuBar()
         self.setupWidgets()
+        self.setTitle()
         self.setMinimumSize(300, 400)
 
     def setupMenuBar(self):
@@ -48,6 +50,13 @@ class OtterMainWindow(QMainWindow):
         w.setLayout(layout)
         self.setCentralWidget(w)
 
+    def setTitle(self):
+        if self.file.fileName():
+            title = os.path.basename(self.file.fileName())
+        else:
+            title = "Untitled"
+        self.setWindowTitle(title)
+
     def onNewInputFile(self):
         pass
 
@@ -59,6 +68,7 @@ class OtterMainWindow(QMainWindow):
             file_name = QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
                 self.file.setFileName(file_name[0])
+                self.setTitle()
             else:
                 return
         self.saveIntoFile()
@@ -67,6 +77,7 @@ class OtterMainWindow(QMainWindow):
         file_name = QFileDialog.getSaveFileName(self, 'Save File As')
         if file_name[0]:
             self.file.setFileName(file_name[0])
+            self.setTitle()
             self.saveIntoFile()
 
     def saveIntoFile(self):
