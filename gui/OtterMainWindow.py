@@ -17,7 +17,7 @@ class OtterMainWindow(QMainWindow):
         self.setupMenuBar()
         self.setupWidgets()
         self.setTitle()
-        self.setMinimumSize(300, 400)
+        self.setMinimumSize(350, 700)
 
     def setupMenuBar(self):
         menubar = self.menuBar()

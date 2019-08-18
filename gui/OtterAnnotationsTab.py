@@ -9,6 +9,32 @@ class OtterAnnotationsTab(OtterObjectsTab):
     IMAGE = 1
     TIME = 2
 
+    PARAMS_BASE = [
+        { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
+        { 'name': 'halign', 'value': 'left', 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
+        { 'name': 'opacity', 'value': None, 'hint': 'The opacity of object', 'req': False },
+        { 'name': 'shadow', 'value': False, 'hint': 'Render shadow for the text', 'req': False },
+        { 'name': 'font-size', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False }
+    ]
+
+    PARAMS_TEXT = PARAMS_BASE + [
+        { 'name': 'text', 'value': '', 'hint': 'The text to render', 'req': True },
+    ]
+
+    PARAMS_IMAGE = [
+        { 'name': 'file', 'value': '', 'hint': 'The file name of the image', 'req': True },
+        { 'name': 'halign', 'value': 'left', 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
+        { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
+        { 'name': 'width', 'value': 0, 'hint': 'The width of the image', 'req': False },
+        { 'name': 'scale', 'value': 1., 'hint': 'The scale of the image', 'req': False },
+    ]
+
+    PARAMS_TIME = PARAMS_BASE + [
+        { 'name': 'format', 'value': '', 'hint': 'The format pattern for the time', 'req': False },
+    ]
+
     def __init__(self, parent):
         super(OtterAnnotationsTab, self).__init__(parent)
 
@@ -33,13 +59,16 @@ class OtterAnnotationsTab(OtterObjectsTab):
             self.addTimeAnnotation()
 
     def addTextAnnotation(self):
-        pass
+        item = self.addGroup(self.PARAMS_TEXT, spanned = False)
+        item.setText("[text]")
 
     def addImageAnnotation(self):
-        pass
+        item = self.addGroup(self.PARAMS_IMAGE, spanned = False)
+        item.setText("[image]")
 
     def addTimeAnnotation(self):
-        pass
+        item = self.addGroup(self.PARAMS_TIME, spanned = False)
+        item.setText("[time]")
 
     def toText(self):
         str = ""

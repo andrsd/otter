@@ -46,7 +46,6 @@ class OtterObjectTypeTab(QWidget):
         layout.addWidget(self.ctlType)
 
         self.ctlParams = QTreeView(self)
-        self.ctlParams.header().resizeSection(0, 200)
         self.ctlParams.setRootIsDecorated(False)
         layout.addWidget(self.ctlParams)
 
@@ -64,9 +63,11 @@ class OtterObjectTypeTab(QWidget):
     def onTypeChanged(self, idx):
         if idx == self.IDX_IMAGE:
             self.ctlParams.setModel(self.modelImage)
+            self.ctlParams.header().resizeSection(0, 140)
             self.modified.emit()
         elif idx == self.IDX_MOVIE:
             self.ctlParams.setModel(self.modelMovie)
+            self.ctlParams.header().resizeSection(0, 140)
             self.modified.emit()
 
     def populateModels(self):
