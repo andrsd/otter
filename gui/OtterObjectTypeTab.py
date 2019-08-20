@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QVariant, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from OtterWindowModifiedObserver import OtterWindowModifiedObserver
+from OtterParams import *
 import chigger
 import re
 
@@ -16,7 +17,13 @@ class OtterObjectTypeTab(QWidget):
     PARAMS_IMAGE = [
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of the rendered image', 'req': True },
         { 'name': 't', 'value': 0, 'hint': 'Simulation time', 'req': False },
-        { 'name': 'time-unit', 'value': 'sec', 'hint': 'The time unit [sec, min, hour, year]', 'req': False },
+        {
+            'name': 'time-unit',
+            'value': 'sec',
+            'enum': ['sec', 'min', 'hour', 'year'],
+            'hint': 'The time unit [sec, min, hour, year]',
+            'req': False
+        },
         { 'name': 'output', 'value': '', 'hint': 'The file name where image will be saved. If empty, image will be redered on the screen', 'req': False }
     ]
 
@@ -26,7 +33,13 @@ class OtterObjectTypeTab(QWidget):
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of rendered movie', 'req': True },
         { 'name': 'location', 'value': '', 'hint': 'The location where the images for the movie will be rendered', 'req': True },
         { 'name': 'times', 'value': [], 'hint': 'The simulation times of the rendered images', 'req': True },
-        { 'name': 'time-unit', 'value': 'sec', 'hint': 'The time unit [sec, min, hour, year]', 'req': False },
+        {
+            'name': 'time-unit',
+            'value': 'sec',
+            'enum': ['sec', 'min', 'hour', 'year'],
+            'hint': 'The time unit [sec, min, hour, year]',
+            'req': False
+        },
         { 'name': 'frame', 'value': 'frame_*.png', 'hint': 'The file name pattern of the rendered frames', 'req': True }
     ]
 
@@ -49,6 +62,7 @@ class OtterObjectTypeTab(QWidget):
 
         self.ctlParams = QTreeView(self)
         self.ctlParams.setRootIsDecorated(False)
+        self.ctlParams.setItemDelegate(OtterParamDelegate(self.ctlParams))
         layout.addWidget(self.ctlParams)
 
         self.onTypeChanged(0)
@@ -93,7 +107,11 @@ class OtterObjectTypeTab(QWidget):
             model.setItem(i, 0, si)
 
             val = item['value']
-            if type(val) == bool:
+            if 'enum' in item:
+                si = QStandardItem(val)
+                si.setEditable(True)
+                si.setData(QVariant(OtterParamOptions(item['enum'])))
+            elif type(val) == bool:
                 si = QStandardItem()
                 si.setEditable(False)
                 si.setCheckable(True)
