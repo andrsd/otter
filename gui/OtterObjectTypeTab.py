@@ -15,7 +15,13 @@ class OtterObjectTypeTab(QWidget):
     CHIGGER_PARAMS = ['size']
 
     PARAMS_IMAGE = [
-        { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of the rendered image', 'req': True },
+        {
+            'name': 'size',
+            'value': [1536, 864],
+            'valid': '\[\d+\, ?\d+\]',
+            'hint': 'The size of the rendered image',
+            'req': True
+        },
         {
             'name': 't',
             'value': 0.,
@@ -29,20 +35,46 @@ class OtterObjectTypeTab(QWidget):
             'hint': 'The time unit [sec, min, hour, year]',
             'req': False
         },
-        { 'name': 'output', 'value': '', 'hint': 'The file name where image will be saved. If empty, image will be redered on the screen', 'req': False }
+        {
+            'name': 'output',
+            'value': '',
+            'hint': 'The file name where image will be saved. If empty, image will be redered on the screen',
+            'req': False
+        }
     ]
 
     PARAMS_MOVIE = [
-        { 'name': 'file', 'value': '', 'hint': 'The file name of the rendered movie', 'req': True },
+        {
+            'name': 'file',
+            'value': '',
+            'hint': 'The file name of the rendered movie',
+            'req': True
+        },
         {
             'name': 'duration',
             'value': 30.,
             'limits': [0, None],
             'hint': 'The duration of the movie in seconds',
             'req': True },
-        { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of rendered movie', 'req': True },
-        { 'name': 'location', 'value': '', 'hint': 'The location where the images for the movie will be rendered', 'req': True },
-        { 'name': 'times', 'value': [], 'hint': 'The simulation times of the rendered images', 'req': True },
+        {
+            'name': 'size',
+            'value': [1536, 864],
+            'valid': '\[\d+\, ?\d+\]',
+            'hint': 'The size of rendered movie',
+            'req': True
+        },
+        {
+            'name': 'location',
+            'value': '',
+            'hint': 'The location where the images for the movie will be rendered',
+            'req': True
+        },
+        {
+            'name': 'times',
+            'value': [],
+            'hint': 'The simulation times of the rendered images',
+            'req': True
+        },
         {
             'name': 'time-unit',
             'value': 'sec',
@@ -50,7 +82,12 @@ class OtterObjectTypeTab(QWidget):
             'hint': 'The time unit [sec, min, hour, year]',
             'req': False
         },
-        { 'name': 'frame', 'value': 'frame_*.png', 'hint': 'The file name pattern of the rendered frames', 'req': True }
+        {
+            'name': 'frame',
+            'value': 'frame_*.png',
+            'hint': 'The file name pattern of the rendered frames',
+            'req': True
+        }
     ]
 
     IDX_IMAGE = 0
@@ -132,6 +169,11 @@ class OtterObjectTypeTab(QWidget):
             elif type(val) == str:
                 si = QStandardItem(val)
                 si.setEditable(True)
+                if 'valid' in item:
+                    valid = item['valid']
+                else:
+                    valid = None
+                si.setData(QVariant(OtterParamLineEdit('str', valid)))
             elif type(val) == int:
                 si = QStandardItem(str(val))
                 si.setEditable(True)
@@ -151,6 +193,11 @@ class OtterObjectTypeTab(QWidget):
             else:
                 si = QStandardItem(str(val))
                 si.setEditable(True)
+                if 'valid' in item:
+                    valid = item['valid']
+                else:
+                    valid = None
+                si.setData(QVariant(OtterParamLineEdit('str', valid)))
             model.setItem(i, 1, si)
         model.sort(0, Qt.AscendingOrder)
         return model

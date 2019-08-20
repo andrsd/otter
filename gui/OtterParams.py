@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtWidgets import QComboBox, QLineEdit, QItemDelegate
-from PyQt5.QtGui import QValidator, QDoubleValidator, QIntValidator
+from PyQt5.QtGui import QValidator, QDoubleValidator, QIntValidator, QRegExpValidator
 
 
 class OtterParamDelegate(QItemDelegate):
@@ -87,17 +87,23 @@ class OtterParamLineEdit(OtterParamBase):
         if self.limits != None:
             if self.type == 'int':
                 validator = QIntValidator()
-            elif self.type == 'float':
-                validator = QDoubleValidator()
-            else:
-                validator = None
-
-            if validator != None:
                 if self.limits[0] != None:
                     validator.setBottom(self.limits[0])
                 if self.limits[1] != None:
                     validator.setTop(self.limits[1])
                 editor.setValidator(validator)
+            elif self.type == 'float':
+                validator = QDoubleValidator()
+                if self.limits[0] != None:
+                    validator.setBottom(self.limits[0])
+                if self.limits[1] != None:
+                    validator.setTop(self.limits[1])
+                editor.setValidator(validator)
+            elif self.type == 'str':
+                validator = QRegExpValidator(QRegExp(self.limits))
+                editor.setValidator(validator)
+            else:
+                pass
 
         return editor
 
