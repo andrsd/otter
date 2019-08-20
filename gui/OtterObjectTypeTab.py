@@ -11,6 +11,8 @@ class OtterObjectTypeTab(QWidget):
 
     modified = pyqtSignal()
 
+    CHIGGER_PARAMS = ['size']
+
     PARAMS_IMAGE = [
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of the rendered image', 'req': True },
         { 'name': 't', 'value': 0, 'hint': 'Simulation time', 'req': False },
@@ -113,10 +115,11 @@ class OtterObjectTypeTab(QWidget):
         model = item.model()
         row = item.row()
         name = model.item(row, 0).text().encode("ascii")
-        value = item.text().encode("ascii")
-        param = self.toPython(value)
-        self.chiggerWindow.setOption(name, param)
-        self.chiggerWindow.update()
+        if name in self.CHIGGER_PARAMS:
+            value = item.text().encode("ascii")
+            param = self.toPython(value)
+            self.chiggerWindow.setOption(name, param)
+            self.chiggerWindow.update()
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')
