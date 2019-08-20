@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QComboBox, QItemDelegate
+from PyQt5.QtWidgets import QComboBox, QLineEdit, QItemDelegate
+from PyQt5.QtGui import QValidator, QDoubleValidator, QIntValidator
 
 
 class OtterParamDelegate(QItemDelegate):
@@ -72,4 +73,39 @@ class OtterParamOptions(OtterParamBase):
     def setGeometry(self, editor, rect):
         rect.setTop(rect.top() - 2)
         rect.setBottom(rect.bottom() + 3)
+        return editor.setGeometry(rect)
+
+
+class OtterParamLineEdit(OtterParamBase):
+    def __init__(self, type, limits = None):
+        super(OtterParamLineEdit, self).__init__()
+        self.type = type
+        self.limits = limits
+
+    def createEditor(self, parent):
+        editor = QLineEdit(parent)
+        if self.limits != None:
+            if self.type == 'int':
+                validator = QIntValidator()
+            elif self.type == 'float':
+                validator = QDoubleValidator()
+            else:
+                validator = None
+
+            if validator != None:
+                if self.limits[0] != None:
+                    validator.setBottom(self.limits[0])
+                if self.limits[1] != None:
+                    validator.setTop(self.limits[1])
+                editor.setValidator(validator)
+
+        return editor
+
+    def setEditorData(self, editor, value):
+        editor.setText(value)
+
+    def setModelData(self, editor):
+        return editor.text()
+
+    def setGeometry(self, editor, rect):
         return editor.setGeometry(rect)

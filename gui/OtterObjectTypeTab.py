@@ -16,7 +16,12 @@ class OtterObjectTypeTab(QWidget):
 
     PARAMS_IMAGE = [
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of the rendered image', 'req': True },
-        { 'name': 't', 'value': 0, 'hint': 'Simulation time', 'req': False },
+        {
+            'name': 't',
+            'value': 0.,
+            'limits': [None, None],
+            'hint': 'Simulation time',
+            'req': False },
         {
             'name': 'time-unit',
             'value': 'sec',
@@ -29,7 +34,12 @@ class OtterObjectTypeTab(QWidget):
 
     PARAMS_MOVIE = [
         { 'name': 'file', 'value': '', 'hint': 'The file name of the rendered movie', 'req': True },
-        { 'name': 'duration', 'value': 30, 'hint': 'The duration of the movie in seconds', 'req': True },
+        {
+            'name': 'duration',
+            'value': 30.,
+            'limits': [0, None],
+            'hint': 'The duration of the movie in seconds',
+            'req': True },
         { 'name': 'size', 'value': [1536, 864], 'hint': 'The size of rendered movie', 'req': True },
         { 'name': 'location', 'value': '', 'hint': 'The location where the images for the movie will be rendered', 'req': True },
         { 'name': 'times', 'value': [], 'hint': 'The simulation times of the rendered images', 'req': True },
@@ -122,6 +132,22 @@ class OtterObjectTypeTab(QWidget):
             elif type(val) == str:
                 si = QStandardItem(val)
                 si.setEditable(True)
+            elif type(val) == int:
+                si = QStandardItem(str(val))
+                si.setEditable(True)
+                if 'limits' in item:
+                    limits = item['limits']
+                else:
+                    limits = None
+                si.setData(QVariant(OtterParamLineEdit('int', limits)))
+            elif type(val) == float:
+                si = QStandardItem(str(val))
+                si.setEditable(True)
+                if 'limits' in item:
+                    limits = item['limits']
+                else:
+                    limits = None
+                si.setData(QVariant(OtterParamLineEdit('float', limits)))
             else:
                 si = QStandardItem(str(val))
                 si.setEditable(True)
