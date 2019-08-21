@@ -86,16 +86,19 @@ def movie(movie):
     args['offscreen'] = True
     window = chigger.RenderWindow(*results, **args)
 
-    i = 0
-    for t in common.times:
-        print '\x1b[2K\rTime: {} ({} of {})'.format(t, i + 1, len(common.times)),
+    pb_len = 65
+    total = len(common.times)
+    for i, t in enumerate(common.times):
+        percent = ("{0:.2f}").format(100 * (i / float(total)))
+        filled_length = int(pb_len * i // total)
+        bar = '#' * filled_length + ' ' * (pb_len - filled_length)
+        print '\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent),
         sys.stdout.flush()
 
         for item in items:
             item.update(t)
 
         window.write("{}/{}".format(location, filename).format(i))
-        i = i + 1
     print
 
     chigger.utils.img2mov(
