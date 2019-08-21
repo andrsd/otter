@@ -53,6 +53,7 @@ class OtterObjectsTab(QWidget):
         self.modified.emit()
 
     def addGroup(self, params, spanned = True):
+        args = {}
         idx = self.model.rowCount()
         si = QStandardItem()
         si.setEditable(False)
@@ -84,11 +85,12 @@ class OtterObjectsTab(QWidget):
                 self.ctlObjects.setFirstColumnSpanned(i, si.index(), True)
             else:
                 self.buildChildParam(i, si, item)
+                args[item['name']] = item['value']
 
         self.ctlObjects.expand(si.index())
         self.model.sort(0, Qt.AscendingOrder)
         self.modified.emit()
-        return si
+        return si, args
 
     def buildChildParam(self, idx, parent, item):
         child = QStandardItem(item['name'])

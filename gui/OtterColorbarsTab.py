@@ -34,7 +34,7 @@ class OtterColorbarsTab(OtterObjectsTab):
         return btn
 
     def onAdd(self):
-        item = self.addGroup(self.PARAMS)
+        item, params = self.addGroup(self.PARAMS)
 
     def toText(self):
         str = ""

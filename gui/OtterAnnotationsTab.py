@@ -59,15 +59,15 @@ class OtterAnnotationsTab(OtterObjectsTab):
             self.addTimeAnnotation()
 
     def addTextAnnotation(self):
-        item = self.addGroup(self.PARAMS_TEXT, spanned = False)
+        item, params = self.addGroup(self.PARAMS_TEXT, spanned = False)
         item.setText("[text]")
 
     def addImageAnnotation(self):
-        item = self.addGroup(self.PARAMS_IMAGE, spanned = False)
+        item, params = self.addGroup(self.PARAMS_IMAGE, spanned = False)
         item.setText("[image]")
 
     def addTimeAnnotation(self):
-        item = self.addGroup(self.PARAMS_TIME, spanned = False)
+        item, params = self.addGroup(self.PARAMS_TIME, spanned = False)
         item.setText("[time]")
 
     def toText(self):

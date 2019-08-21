@@ -101,19 +101,19 @@ class OtterViewportsTab(OtterObjectsTab):
             self.addVPPPlot()
 
     def addExodusResult(self):
-        item = self.addGroup(self.PARAMS_EXODUS_RESULT, spanned = False)
+        item, params = self.addGroup(self.PARAMS_EXODUS_RESULT, spanned = False)
         item.setText("[exodus]")
 
     def addRELAP7Result(self):
-        item = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
+        item, params = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
         item.setText("[RELAP-7 result]")
 
     def addPlotOverLine(self):
-        item = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
+        item, params = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
         item.setText("[plot over line]")
 
     def addVPPPlot(self):
-        item = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
+        item, params = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
         item.setText("[vpp plot]")
 
     def toText(self):
