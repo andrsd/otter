@@ -2,12 +2,12 @@
 
 import os
 import sys
+import re
 import chigger
 import common
 import viewports
 import colorbars
 import annotations
-
 
 def render(obj):
     """
@@ -96,6 +96,10 @@ def movie(movie):
         duration = movie['duration'],
         num_threads = 12,
         overwrite = True)
+
+    for f in os.listdir(location):
+        if re.search(frame, f):
+            os.remove(os.path.join(location, f))
 
 
 def _buildResults(obj):
