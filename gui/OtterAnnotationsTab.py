@@ -35,8 +35,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         { 'name': 'format', 'value': '', 'hint': 'The format pattern for the time', 'req': False },
     ]
 
-    def __init__(self, parent):
-        super(OtterAnnotationsTab, self).__init__(parent)
+    def __init__(self, parent, chigger_window):
+        super(OtterAnnotationsTab, self).__init__(parent, chigger_window)
 
     def name(self):
         return "ANs"

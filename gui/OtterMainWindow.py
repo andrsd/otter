@@ -38,15 +38,15 @@ class OtterMainWindow(QMainWindow):
         self.tabType.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabType, "Type")
 
-        self.tabViewports = OtterViewportsTab(self)
+        self.tabViewports = OtterViewportsTab(self, self.tabType.chiggerWindow)
         self.tabViewports.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabViewports, self.tabViewports.name())
 
-        self.tabColorBars = OtterColorbarsTab(self)
+        self.tabColorBars = OtterColorbarsTab(self, self.tabType.chiggerWindow)
         self.tabColorBars.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabColorBars, self.tabColorBars.name())
 
-        self.tabAnnotations = OtterAnnotationsTab(self)
+        self.tabAnnotations = OtterAnnotationsTab(self, self.tabType.chiggerWindow)
         self.tabAnnotations.modified.connect(self.setModified)
         self.ctlObjType.addTab(self.tabAnnotations, self.tabAnnotations.name())
 

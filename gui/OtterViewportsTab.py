@@ -74,8 +74,8 @@ class OtterViewportsTab(OtterObjectsTab):
         { 'name': 'y-axis', 'group': True, 'childs': OtterObjectsTab.PARAMS_AXIS, 'hint': 'Y axis' },
     ]
 
-    def __init__(self, parent):
-        super(OtterViewportsTab, self).__init__(parent)
+    def __init__(self, parent, chigger_window):
+        super(OtterViewportsTab, self).__init__(parent, chigger_window)
 
     def name(self):
         return "VPs"

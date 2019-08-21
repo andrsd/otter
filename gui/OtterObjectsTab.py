@@ -25,7 +25,7 @@ class OtterObjectsTab(QWidget):
         { 'name': 'labels-visible', 'value': True, 'hint': 'Visibility of the labels', 'req': False },
     ]
 
-    def __init__(self, parent):
+    def __init__(self, parent, chigger_window):
         super(OtterObjectsTab, self).__init__(parent)
 
         layout = QVBoxLayout(self)
@@ -46,6 +46,8 @@ class OtterObjectsTab(QWidget):
         self.ctlObjects.setRootIsDecorated(False)
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         layout.addWidget(self.ctlObjects)
+
+        self.chiggerWindow = chigger_window
 
     def onItemChanged(self, item):
         self.modified.emit()

@@ -22,8 +22,8 @@ class OtterColorbarsTab(OtterObjectsTab):
         { 'name': 'axis2', 'group': True, 'childs': PARAMS_AXIS, 'hint': 'Secondary axis' }
     ]
 
-    def __init__(self, parent):
-        super(OtterColorbarsTab, self).__init__(parent)
+    def __init__(self, parent, chigger_window):
+        super(OtterColorbarsTab, self).__init__(parent, chigger_window)
 
     def name(self):
         return "CBs"
