@@ -26,6 +26,7 @@ def run_otter():
 
     sys.path.append(os.path.join(moose_dir, "python"))
     sys.path.append(chigger_dir)
+    sys.path.append(otter_dir)
 
     sys.exit(main(sys.argv))
 
