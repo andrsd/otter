@@ -94,7 +94,8 @@ def movie(movie):
         '{}/{}'.format(location, frame),
         movie['file'],
         duration = movie['duration'],
-        num_threads = 12)
+        num_threads = 12,
+        overwrite = True)
 
 
 def _buildResults(obj):
