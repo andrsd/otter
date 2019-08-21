@@ -2,6 +2,9 @@
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from OtterObjectsTab import OtterObjectsTab
+import common
+import otter
+import chigger
 
 class OtterAnnotationsTab(OtterObjectsTab):
 
@@ -61,6 +64,12 @@ class OtterAnnotationsTab(OtterObjectsTab):
     def addTextAnnotation(self):
         item, params = self.addGroup(self.PARAMS_TEXT, spanned = False)
         item.setText("[text]")
+
+        kwargs = common.remap(params, otter.annotations.AnnotationText.MAP)
+        self.ann = chigger.annotations.TextAnnotation(**kwargs)
+        item.setData((self.ann[0], otter.annotations.AnnotationText.MAP))
+        self.chiggerWindow.append(self.ann)
+        self.chiggerWindow.update()
 
     def addImageAnnotation(self):
         item, params = self.addGroup(self.PARAMS_IMAGE, spanned = False)

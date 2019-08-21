@@ -3,6 +3,7 @@
 from PyQt5.QtCore import Qt, QModelIndex, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
+import common
 
 class OtterObjectsTab(QWidget):
 
@@ -50,6 +51,26 @@ class OtterObjectsTab(QWidget):
         self.chiggerWindow = chigger_window
 
     def onItemChanged(self, item):
+        parent = item.parent()
+        if parent != None:
+            model = item.model()
+            row = item.row()
+
+            name = parent.child(row, 0).text().encode("ascii")
+            value = item.text().encode("ascii")
+            if item.isCheckable():
+                value = self.toPython(item.checkState() == Qt.Checked)
+            else:
+                value = self.toPython(value)
+            params = { name: value }
+
+            chigger_object, map = parent.data()
+            kwargs = common.remap(params, map)
+            for key, val in kwargs.items():
+                chigger_object.setOption(key, val)
+            chigger_object.update()
+            self.chiggerWindow.update()
+
         self.modified.emit()
 
     def addGroup(self, params, spanned = True):
@@ -124,3 +145,20 @@ class OtterObjectsTab(QWidget):
             child = QStandardItem(str(val))
             child.setEditable(True)
         parent.setChild(idx, 1, child)
+
+    def toPython(self, value):
+        if isinstance(value, bool):
+            return value
+        elif value[0] == '[' and value[-1] == ']':
+            value = value[1:-1]
+            str_array = [x.strip() for x in value.split(',')]
+            return [ float(val) for val in str_array]
+        elif value[0] == '(' and value[-1] == ')':
+            value = value[1:-1]
+            str_array = [x.strip() for x in value.split(',')]
+            return [ float(val) for val in str_array]
+        else:
+            try:
+                return float(value)
+            except ValueError:
+                return value
