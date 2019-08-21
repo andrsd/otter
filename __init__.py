@@ -9,6 +9,11 @@ import viewports
 import colorbars
 import annotations
 
+size = {
+    '720p' : [1280, 720],
+    '1080p' : [1920, 1080]
+}
+
 def render(obj):
     """
     Render an image or a movie
