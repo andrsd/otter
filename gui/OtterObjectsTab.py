@@ -53,6 +53,7 @@ class OtterObjectsTab(QWidget):
         self.modified.emit()
 
     def addGroup(self, params, spanned = True):
+        self.model.blockSignals(True)
         args = {}
         idx = self.model.rowCount()
         si = QStandardItem()
@@ -88,6 +89,7 @@ class OtterObjectsTab(QWidget):
                 args[item['name']] = item['value']
 
         self.ctlObjects.expand(si.index())
+        self.model.blockSignals(False)
         self.model.sort(0, Qt.AscendingOrder)
         self.modified.emit()
         return si, args
