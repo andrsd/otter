@@ -7,6 +7,7 @@ from OtterViewportsTab import OtterViewportsTab
 from OtterColorbarsTab import OtterColorbarsTab
 from OtterAnnotationsTab import OtterAnnotationsTab
 import os
+import otter
 
 class OtterMainWindow(QMainWindow):
 
@@ -101,7 +102,8 @@ class OtterMainWindow(QMainWindow):
             out << "\n"
             out << "import otter\n"
             out << "import numpy\n"
-            out << "import relap7\n"
+            if otter.HAVE_RELAP7:
+                out << "import relap7\n"
             out << "\n"
             out << self.tabViewports.toText()
             out << "\n"

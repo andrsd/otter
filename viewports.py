@@ -1,7 +1,9 @@
 import vtk
 import chigger
 import filters
-import relap7
+import otter
+if otter.HAVE_RELAP7:
+    import relap7
 import common
 import mooseutils
 import numpy

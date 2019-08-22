@@ -4,6 +4,11 @@ import os
 import sys
 import re
 import chigger
+try:
+    import relap7
+    HAVE_RELAP7 = True
+except:
+    HAVE_RELAP7 = False
 import common
 import viewports
 import colorbars
