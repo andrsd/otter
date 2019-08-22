@@ -16,7 +16,7 @@ class OtterObjectsTab(QWidget):
         { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
         { 'name': 'font-size', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'font-color', 'value': [1,1,1], 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'title', 'value': [1,1,1], 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
         { 'name': 'grid', 'value': True, 'hint': 'Show the grid', 'req': False },
         { 'name': 'grid-color', 'value': [0.25, 0.25, 0.25], 'hint': 'The color of the grid', 'req': False },
         { 'name': 'precision', 'value': 0, 'hint': 'The size of the font used for the numbers', 'req': False },
