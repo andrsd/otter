@@ -53,6 +53,15 @@ def setTimeUnit(unit):
     else:
         raise SystemExit("Unsupported 'time-unit' specified.")
 
+def formatTimeStr(format_str, time):
+    global time_unit
+    global time_unit_str
+
+    if format_str == None:
+        return 'Time: {:1.2f} {}'.format(time * time_unit, time_unit_str)
+    else:
+        return 'Time: {} {}'.format(format_str, time_unit_str).format(time * time_unit)
+
 def buildCamera(args):
     """
     Build a VTK camera object

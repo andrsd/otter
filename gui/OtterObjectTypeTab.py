@@ -7,10 +7,13 @@ from OtterWindowModifiedObserver import OtterWindowModifiedObserver
 from OtterParams import *
 import chigger
 import re
+import common
 
 class OtterObjectTypeTab(QWidget):
 
     modified = pyqtSignal()
+    # When user changed the time parameter (arg: the new time)
+    timeChanged = pyqtSignal(float)
 
     CHIGGER_PARAMS = ['size']
 
@@ -139,6 +142,9 @@ class OtterObjectTypeTab(QWidget):
         self.modelMovie = self.populateParams(self.PARAMS_MOVIE)
         self.modelMovie.itemChanged.connect(self.onParamChanged)
 
+        # TODO: make this to use the value 't' from self.PARAMS_IMAGE
+        common.t = 0.
+
     def populateParams(self, params):
         model = QStandardItemModel(len(params), 2, self)
         model.setHorizontalHeaderLabels(["Parameter", "Value"])
@@ -206,11 +212,14 @@ class OtterObjectTypeTab(QWidget):
         model = item.model()
         row = item.row()
         name = model.item(row, 0).text().encode("ascii")
+        value = item.text().encode("ascii")
         if name in self.CHIGGER_PARAMS:
-            value = item.text().encode("ascii")
             param = self.toPython(value)
             self.chiggerWindow.setOption(name, param)
             self.chiggerWindow.update()
+        elif name == 't':
+            common.t = float(value)
+            self.timeChanged.emit(common.t)
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')

@@ -35,7 +35,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
     ]
 
     PARAMS_TIME = PARAMS_BASE + [
-        { 'name': 'format', 'value': '', 'hint': 'The format pattern for the time', 'req': False },
+        { 'name': 'format', 'value': None, 'hint': 'The format pattern for the time', 'req': False },
     ]
 
     def __init__(self, parent, chigger_window):
@@ -89,9 +89,21 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
         map = otter.annotations.AnnotationTime.MAP
         kwargs = common.remap(params, map)
-        ann = chigger.annotations.TimeAnnotation(**kwargs)
+        kwargs['text'] = common.formatTimeStr(kwargs['format'], common.t)
+        ann = chigger.annotations.TextAnnotation(**kwargs)
         item.setData((ann[0], map))
         self.chiggerWindow.append(ann)
+        self.chiggerWindow.update()
+
+    def onTimeChanged(self, time):
+        for row in range(self.model.rowCount()):
+            item = self.model.item(row, 0)
+            if item.text() == '[time]':
+                ann, map = item.data()
+                # TODO: get this from the parameter
+                format_str = None
+                text = common.formatTimeStr(format_str, time)
+                ann.setOption('text', text)
         self.chiggerWindow.update()
 
     def toText(self):

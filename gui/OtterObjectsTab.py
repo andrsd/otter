@@ -67,7 +67,8 @@ class OtterObjectsTab(QWidget):
             chigger_object, map = parent.data()
             kwargs = common.remap(params, map)
             for key, val in kwargs.items():
-                chigger_object.setOption(key, val)
+                if chigger_object.getOptions().hasOption(key):
+                    chigger_object.setOption(key, val)
             chigger_object.update()
             self.chiggerWindow.update()
 

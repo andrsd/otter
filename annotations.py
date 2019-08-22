@@ -43,7 +43,7 @@ class AnnotationTime(AnnotationText):
         self.text.setOptions(text = self.getTimeText(time))
 
     def getTimeText(self, time):
-        return 'Time: {} {}'.format(self.format_str, common.time_unit_str).format(time * common.time_unit)
+        return common.formatTimeStr(self.format_str, time)
 
 
 

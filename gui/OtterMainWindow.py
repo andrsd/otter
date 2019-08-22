@@ -37,6 +37,7 @@ class OtterMainWindow(QMainWindow):
 
         self.tabType = OtterObjectTypeTab(self)
         self.tabType.modified.connect(self.setModified)
+        self.tabType.timeChanged.connect(self.onTimeChanged)
         self.ctlObjType.addTab(self.tabType, "Type")
 
         self.tabViewports = OtterViewportsTab(self, self.tabType.chiggerWindow)
@@ -59,6 +60,9 @@ class OtterMainWindow(QMainWindow):
     def setModified(self):
         self.modified = True
         self.setTitle()
+
+    def onTimeChanged(self, time):
+        self.tabAnnotations.onTimeChanged(time)
 
     def setTitle(self):
         if self.file.fileName():
