@@ -96,13 +96,19 @@ class OtterAnnotationsTab(OtterObjectsTab):
         self.chiggerWindow.update()
 
     def onTimeChanged(self, time):
+        self.updateTimeAnnotations()
+
+    def onTimeUnitChanged(self, time):
+        self.updateTimeAnnotations()
+
+    def updateTimeAnnotations(self):
         for row in range(self.model.rowCount()):
             item = self.model.item(row, 0)
             if item.text() == '[time]':
                 ann, map = item.data()
                 # TODO: get this from the parameter
                 format_str = None
-                text = common.formatTimeStr(format_str, time)
+                text = common.formatTimeStr(format_str, common.t)
                 ann.setOption('text', text)
         self.chiggerWindow.update()
 

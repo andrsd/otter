@@ -14,6 +14,8 @@ class OtterObjectTypeTab(QWidget):
     modified = pyqtSignal()
     # When user changed the time parameter (arg: the new time)
     timeChanged = pyqtSignal(float)
+    # When user changed time unit
+    timeUnitChanged = pyqtSignal(str)
 
     CHIGGER_PARAMS = ['size']
 
@@ -220,6 +222,10 @@ class OtterObjectTypeTab(QWidget):
         elif name == 't':
             common.t = float(value)
             self.timeChanged.emit(common.t)
+        elif name == 'time-unit':
+            time_unit = str(value)
+            common.setTimeUnit(time_unit)
+            self.timeUnitChanged.emit(time_unit)
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')
