@@ -81,6 +81,12 @@ class OtterViewportsTab(OtterObjectsTab):
     def name(self):
         return "VPs"
 
+    def pythonName(self):
+        return "viewports"
+
+    def needsName(self):
+        return True
+
     def buildAddButton(self):
         btn = QPushButton("Add", self)
         mnu = QMenu("Add", self)
@@ -117,10 +123,3 @@ class OtterViewportsTab(OtterObjectsTab):
     def addVPPPlot(self):
         item, params = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
         item.setText("[vpp plot]")
-
-    def toText(self):
-        str = ""
-        str += "viewports = [\n"
-        str += "]\n"
-
-        return str

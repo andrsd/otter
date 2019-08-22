@@ -28,6 +28,9 @@ class OtterColorbarsTab(OtterObjectsTab):
     def name(self):
         return "CBs"
 
+    def pythonName(self):
+        return "colorbars"
+
     def buildAddButton(self):
         btn = QPushButton("Add", self)
         btn.clicked.connect(self.onAdd)
@@ -35,10 +38,3 @@ class OtterColorbarsTab(OtterObjectsTab):
 
     def onAdd(self):
         item, params = self.addGroup(self.PARAMS)
-
-    def toText(self):
-        str = ""
-        str += "colorbars = [\n"
-        str += "]\n"
-
-        return str

@@ -50,6 +50,13 @@ class OtterObjectsTab(QWidget):
 
         self.chiggerWindow = chigger_window
 
+    def needsName(self):
+        """
+        Tells the caller if we need to store the name of the group, needed for example by viewports that needs to be referenced
+        by color bars.
+        """
+        return False
+
     def onItemChanged(self, item):
         parent = item.parent()
         if parent != None:
@@ -146,6 +153,83 @@ class OtterObjectsTab(QWidget):
             child = QStandardItem(str(val))
             child.setEditable(True)
         parent.setChild(idx, 1, child)
+
+    def argsGroup(self, parent):
+        """
+        Build python dictionary for an otter object
+
+        Inputs:
+            parent [QStandardItem] - parent item from the model, childern of this key will be stored into the python dictionary
+        """
+
+        args = {}
+        for idx in range(parent.rowCount()):
+            name = parent.child(idx, 0).text().encode("ascii")
+            value = parent.child(idx, 1).text().encode("ascii")
+            if len(value) > 0:
+                args[name] = value
+        return args
+
+    def args(self):
+        """
+        Build python array of all otter objects as python dictionaries
+        """
+
+        args = []
+        for idx in range(self.model.rowCount()):
+            parent = self.model.item(idx, 0)
+            if parent.hasChildren():
+                argsGroup  = self.argsGroup(parent)
+                if self.needsName():
+                    parent_name = self.model.item(idx, 1).text().encode("ascii")
+                    argsGroup['name'] = parent_name
+                args.append(argsGroup)
+
+        return args
+
+    def argToText(self, name, value, level):
+        """
+        Convert a parameter into a string representation of python dictionary key for outputting
+
+        Inputs:
+            name [string]
+            value [string]
+            level [int]
+        """
+
+        str = ""
+        if isinstance(value, basestring):
+            str += "    " * level + "'{}': '{}',\n".format(name, value)
+        else:
+            str += "    " * level + "'{}': {},\n".format(name, value)
+        return str
+
+    def groupToText(self, args, level):
+        """
+        Convert a group of parameters into a string representation of python dictionary for outputting
+
+        Inputs:
+            args [dict] - dictionary that will be converted into a string
+            level [int] - indentation level
+        """
+
+        str = "    " * level + "{\n"
+        for key, val in args.items():
+            str += self.argToText(key, val, level + 1)
+        str += "    " * level + "},\n"
+        return str
+
+    def toText(self):
+        """
+        Convert all otter objects into string representation of python code for outputting
+        """
+
+        str = ""
+        str += "{} = [\n".format(self.pythonName())
+        for value in self.args():
+            str += self.groupToText(value, 1)
+        str += "]\n"
+        return str
 
     def toPython(self, value):
         if isinstance(value, bool):

@@ -44,6 +44,9 @@ class OtterAnnotationsTab(OtterObjectsTab):
     def name(self):
         return "ANs"
 
+    def pythonName(self):
+        return "annotations"
+
     def buildAddButton(self):
         btn = QPushButton("Add", self)
         mnu = QMenu("Add", self)
@@ -111,10 +114,3 @@ class OtterAnnotationsTab(OtterObjectsTab):
                 text = common.formatTimeStr(format_str, common.t)
                 ann.setOption('text', text)
         self.chiggerWindow.update()
-
-    def toText(self):
-        str = ""
-        str += "annotations = [\n"
-        str += "]\n"
-
-        return str
