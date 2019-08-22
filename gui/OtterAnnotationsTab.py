@@ -18,11 +18,11 @@ class OtterAnnotationsTab(OtterObjectsTab):
         { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
         { 'name': 'opacity', 'value': None, 'hint': 'The opacity of object', 'req': False },
         { 'name': 'shadow', 'value': False, 'hint': 'Render shadow for the text', 'req': False },
-        { 'name': 'font-size', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False }
+        { 'name': 'font-size', 'value': 20, 'hint': 'The size of the font used for the numbers', 'req': False }
     ]
 
     PARAMS_TEXT = PARAMS_BASE + [
-        { 'name': 'text', 'value': '', 'hint': 'The text to render', 'req': True },
+        { 'name': 'text', 'value': 'Text', 'hint': 'The text to render', 'req': True },
     ]
 
     PARAMS_IMAGE = [
