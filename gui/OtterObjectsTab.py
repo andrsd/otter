@@ -234,6 +234,8 @@ class OtterObjectsTab(QWidget):
     def toPython(self, value):
         if isinstance(value, bool):
             return value
+        elif len(value) == 0:
+            return None
         elif value[0] == '[' and value[-1] == ']':
             value = value[1:-1]
             str_array = [x.strip() for x in value.split(',')]
