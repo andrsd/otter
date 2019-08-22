@@ -65,19 +65,34 @@ class OtterAnnotationsTab(OtterObjectsTab):
         item, params = self.addGroup(self.PARAMS_TEXT, spanned = False)
         item.setText("[text]")
 
-        kwargs = common.remap(params, otter.annotations.AnnotationText.MAP)
-        self.ann = chigger.annotations.TextAnnotation(**kwargs)
-        item.setData((self.ann[0], otter.annotations.AnnotationText.MAP))
-        self.chiggerWindow.append(self.ann)
+        map = otter.annotations.AnnotationText.MAP
+        kwargs = common.remap(params, map)
+        ann = chigger.annotations.TextAnnotation(**kwargs)
+        item.setData((ann[0], map))
+        self.chiggerWindow.append(ann)
         self.chiggerWindow.update()
 
     def addImageAnnotation(self):
         item, params = self.addGroup(self.PARAMS_IMAGE, spanned = False)
         item.setText("[image]")
 
+        map = otter.annotations.AnnotationImage.MAP
+        kwargs = common.remap(params, map)
+        ann = chigger.annotations.ImageAnnotation(**kwargs)
+        item.setData((ann[0], map))
+        self.chiggerWindow.append(ann)
+        self.chiggerWindow.update()
+
     def addTimeAnnotation(self):
         item, params = self.addGroup(self.PARAMS_TIME, spanned = False)
         item.setText("[time]")
+
+        map = otter.annotations.AnnotationTime.MAP
+        kwargs = common.remap(params, map)
+        ann = chigger.annotations.TimeAnnotation(**kwargs)
+        item.setData((ann[0], map))
+        self.chiggerWindow.append(ann)
+        self.chiggerWindow.update()
 
     def toText(self):
         str = ""
