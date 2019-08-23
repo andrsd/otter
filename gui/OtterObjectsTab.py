@@ -12,18 +12,18 @@ class OtterObjectsTab(QWidget):
     INDENT = 14
 
     PARAMS_AXIS = [
-        { 'name': 'num-ticks', 'value': None, 'hint': 'The number of tick on the axis', 'req': False },
-        { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
+        { 'name': 'axis-visible', 'value': True, 'hint': 'Visibility of the axis', 'req': False },
         { 'name': 'font-size', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'font-color', 'value': [1,1,1], 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
         { 'name': 'grid', 'value': True, 'hint': 'Show the grid', 'req': False },
         { 'name': 'grid-color', 'value': [0.25, 0.25, 0.25], 'hint': 'The color of the grid', 'req': False },
-        { 'name': 'precision', 'value': 0, 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'notation', 'value': None, 'hint': 'The type of notation [standard, scientific, fixed, printf]', 'req': False },
-        { 'name': 'ticks-visible', 'value': True, 'hint': 'Visibilitty of the tickmarks', 'req': False },
-        { 'name': 'axis-visible', 'value': True, 'hint': 'Visibility of the axis', 'req': False },
         { 'name': 'labels-visible', 'value': True, 'hint': 'Visibility of the labels', 'req': False },
+        { 'name': 'notation', 'value': None, 'hint': 'The type of notation [standard, scientific, fixed, printf]', 'req': False },
+        { 'name': 'num-ticks', 'value': None, 'hint': 'The number of tick on the axis', 'req': False },
+        { 'name': 'precision', 'value': 0, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
+        { 'name': 'ticks-visible', 'value': True, 'hint': 'Visibilitty of the tickmarks', 'req': False },
+        { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
     ]
 
     def __init__(self, parent, chigger_window):
@@ -38,7 +38,6 @@ class OtterObjectsTab(QWidget):
 
         self.model = QStandardItemModel(0, 2, self)
         self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
-        self.model.sort(0, Qt.AscendingOrder)
         self.model.itemChanged.connect(self.onItemChanged)
 
         self.ctlObjects = QTreeView(self)
@@ -71,18 +70,18 @@ class OtterObjectsTab(QWidget):
                 value = self.toPython(value)
             params = { name: value }
 
-            chigger_object, map = parent.data()
-            kwargs = common.remap(params, map)
-            for key, val in kwargs.items():
-                if chigger_object.getOptions().hasOption(key):
-                    chigger_object.setOption(key, val)
-            chigger_object.update()
-            self.chiggerWindow.update()
+            if parent.data() != None:
+                chigger_object, map = parent.data()
+                kwargs = common.remap(params, map)
+                for key, val in kwargs.items():
+                    if chigger_object.getOptions().hasOption(key):
+                        chigger_object.setOption(key, val)
+                chigger_object.update()
+                self.chiggerWindow.update()
 
         self.modified.emit()
 
     def addGroup(self, params, spanned = True):
-        self.model.blockSignals(True)
         args = {}
         idx = self.model.rowCount()
         si = QStandardItem()
@@ -118,8 +117,6 @@ class OtterObjectsTab(QWidget):
                 args[item['name']] = item['value']
 
         self.ctlObjects.expand(si.index())
-        self.model.blockSignals(False)
-        self.model.sort(0, Qt.AscendingOrder)
         self.modified.emit()
         return si, args
 
@@ -238,12 +235,18 @@ class OtterObjectsTab(QWidget):
             return None
         elif value[0] == '[' and value[-1] == ']':
             value = value[1:-1]
-            str_array = [x.strip() for x in value.split(',')]
-            return [ float(val) for val in str_array]
+            if len(value) > 0:
+                str_array = [x.strip() for x in value.split(',')]
+                return [ float(val) for val in str_array]
+            else:
+                return []
         elif value[0] == '(' and value[-1] == ')':
             value = value[1:-1]
-            str_array = [x.strip() for x in value.split(',')]
-            return [ float(val) for val in str_array]
+            if len(value) > 0:
+                str_array = [x.strip() for x in value.split(',')]
+                return [ float(val) for val in str_array]
+            else:
+                return []
         else:
             try:
                 return float(value)
