@@ -14,31 +14,31 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
     PARAMS_TEXT = [
         { 'name': 'text', 'value': 'Text', 'hint': 'The text to render', 'req': True },
-        { 'name': 'font-size', 'value': 20, 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'halign', 'value': 'left', 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
-        { 'name': 'opacity', 'value': None, 'hint': 'The opacity of object', 'req': False },
+        { 'name': 'font-size', 'value': 20, 'valid': '\d+', 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
         { 'name': 'shadow', 'value': False, 'hint': 'Render shadow for the text', 'req': False },
-        { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
+        { 'name': 'valign', 'value': 'top', 'enum': ['top', 'middle', 'bottom'], 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
     ]
 
     PARAMS_IMAGE = [
         { 'name': 'file', 'value': '', 'hint': 'The file name of the image', 'req': True },
-        { 'name': 'halign', 'value': 'left', 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
         { 'name': 'scale', 'value': 1., 'hint': 'The scale of the image', 'req': False },
-        { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
+        { 'name': 'valign', 'value': 'top', 'enum': ['top', 'middle', 'bottom'], 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
         { 'name': 'width', 'value': 0, 'hint': 'The width of the image', 'req': False },
     ]
 
     PARAMS_TIME = [
-        { 'name': 'font-size', 'value': 20, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'font-size', 'value': 20, 'valid': '\d+', 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'format', 'value': None, 'hint': 'The format pattern for the time', 'req': False },
-        { 'name': 'halign', 'value': 'left', 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
-        { 'name': 'opacity', 'value': None, 'hint': 'The opacity of object', 'req': False },
+        { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
         { 'name': 'shadow', 'value': False, 'hint': 'Render shadow for the text', 'req': False },
-        { 'name': 'valign', 'value': 'top', 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
+        { 'name': 'valign', 'value': 'top', 'enum': ['top', 'middle', 'bottom'], 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
     ]
 
     def __init__(self, parent, chigger_window):

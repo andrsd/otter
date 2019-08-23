@@ -156,6 +156,9 @@ class OtterObjectTypeTab(QWidget):
                 si = QStandardItem(val)
                 si.setEditable(True)
                 si.setData(QVariant(OtterParamOptions(item['enum'])))
+            elif val == None:
+                si = QStandardItem()
+                si.setEditable(True)
             elif type(val) == bool:
                 si = QStandardItem()
                 si.setEditable(False)

@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtCore import Qt, QModelIndex, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QVariant, QModelIndex, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
+from OtterParams import *
 import common
 
 class OtterObjectsTab(QWidget):
@@ -44,6 +45,7 @@ class OtterObjectsTab(QWidget):
         self.ctlObjects.setModel(self.model)
         self.ctlObjects.header().resizeSection(0, 140)
         self.ctlObjects.setRootIsDecorated(False)
+        self.ctlObjects.setItemDelegate(OtterParamDelegate(self.ctlObjects))
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         layout.addWidget(self.ctlObjects)
 
@@ -132,7 +134,11 @@ class OtterObjectsTab(QWidget):
         parent.setChild(idx, 0, child)
 
         val = item['value']
-        if val == None:
+        if 'enum' in item:
+            child = QStandardItem(val)
+            child.setEditable(True)
+            child.setData(QVariant(OtterParamOptions(item['enum'])))
+        elif val == None:
             child = QStandardItem()
             child.setEditable(True)
         elif type(val) == bool:
@@ -146,9 +152,35 @@ class OtterObjectsTab(QWidget):
         elif type(val) == str:
             child = QStandardItem(val)
             child.setEditable(True)
+            if 'valid' in item:
+                valid = item['valid']
+            else:
+                valid = None
+            child.setData(QVariant(OtterParamLineEdit('str', valid)))
+        elif type(val) == int:
+            child = QStandardItem(str(val))
+            child.setEditable(True)
+            if 'limits' in item:
+                limits = item['limits']
+            else:
+                limits = None
+            child.setData(QVariant(OtterParamLineEdit('int', limits)))
+        elif type(val) == float:
+            child = QStandardItem(str(val))
+            child.setEditable(True)
+            if 'limits' in item:
+                limits = item['limits']
+            else:
+                limits = None
+            child.setData(QVariant(OtterParamLineEdit('float', limits)))
         else:
             child = QStandardItem(str(val))
             child.setEditable(True)
+            if 'valid' in item:
+                valid = item['valid']
+            else:
+                valid = None
+            child.setData(QVariant(OtterParamLineEdit('str', valid)))
         parent.setChild(idx, 1, child)
 
     def argsGroup(self, parent):
