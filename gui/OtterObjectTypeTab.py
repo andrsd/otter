@@ -3,9 +3,7 @@
 from PyQt5.QtCore import Qt, QVariant, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from OtterWindowModifiedObserver import OtterWindowModifiedObserver
 from OtterParams import *
-import chigger
 import re
 import common
 
@@ -16,8 +14,6 @@ class OtterObjectTypeTab(QWidget):
     timeChanged = pyqtSignal(float)
     # When user changed time unit
     timeUnitChanged = pyqtSignal(str)
-
-    CHIGGER_PARAMS = ['size']
 
     PARAMS_IMAGE = [
         {
@@ -98,8 +94,11 @@ class OtterObjectTypeTab(QWidget):
     IDX_IMAGE = 0
     IDX_MOVIE = 1
 
-    def __init__(self, parent):
+    def __init__(self, parent, resultWindow):
         super(OtterObjectTypeTab, self).__init__(parent)
+        self.windowResult = resultWindow
+        self.windowResult.resized.connect(self.onWindowResized)
+
         self.populateModels()
 
         layout = QVBoxLayout(self)
@@ -119,15 +118,6 @@ class OtterObjectTypeTab(QWidget):
 
         self.onTypeChanged(0)
 
-        self.windowObserver = OtterWindowModifiedObserver()
-        self.windowObserver.resized.connect(self.onWindowResized)
-
-        args = self.args()
-        args['chigger'] = True
-        args['observers'] = [ self.windowObserver ]
-        self.chiggerWindow = chigger.RenderWindow(*[], **args)
-        self.chiggerWindow.update()
-
     def onTypeChanged(self, idx):
         if idx == self.IDX_IMAGE:
             self.ctlParams.setModel(self.modelImage)
@@ -139,16 +129,16 @@ class OtterObjectTypeTab(QWidget):
             self.modified.emit()
 
     def populateModels(self):
-        self.modelImage = self.populateParams(self.PARAMS_IMAGE)
+        self.modelImage = QStandardItemModel(self)
+        self.modelMovie = QStandardItemModel(self)
+
         self.modelImage.itemChanged.connect(self.onParamChanged)
-        self.modelMovie = self.populateParams(self.PARAMS_MOVIE)
         self.modelMovie.itemChanged.connect(self.onParamChanged)
 
-        # TODO: make this to use the value 't' from self.PARAMS_IMAGE
-        common.t = 0.
+        self.populateParams(self.modelImage, self.PARAMS_IMAGE)
+        self.populateParams(self.modelMovie, self.PARAMS_MOVIE)
 
-    def populateParams(self, params):
-        model = QStandardItemModel(len(params), 2, self)
+    def populateParams(self, model, params):
         model.setHorizontalHeaderLabels(["Parameter", "Value"])
         for i, item in enumerate(params):
             si = QStandardItem(item['name'])
@@ -208,24 +198,30 @@ class OtterObjectTypeTab(QWidget):
                 si.setData(QVariant(OtterParamLineEdit('str', valid)))
             model.setItem(i, 1, si)
         model.sort(0, Qt.AscendingOrder)
-        return model
 
     def onParamChanged(self, item):
+        if item.column() == 0:
+            return
+
         model = item.model()
         row = item.row()
         name = model.item(row, 0).text().encode("ascii")
         value = item.text().encode("ascii")
-        if name in self.CHIGGER_PARAMS:
-            param = self.toPython(value)
-            self.chiggerWindow.setOption(name, param)
-            self.chiggerWindow.update()
-        elif name == 't':
+        if name == 't':
             common.t = float(value)
             self.timeChanged.emit(common.t)
         elif name == 'time-unit':
             time_unit = str(value)
             common.setTimeUnit(time_unit)
             self.timeUnitChanged.emit(time_unit)
+        elif name == 'size':
+            param = self.toPython(value)
+            self.windowResult.resize(param[0], param[1])
+        elif name in ['output', 'location', 'duration', 'file', 'times', 'frame']:
+            pass
+        else:
+            param = self.toPython(value)
+            self.windowResult.setParam(name, param)
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')
@@ -247,7 +243,9 @@ class OtterObjectTypeTab(QWidget):
             return None
 
     def toPython(self, value):
-        if value[0] == '[' and value[-1] == ']':
+        if len(value) == 0:
+            return None
+        elif value[0] == '[' and value[-1] == ']':
             str_array = re.findall('\d+', value)
             return [ int(val) for val in str_array]
         elif value[0] == '(' and value[-1] == ')':

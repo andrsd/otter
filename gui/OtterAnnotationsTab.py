@@ -75,8 +75,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         kwargs = common.remap(params, map)
         ann = chigger.annotations.TextAnnotation(**kwargs)
         item.setData((ann[0], map))
-        self.chiggerWindow.append(ann)
-        self.chiggerWindow.update()
+        self.windowResult.append(ann)
+        self.windowResult.update()
 
     def addImageAnnotation(self):
         item, params = self.addGroup(self.PARAMS_IMAGE, spanned = False)
@@ -86,8 +86,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         kwargs = common.remap(params, map)
         ann = chigger.annotations.ImageAnnotation(**kwargs)
         item.setData((ann[0], map))
-        self.chiggerWindow.append(ann)
-        self.chiggerWindow.update()
+        self.windowResult.append(ann)
+        self.windowResult.update()
 
     def addTimeAnnotation(self):
         item, params = self.addGroup(self.PARAMS_TIME, spanned = False)
@@ -98,8 +98,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         kwargs['text'] = common.formatTimeStr(kwargs['format'], common.t)
         ann = chigger.annotations.TextAnnotation(**kwargs)
         item.setData((ann[0], map))
-        self.chiggerWindow.append(ann)
-        self.chiggerWindow.update()
+        self.windowResult.append(ann)
+        self.windowResult.update()
 
     def onTimeChanged(self, time):
         self.updateTimeAnnotations()
@@ -116,4 +116,4 @@ class OtterAnnotationsTab(OtterObjectsTab):
                 format_str = None
                 text = common.formatTimeStr(format_str, common.t)
                 ann.setOption('text', text)
-        self.chiggerWindow.update()
+        self.windowResult.update()

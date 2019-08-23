@@ -26,7 +26,7 @@ class OtterObjectsTab(QWidget):
         { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
     ]
 
-    def __init__(self, parent, chigger_window):
+    def __init__(self, parent, resultWindow):
         super(OtterObjectsTab, self).__init__(parent)
 
         layout = QVBoxLayout(self)
@@ -47,7 +47,7 @@ class OtterObjectsTab(QWidget):
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         layout.addWidget(self.ctlObjects)
 
-        self.chiggerWindow = chigger_window
+        self.windowResult = resultWindow
 
     def needsName(self):
         """
@@ -77,7 +77,7 @@ class OtterObjectsTab(QWidget):
                     if chigger_object.getOptions().hasOption(key):
                         chigger_object.setOption(key, val)
                 chigger_object.update()
-                self.chiggerWindow.update()
+                self.windowResult.update()
 
         self.modified.emit()
 
