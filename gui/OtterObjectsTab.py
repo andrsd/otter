@@ -273,14 +273,25 @@ class OtterObjectsTab(QWidget):
             value = value[1:-1]
             if len(value) > 0:
                 str_array = [x.strip() for x in value.split(',')]
-                return [ float(val) for val in str_array]
+                res = []
+                for val in str_array:
+                    if val[0] == "'" and val[-1] == "'":
+                        res.append(val[1:-1])
+                    else:
+                        res.append(float(val))
+                return res
             else:
                 return []
         elif value[0] == '(' and value[-1] == ')':
             value = value[1:-1]
             if len(value) > 0:
                 str_array = [x.strip() for x in value.split(',')]
-                return [ float(val) for val in str_array]
+                res = []
+                for val in str_array:
+                    if val[0] == "'" and val[-1] == "'":
+                        res.append(val[1:-1])
+                    else:
+                        res.append(float(val))
             else:
                 return []
         else:
