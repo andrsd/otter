@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu, QFileDialog
 from OtterObjectsTab import OtterObjectsTab
+import common
 import otter
+import chigger
 
 class OtterViewportsTab(OtterObjectsTab):
 
@@ -77,6 +79,7 @@ class OtterViewportsTab(OtterObjectsTab):
 
     def __init__(self, parent, chigger_window):
         super(OtterViewportsTab, self).__init__(parent, chigger_window)
+        self.num_results = 0
 
     def name(self):
         return "VPs"
@@ -109,8 +112,40 @@ class OtterViewportsTab(OtterObjectsTab):
             self.addVPPPlot()
 
     def addExodusResult(self):
-        item, params = self.addGroup(self.PARAMS_EXODUS_RESULT, spanned = False)
-        item.setText("[exodus]")
+        file_names = QFileDialog.getOpenFileName(self, 'Select ExodusII File')
+        if file_names[0]:
+            exodus_file = file_names[0]
+
+            kwargs = {}
+            kwargs['time'] = common.t
+            kwargs['timestep'] = None
+            exodus_reader = chigger.exodus.ExodusReader(exodus_file, **kwargs)
+            exodus_reader.update()
+            vars = exodus_reader.getVariableInformation()
+            var_names = list(vars.keys())
+            var_name = ''
+            for vn in var_names:
+                obj_type = vars[vn].object_type
+                if obj_type in [chigger.exodus.ExodusReader.NODAL, chigger.exodus.ExodusReader.ELEMENTAL]:
+                    var_name = vn
+                    break
+
+            input_params = self.PARAMS_EXODUS_RESULT
+            self.setInputParam(input_params, 'file', exodus_file)
+            self.setInputParam(input_params, 'variable', var_name)
+
+            self.num_results = self.num_results + 1
+            item, params = self.addGroup(input_params, spanned = False, name = 'result' + str(self.num_results))
+            item.setText("[exodus]")
+
+            map = otter.viewports.ViewportExodusResult.MAP
+            kwargs = common.remap(params, map)
+            exodus_result = chigger.exodus.ExodusResult(exodus_reader, **kwargs)
+
+            item.setData((exodus_result, map))
+            self.windowResult.append(exodus_result)
+            self.windowResult.update()
+
 
     def addRELAP7Result(self):
         item, params = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)

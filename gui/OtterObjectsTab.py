@@ -58,6 +58,12 @@ class OtterObjectsTab(QWidget):
         """
         return False
 
+    def setInputParam(self, map, key, value):
+        for item in map:
+            if item['name'] == key:
+                item['value'] = value
+                return
+
     def onItemChanged(self, item):
         parent = item.parent()
         if parent != None:
@@ -77,13 +83,12 @@ class OtterObjectsTab(QWidget):
                 kwargs = common.remap(params, map)
                 for key, val in kwargs.items():
                     if chigger_object.getOptions().hasOption(key):
-                        chigger_object.setOption(key, val)
-                chigger_object.update()
+                        chigger_object.update(**{key: val})
                 self.windowResult.update()
 
         self.modified.emit()
 
-    def addGroup(self, params, spanned = True):
+    def addGroup(self, params, spanned = True, name = ''):
         args = {}
         idx = self.model.rowCount()
         si = QStandardItem()
@@ -96,7 +101,7 @@ class OtterObjectsTab(QWidget):
             self.ctlObjects.setFirstColumnSpanned(idx, QModelIndex(), spanned)
         else:
             si.setText("name")
-            si2 = QStandardItem()
+            si2 = QStandardItem(name)
             si2.setEditable(True)
             si2.setBackground(brush)
             self.model.setItem(idx, 1, si2)
