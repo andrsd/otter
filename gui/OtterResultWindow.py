@@ -50,6 +50,7 @@ class OtterResultWindow(QMainWindow):
         args = {}
         args['vtkinteractor'] = self.vtkWidget
         args['vtkwindow'] = self.vtkWidget.GetRenderWindow()
+        args['layer'] = 0
         self.chiggerWindow = chigger.RenderWindow(*[], **args)
 
         self.frame.setLayout(self.layout)

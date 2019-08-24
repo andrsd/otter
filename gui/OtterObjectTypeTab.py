@@ -24,11 +24,30 @@ class OtterObjectTypeTab(QWidget):
             'req': True
         },
         {
+            'name': 'background',
+            'value': [0., 0., 0.],
+            'hint': 'The background color',
+            'req': False
+        },
+        {
+            'name': 'background2',
+            'value': [0., 0., 0.],
+            'hint': 'The second background color, when supplied this creates a gradient background',
+            'req': False
+        },
+        {
+            'name': 'gradient_background',
+            'value': False,
+            'hint': 'Enable/disable the use of a gradient background.',
+            'req': False
+        },
+        {
             'name': 't',
             'value': 0.,
             'limits': [None, None],
             'hint': 'Simulation time',
-            'req': False },
+            'req': False
+        },
         {
             'name': 'time-unit',
             'value': 'sec',
@@ -46,28 +65,35 @@ class OtterObjectTypeTab(QWidget):
 
     PARAMS_MOVIE = [
         {
+            'name': 'duration',
+            'value': 30.,
+            'limits': [0, None],
+            'hint': 'The duration of the movie in seconds',
+            'req': True
+        },
+        {
             'name': 'file',
             'value': '',
             'hint': 'The file name of the rendered movie',
             'req': True
         },
         {
-            'name': 'duration',
-            'value': 30.,
-            'limits': [0, None],
-            'hint': 'The duration of the movie in seconds',
-            'req': True },
-        {
-            'name': 'size',
-            'value': [1536, 864],
-            'valid': '\[\d+\, ?\d+\]',
-            'hint': 'The size of rendered movie',
+            'name': 'frame',
+            'value': 'frame_*.png',
+            'hint': 'The file name pattern of the rendered frames',
             'req': True
         },
         {
             'name': 'location',
             'value': '',
             'hint': 'The location where the images for the movie will be rendered',
+            'req': True
+        },
+        {
+            'name': 'size',
+            'value': [1536, 864],
+            'valid': '\[\d+\, ?\d+\]',
+            'hint': 'The size of rendered movie',
             'req': True
         },
         {
@@ -82,12 +108,6 @@ class OtterObjectTypeTab(QWidget):
             'enum': ['sec', 'min', 'hour', 'year'],
             'hint': 'The time unit [sec, min, hour, year]',
             'req': False
-        },
-        {
-            'name': 'frame',
-            'value': 'frame_*.png',
-            'hint': 'The file name pattern of the rendered frames',
-            'req': True
         }
     ]
 
@@ -200,7 +220,6 @@ class OtterObjectTypeTab(QWidget):
                     valid = None
                 si.setData(QVariant(OtterParamLineEdit('str', valid)))
             model.setItem(i, 1, si)
-        model.sort(0, Qt.AscendingOrder)
 
     def onParamChanged(self, item):
         if item.column() == 0:
@@ -223,7 +242,10 @@ class OtterObjectTypeTab(QWidget):
         elif name in ['output', 'location', 'duration', 'file', 'times', 'frame']:
             pass
         else:
-            param = self.toPython(value)
+            if item.isCheckable():
+                param = self.toPython(item.checkState() == Qt.Checked)
+            else:
+                param = self.toPython(value)
             self.windowResult.setParam(name, param)
 
     def setSizeParam(self, model, width, height):
@@ -246,14 +268,24 @@ class OtterObjectTypeTab(QWidget):
             return None
 
     def toPython(self, value):
-        if len(value) == 0:
+        if isinstance(value, bool):
+            return value
+        elif len(value) == 0:
             return None
         elif value[0] == '[' and value[-1] == ']':
-            str_array = re.findall('\d+', value)
-            return [ int(val) for val in str_array]
+            value = value[1:-1]
+            if len(value) > 0:
+                str_array = [x.strip() for x in value.split(',')]
+                return [ float(val) for val in str_array]
+            else:
+                return []
         elif value[0] == '(' and value[-1] == ')':
-            str_array = re.findall('\d+', value)
-            return [ int(val) for val in str_array]
+            value = value[1:-1]
+            if len(value) > 0:
+                str_array = [x.strip() for x in value.split(',')]
+                return [ float(val) for val in str_array]
+            else:
+                return []
         else:
             try:
                 return int(value)

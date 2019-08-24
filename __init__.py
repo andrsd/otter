@@ -49,6 +49,8 @@ def image(image):
 
     args = common.remap(image, IMAGE_MAP)
     args['chigger'] = True
+    if 'layer' not in image:
+        args['layer'] = 0
     if 'output' in image:
         args['offscreen'] = True
     window = chigger.RenderWindow(*results, **args)
@@ -89,6 +91,8 @@ def movie(movie):
     args = common.remap(movie, MOVIE_MAP)
     args['chigger'] = True
     args['offscreen'] = True
+    if 'layer' not in image:
+        args['layer'] = 0
     window = chigger.RenderWindow(*results, **args)
 
     pb_len = 65
