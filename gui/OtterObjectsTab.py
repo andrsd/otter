@@ -108,7 +108,6 @@ class OtterObjectsTab(QWidget):
                 if 'hint' in item:
                     group.setToolTip(item['hint'])
                 si.setChild(i, 0, group)
-                self.ctlObjects.expand(group.index())
 
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
