@@ -32,7 +32,6 @@ class OtterMainWindow(QMainWindow):
 
         windowMenu = menubar.addMenu("Window")
         self._minimize = windowMenu.addAction("Minimize", self.onMinimize, "Ctrl+M")
-        self._zoom = windowMenu.addAction("Zoom", self.onZoom)
         windowMenu.addSeparator()
         self._bring_all_to_front = windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
         windowMenu.addSeparator()
@@ -139,9 +138,6 @@ class OtterMainWindow(QMainWindow):
     def onMinimize(self):
         qapp = QApplication.instance()
         qapp.activeWindow().showMinimized()
-
-    def onZoom(self):
-        pass
 
     def onBringAllToFront(self):
         self.tabType.showChiggerWindow()
