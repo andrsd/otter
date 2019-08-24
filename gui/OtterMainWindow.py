@@ -16,6 +16,9 @@ class OtterMainWindow(QMainWindow):
         super(OtterMainWindow, self).__init__()
         self.file = QFile()
         self.modified = False
+        self.windowResult = None
+        self.ctlObjType = None
+
         self.setupWidgets()
         self.setupMenuBar()
         self.setTitle()
@@ -29,6 +32,23 @@ class OtterMainWindow(QMainWindow):
         fileMenu.addSeparator()
         self._save_action = fileMenu.addAction("Save", self.onSaveInputFile, "Ctrl+S")
         self._save_as_action = fileMenu.addAction("Save As", self.onSaveInputFileAs, "Ctrl+Shift+S")
+
+        # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
+        viewMenu = menubar.addMenu("View" + u'\u200C')
+        self._type_tab_action = viewMenu.addAction("Type", lambda: self.onActivateTab(0), "Ctrl+1")
+        self._type_tab_action.setCheckable(True)
+        self._viewports_tab_action = viewMenu.addAction("Viewports", lambda: self.onActivateTab(1), "Ctrl+2")
+        self._viewports_tab_action.setCheckable(True)
+        self._colorbars_tab_action = viewMenu.addAction("Color bars", lambda: self.onActivateTab(2), "Ctrl+3")
+        self._colorbars_tab_action.setCheckable(True)
+        self._annotations_tab_action = viewMenu.addAction("Annotations", lambda: self.onActivateTab(3), "Ctrl+4")
+        self._annotations_tab_action.setCheckable(True)
+
+        self._tab_group_windows = QActionGroup(self)
+        self._tab_group_windows.addAction(self._type_tab_action)
+        self._tab_group_windows.addAction(self._viewports_tab_action)
+        self._tab_group_windows.addAction(self._colorbars_tab_action)
+        self._tab_group_windows.addAction(self._annotations_tab_action)
 
         windowMenu = menubar.addMenu("Window")
         self._minimize = windowMenu.addAction("Minimize", self.onMinimize, "Ctrl+M")
@@ -51,6 +71,16 @@ class OtterMainWindow(QMainWindow):
             self._main_window.setChecked(True)
         elif active_window == self.windowResult:
             self._result_window.setChecked(True)
+
+        if self.ctlObjType != None:
+            tabs = [
+                self._type_tab_action,
+                self._viewports_tab_action,
+                self._colorbars_tab_action,
+                self._annotations_tab_action
+            ]
+            idx = self.ctlObjType.currentIndex()
+            tabs[idx].setChecked(True)
 
     def setupWidgets(self):
         self.windowResult = OtterResultWindow(self)
@@ -79,6 +109,7 @@ class OtterMainWindow(QMainWindow):
         self.ctlObjType.addTab(self.tabAnnotations, self.tabAnnotations.name())
 
         layout.addWidget(self.ctlObjType)
+        self.ctlObjType.currentChanged.connect(self.updateMenuBar)
 
         w.setLayout(layout)
         self.setCentralWidget(w)
@@ -152,6 +183,9 @@ class OtterMainWindow(QMainWindow):
         self.windowResult.showNormal()
         self.windowResult.activateWindow()
         self.windowResult.raise_()
+
+    def onActivateTab(self, tab):
+        self.ctlObjType.setCurrentIndex(tab)
 
     def event(self, e):
         if (e.type() == QEvent.WindowActivate):
