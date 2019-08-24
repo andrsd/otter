@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QActionGroup, QTabWidget, QFileDialog, QApplication
-from PyQt5.QtCore import QFile, QTextStream, QEvent
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QActionGroup, QTabWidget, QFileDialog, QApplication, QStyle
+from PyQt5.QtCore import QFile, QTextStream, QEvent, Qt
 from OtterResultWindow import OtterResultWindow
 from OtterObjectTypeTab import OtterObjectTypeTab
 from OtterViewportsTab import OtterViewportsTab
@@ -84,6 +84,9 @@ class OtterMainWindow(QMainWindow):
         w.setLayout(layout)
         self.setCentralWidget(w)
 
+        qapp = QApplication.instance()
+        self.windowResult.setGeometry(
+            QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.windowResult.size(), qapp.desktop().availableGeometry()))
         self.windowResult.show()
 
     def setModified(self):
