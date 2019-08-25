@@ -123,7 +123,8 @@ class OtterObjectsTab(QWidget):
             name = item.child(row, 0).text().encode("ascii")
             if item.child(row, 1) != None:
                 value = item.child(row, 1).text().encode("ascii")
-                params[name] = value
+                if len(value) > 0:
+                    params[name] = value
         return params
 
     def addGroup(self, params, spanned = True, name = ''):

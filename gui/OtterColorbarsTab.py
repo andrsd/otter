@@ -12,7 +12,17 @@ class OtterColorbarsTab(OtterObjectsTab):
 
     PARAMS_AXIS = [
         { 'name': 'result', 'value': None, 'hint': 'The name of the viewport with a result', 'req': True },
-    ] + OtterObjectsTab.PARAMS_AXIS
+        { 'name': 'axis-visible', 'value': False, 'hint': 'Visibility of the axis', 'req': False },
+        { 'name': 'font-size', 'value': 30, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'font-color', 'value': [1,1,1], 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'labels-visible', 'value': True, 'hint': 'Visibility of the labels', 'req': False },
+        { 'name': 'notation', 'value': 'standard', 'hint': 'The type of notation [standard, scientific, fixed, printf]', 'req': False },
+        { 'name': 'num-ticks', 'value': 5, 'hint': 'The number of tick on the axis', 'req': False },
+        { 'name': 'precision', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
+        { 'name': 'ticks-visible', 'value': False, 'hint': 'Visibilitty of the tickmarks', 'req': False },
+        { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
+    ]
 
     PARAMS = [
         { 'name': 'length', 'value': 0.25, 'hint': 'The length of the color bar', 'req': True },
