@@ -21,7 +21,7 @@ class OtterObjectsTab(QWidget):
         { 'name': 'labels-visible', 'value': True, 'hint': 'Visibility of the labels', 'req': False },
         { 'name': 'notation', 'value': None, 'hint': 'The type of notation [standard, scientific, fixed, printf]', 'req': False },
         { 'name': 'num-ticks', 'value': None, 'hint': 'The number of tick on the axis', 'req': False },
-        { 'name': 'precision', 'value': 0, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'precision', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
         { 'name': 'ticks-visible', 'value': True, 'hint': 'Visibilitty of the tickmarks', 'req': False },
         { 'name': 'title', 'value': '', 'hint': 'The title of the axis', 'req': False },
@@ -64,6 +64,12 @@ class OtterObjectsTab(QWidget):
                 item['value'] = value
                 for k, v in kwargs.iteritems():
                     item[k] = v
+                return
+
+    def setGroupInputParam(self, map, group_name, key, value, **kwargs):
+        for item in map:
+            if item['name'] == group_name and item['group'] == True:
+                self.setInputParam(item['childs'], key, value, **kwargs)
                 return
 
     def onItemChanged(self, item):
@@ -115,10 +121,13 @@ class OtterObjectsTab(QWidget):
                     group.setToolTip(item['hint'])
                 si.setChild(i, 0, group)
 
+                child_args = {}
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
+                    child_args[subitem['name']] = subitem['value']
 
                 self.ctlObjects.setFirstColumnSpanned(i, si.index(), True)
+                args[item['name']] = child_args
             else:
                 self.buildChildParam(i, si, item)
                 args[item['name']] = item['value']

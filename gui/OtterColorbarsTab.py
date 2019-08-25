@@ -53,16 +53,19 @@ class OtterColorbarsTab(OtterObjectsTab):
         self.updateControls()
 
     def onAdd(self, idx):
-        item, params = self.addGroup(self.PARAMS)
-        item.setText("[colorbar]")
+        ex_result = self.mainWindow.exodusResults()[idx]
 
-        ex_result = self.mainWindow.exodusResults()[idx]['result']
+        input_params = self.PARAMS
+        self.setGroupInputParam(input_params, 'axis1', 'result', ex_result['name'])
+
+        item, params = self.addGroup(input_params)
+        item.setText("[colorbar]")
 
         map = otter.colorbars.ColorBar.COLORBAR_MAP
         kwargs = common.remap(params, map)
-        cbar = chigger.exodus.ExodusColorBar(*[ex_result], **kwargs)
+        cbar = chigger.exodus.ExodusColorBar(*[ex_result['result']], **kwargs)
 
-        axis_params = self.groupParams(params, 'axis1')
+        axis_params = params['axis1']
         axis_map = otter.colorbars.ColorBar.AXIS_MAP
         axis_kwargs = common.remap(axis_params, axis_map)
         cbar.setOptions('primary', **axis_kwargs)
@@ -70,9 +73,6 @@ class OtterColorbarsTab(OtterObjectsTab):
         item.setData((cbar, map))
         self.windowResult.append(cbar)
         self.windowResult.update()
-
-    def groupParams(self, params, group_name):
-        return []
 
     def updateControls(self):
         if len(self.mainWindow.exodusResults().keys()) > 0:
