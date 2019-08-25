@@ -58,10 +58,12 @@ class OtterObjectsTab(QWidget):
         """
         return False
 
-    def setInputParam(self, map, key, value):
+    def setInputParam(self, map, key, value, **kwargs):
         for item in map:
             if item['name'] == key:
                 item['value'] = value
+                for k, v in kwargs.iteritems():
+                    item[k] = v
                 return
 
     def onItemChanged(self, item):

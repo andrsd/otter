@@ -122,17 +122,18 @@ class OtterViewportsTab(OtterObjectsTab):
             exodus_reader = chigger.exodus.ExodusReader(exodus_file, **kwargs)
             exodus_reader.update()
             vars = exodus_reader.getVariableInformation()
-            var_names = list(vars.keys())
-            var_name = ''
-            for vn in var_names:
+            var_names = []
+            var_name = None
+            for vn in list(vars.keys()):
                 obj_type = vars[vn].object_type
                 if obj_type in [chigger.exodus.ExodusReader.NODAL, chigger.exodus.ExodusReader.ELEMENTAL]:
-                    var_name = vn
-                    break
+                    if var_name == None:
+                        var_name = vn
+                    var_names.append(vn)
 
             input_params = self.PARAMS_EXODUS_RESULT
             self.setInputParam(input_params, 'file', exodus_file)
-            self.setInputParam(input_params, 'variable', var_name)
+            self.setInputParam(input_params, 'variable', var_name, enum = var_names)
 
             self.num_results = self.num_results + 1
             item, params = self.addGroup(input_params, spanned = False, name = 'result' + str(self.num_results))
