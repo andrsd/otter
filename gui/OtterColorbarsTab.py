@@ -24,6 +24,8 @@ class OtterColorbarsTab(OtterObjectsTab):
 
     def __init__(self, parent, chigger_window):
         super(OtterColorbarsTab, self).__init__(parent, chigger_window)
+        self.mainWindow = parent
+        self.updateControls()
 
     def name(self):
         return "CBs"
@@ -32,10 +34,16 @@ class OtterColorbarsTab(OtterObjectsTab):
         return "colorbars"
 
     def buildAddButton(self):
-        btn = QPushButton("Add", self)
-        btn.clicked.connect(self.onAdd)
-        return btn
+        self.btnAdd = QPushButton("Add", self)
+        self.btnAdd.clicked.connect(self.onAdd)
+        return self.btnAdd
 
     def onAdd(self):
         item, params = self.addGroup(self.PARAMS)
         item.setText("[colorbar]")
+
+    def updateControls(self):
+        if self.mainWindow.numExodusResults() > 0:
+            self.btnAdd.setEnabled(True)
+        else:
+            self.btnAdd.setEnabled(False)

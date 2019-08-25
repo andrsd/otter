@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu, QFileDialog
 from OtterObjectsTab import OtterObjectsTab
 import common
@@ -7,6 +8,8 @@ import otter
 import chigger
 
 class OtterViewportsTab(OtterObjectsTab):
+
+    resultAdded = pyqtSignal()
 
     EXODUS = 0
     RELAP7_RESULT = 1
@@ -80,6 +83,7 @@ class OtterViewportsTab(OtterObjectsTab):
     def __init__(self, parent, chigger_window):
         super(OtterViewportsTab, self).__init__(parent, chigger_window)
         self.num_results = 0
+        self.num_exodus_results = 0
 
     def name(self):
         return "VPs"
@@ -136,6 +140,7 @@ class OtterViewportsTab(OtterObjectsTab):
             self.setInputParam(input_params, 'variable', var_name, enum = var_names)
 
             self.num_results = self.num_results + 1
+            self.num_exodus_results = self.num_exodus_results + 1
             item, params = self.addGroup(input_params, spanned = False, name = 'result' + str(self.num_results))
             item.setText("[exodus]")
 
@@ -146,6 +151,8 @@ class OtterViewportsTab(OtterObjectsTab):
             item.setData((exodus_result, map))
             self.windowResult.append(exodus_result)
             self.windowResult.update()
+
+            self.resultAdded.emit()
 
 
     def addRELAP7Result(self):
@@ -159,3 +166,11 @@ class OtterViewportsTab(OtterObjectsTab):
     def addVPPPlot(self):
         item, params = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
         item.setText("[vpp plot]")
+
+    def onTimeChanged(self, time):
+        # update time in exodus-based results
+        for row in range(self.model.rowCount()):
+            item = self.model.item(row, 0)
+            if item.text() in ['[exodus]', 'RELAP-7 result']:
+                exo, map = item.data()
+                exo.update(time)

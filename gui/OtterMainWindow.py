@@ -98,6 +98,8 @@ class OtterMainWindow(QMainWindow):
 
         self.tabViewports = OtterViewportsTab(self, self.windowResult)
         self.tabViewports.modified.connect(self.setModified)
+        self.tabViewports.resultAdded.connect(self.onResultAdded)
+
         self.ctlObjType.addTab(self.tabViewports, self.tabViewports.name())
 
         self.tabColorBars = OtterColorbarsTab(self, self.windowResult)
@@ -124,10 +126,14 @@ class OtterMainWindow(QMainWindow):
         self.setTitle()
 
     def onTimeChanged(self, time):
+        self.tabViewports.onTimeChanged(time)
         self.tabAnnotations.onTimeChanged(time)
 
     def onTimeUnitChanged(self, time_unit):
         self.tabAnnotations.onTimeUnitChanged(time_unit)
+
+    def onResultAdded(self):
+        self.tabColorBars.updateControls()
 
     def title(self):
         if self.file.fileName():
@@ -137,6 +143,9 @@ class OtterMainWindow(QMainWindow):
         if self.modified:
             title += " *"
         return title
+
+    def numExodusResults(self):
+        return self.tabViewports.num_exodus_results;
 
     def setTitle(self):
         self.setWindowTitle(self.title())
