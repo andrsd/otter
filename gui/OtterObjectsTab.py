@@ -87,8 +87,7 @@ class OtterObjectsTab(QWidget):
                     if chigger_object.getOptions().hasOption(key):
                         chigger_object.update(**{key: val})
                 self.windowResult.update()
-
-        self.modified.emit()
+            self.modified.emit()
 
     def addGroup(self, params, spanned = True, name = ''):
         args = {}

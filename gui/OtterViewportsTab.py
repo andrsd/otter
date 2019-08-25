@@ -83,7 +83,7 @@ class OtterViewportsTab(OtterObjectsTab):
     def __init__(self, parent, chigger_window):
         super(OtterViewportsTab, self).__init__(parent, chigger_window)
         self.num_results = 0
-        self.num_exodus_results = 0
+        self.exodusResults = {}
 
     def name(self):
         return "VPs"
@@ -140,13 +140,14 @@ class OtterViewportsTab(OtterObjectsTab):
             self.setInputParam(input_params, 'variable', var_name, enum = var_names)
 
             self.num_results = self.num_results + 1
-            self.num_exodus_results = self.num_exodus_results + 1
-            item, params = self.addGroup(input_params, spanned = False, name = 'result' + str(self.num_results))
+            exodus_result_name = 'result' + str(self.num_results)
+            item, params = self.addGroup(input_params, spanned = False, name = exodus_result_name)
             item.setText("[exodus]")
 
             map = otter.viewports.ViewportExodusResult.MAP
             kwargs = common.remap(params, map)
             exodus_result = chigger.exodus.ExodusResult(exodus_reader, **kwargs)
+            self.exodusResults[item.row()] = { 'name' : exodus_result_name, 'result' : exodus_result }
 
             item.setData((exodus_result, map))
             self.windowResult.append(exodus_result)
@@ -174,3 +175,13 @@ class OtterViewportsTab(OtterObjectsTab):
             if item.text() in ['[exodus]', 'RELAP-7 result']:
                 exo, map = item.data()
                 exo.update(time)
+
+    def onItemChanged(self, item):
+        parent = item.parent()
+        if parent != None:
+            super(OtterViewportsTab, self).onItemChanged(item)
+        else:
+            if item.column() == 1:
+                name = item.text().encode("ascii")
+                if item.row() in self.exodusResults:
+                    self.exodusResults[item.row()]['name'] = name

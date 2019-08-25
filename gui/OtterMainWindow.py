@@ -133,7 +133,7 @@ class OtterMainWindow(QMainWindow):
         self.tabAnnotations.onTimeUnitChanged(time_unit)
 
     def onResultAdded(self):
-        self.tabColorBars.updateControls()
+        self.tabColorBars.onResultAdded()
 
     def title(self):
         if self.file.fileName():
@@ -144,8 +144,8 @@ class OtterMainWindow(QMainWindow):
             title += " *"
         return title
 
-    def numExodusResults(self):
-        return self.tabViewports.num_exodus_results;
+    def exodusResults(self):
+        return self.tabViewports.exodusResults;
 
     def setTitle(self):
         self.setWindowTitle(self.title())
