@@ -58,7 +58,8 @@ class OtterColorbarsTab(OtterObjectsTab):
         input_params = self.PARAMS
         self.setGroupInputParam(input_params, 'axis1', 'result', ex_result['name'])
 
-        item, params = self.addGroup(input_params)
+        item = self.addGroup(input_params)
+        params = self.itemParams(item)
         item.setText("[colorbar]")
 
         axis1_item = self.childItem(item, 'axis1')

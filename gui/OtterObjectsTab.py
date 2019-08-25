@@ -121,12 +121,12 @@ class OtterObjectsTab(QWidget):
         params = {}
         for row in range(item.rowCount()):
             name = item.child(row, 0).text().encode("ascii")
-            value = item.child(row, 1).text().encode("ascii")
-            params[name] = value
+            if item.child(row, 1) != None:
+                value = item.child(row, 1).text().encode("ascii")
+                params[name] = value
         return params
 
     def addGroup(self, params, spanned = True, name = ''):
-        args = {}
         idx = self.model.rowCount()
         si = QStandardItem()
         si.setEditable(False)
@@ -157,11 +157,10 @@ class OtterObjectsTab(QWidget):
                 self.ctlObjects.setFirstColumnSpanned(i, si.index(), True)
             else:
                 self.buildChildParam(i, si, item)
-                args[item['name']] = item['value']
 
         self.ctlObjects.expand(si.index())
         self.modified.emit()
-        return si, args
+        return si
 
     def buildChildParam(self, idx, parent, item):
         child = QStandardItem(item['name'])

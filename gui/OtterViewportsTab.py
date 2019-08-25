@@ -141,7 +141,8 @@ class OtterViewportsTab(OtterObjectsTab):
 
             self.num_results = self.num_results + 1
             exodus_result_name = 'result' + str(self.num_results)
-            item, params = self.addGroup(input_params, spanned = False, name = exodus_result_name)
+            item = self.addGroup(input_params, spanned = False, name = exodus_result_name)
+            params = self.itemParams(item)
             item.setText("[exodus]")
 
             map = otter.viewports.ViewportExodusResult.MAP
@@ -157,13 +158,15 @@ class OtterViewportsTab(OtterObjectsTab):
 
 
     def addRELAP7Result(self):
-        item, params = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
+        item = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
+        params = self.itemParams(item)
         item.setText("[RELAP-7 result]")
 
     def addPlotOverLine(self):
         file_names = QFileDialog.getOpenFileName(self, 'Select CSV File')
         if file_names[0]:
-            item, params = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
+            item = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
+            params = self.itemParams(item)
             item.setText("[plot over line]")
 
             map = otter.viewports.ViewportPlotOverTime.MAP
@@ -188,7 +191,8 @@ class OtterViewportsTab(OtterObjectsTab):
             self.resultAdded.emit()
 
     def addVPPPlot(self):
-        item, params = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
+        item = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
+        params = self.itemParams(item)
         item.setText("[vpp plot]")
 
     def onTimeChanged(self, time):

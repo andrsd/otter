@@ -68,7 +68,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
             self.addTimeAnnotation()
 
     def addTextAnnotation(self):
-        item, params = self.addGroup(self.PARAMS_TEXT, spanned = False)
+        item = self.addGroup(self.PARAMS_TEXT, spanned = False)
+        params = self.itemParams(item)
         item.setText("[text]")
 
         map = otter.annotations.AnnotationText.MAP
@@ -79,7 +80,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         self.windowResult.update()
 
     def addImageAnnotation(self):
-        item, params = self.addGroup(self.PARAMS_IMAGE, spanned = False)
+        item = self.addGroup(self.PARAMS_IMAGE, spanned = False)
+        params = self.itemParams(item)
         item.setText("[image]")
 
         map = otter.annotations.AnnotationImage.MAP
@@ -90,7 +92,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         self.windowResult.update()
 
     def addTimeAnnotation(self):
-        item, params = self.addGroup(self.PARAMS_TIME, spanned = False)
+        item = self.addGroup(self.PARAMS_TIME, spanned = False)
+        params = self.itemParams(item)
         item.setText("[time]")
 
         map = otter.annotations.AnnotationTime.MAP
