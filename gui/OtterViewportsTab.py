@@ -156,7 +156,6 @@ class OtterViewportsTab(OtterObjectsTab):
 
             self.resultAdded.emit()
 
-
     def addRELAP7Result(self):
         item = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
         params = self.itemParams(item)
@@ -199,9 +198,9 @@ class OtterViewportsTab(OtterObjectsTab):
         # update time in exodus-based results
         for row in range(self.model.rowCount()):
             item = self.model.item(row, 0)
-            if item.text() in ['[exodus]', 'RELAP-7 result']:
+            if item.text() in ['[exodus]', '[RELAP-7 result]']:
                 exo, map = item.data()
-                exo.update(time)
+                exo[0].getExodusReader().update(time = time, timestep = None)
 
     def onItemChanged(self, item):
         parent = item.parent()
