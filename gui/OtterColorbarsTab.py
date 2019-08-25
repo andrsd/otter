@@ -61,16 +61,24 @@ class OtterColorbarsTab(OtterObjectsTab):
         item, params = self.addGroup(input_params)
         item.setText("[colorbar]")
 
-        map = otter.colorbars.ColorBar.COLORBAR_MAP
-        kwargs = common.remap(params, map)
+        axis1_item = self.childItem(item, 'axis1')
+        axis1_params = self.itemParams(axis1_item)
+
+        axis2_item = self.childItem(item, 'axis2')
+        axis2_params = self.itemParams(axis2_item)
+
+        kwargs = common.remap(params, otter.colorbars.ColorBar.COLORBAR_MAP)
+        axis1_kwargs = common.remap(axis1_params, common.AXIS_MAP)
+        axis2_kwargs = common.remap(axis2_params, common.AXIS_MAP)
+
         cbar = chigger.exodus.ExodusColorBar(*[ex_result['result']], **kwargs)
+        cbar.setOptions('primary', **axis1_kwargs)
+        cbar.setOptions('secondary', **axis2_kwargs)
 
-        axis_params = params['axis1']
-        axis_map = otter.colorbars.ColorBar.AXIS_MAP
-        axis_kwargs = common.remap(axis_params, axis_map)
-        cbar.setOptions('primary', **axis_kwargs)
+        item.setData((cbar, otter.colorbars.ColorBar.COLORBAR_MAP))
+        axis1_item.setData((None, common.AXIS_MAP))
+        axis2_item.setData((None, common.AXIS_MAP))
 
-        item.setData((cbar, map))
         self.windowResult.append(cbar)
         self.windowResult.update()
 

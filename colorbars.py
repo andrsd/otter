@@ -6,14 +6,12 @@ class ColorBar(object):
     """
     Color bar object
     """
-    AXIS_MAP = {
-        'num-ticks': 'num_ticks',
-        'font-size': 'font_size'
-    }
     COLORBAR_MAP = {
         'origin': 'colorbar_origin',
         'num-colors': 'cmap_num_colors',
-        'range': 'cmap_range'
+        'range': 'cmap_range',
+        'axis1': 'primary',
+        'axis2': 'secondary'
     }
 
     def __init__(self, colorbar):
@@ -36,10 +34,10 @@ class ColorBar(object):
         args = common.remap(colorbar, self.COLORBAR_MAP)
         self.cbar = chigger.exodus.ExodusColorBar(*self.results, **args)
         if self.primary != None:
-            args = common.remap(self.primary, self.AXIS_MAP)
+            args = common.remap(self.primary, common.AXIS_MAP)
             self.cbar.setOptions('primary', **args)
         if self.secondary != None:
-            args = common.remap(self.secondary, self.AXIS_MAP)
+            args = common.remap(self.secondary, common.AXIS_MAP)
             self.cbar.setOptions('secondary', **args)
 
     def _processResult(self, axis, txt):

@@ -161,8 +161,31 @@ class OtterViewportsTab(OtterObjectsTab):
         item.setText("[RELAP-7 result]")
 
     def addPlotOverLine(self):
-        item, params = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
-        item.setText("[plot over line]")
+        file_names = QFileDialog.getOpenFileName(self, 'Select CSV File')
+        if file_names[0]:
+            item, params = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
+            item.setText("[plot over line]")
+
+            map = otter.viewports.ViewportPlotOverTime.MAP
+            kwargs = common.remap(params, map)
+            lines = []
+            graph = chigger.graphs.Graph(*lines, **kwargs)
+
+            item.setData((graph, map))
+
+            item_x_axis = self.childItem(item, 'x-axis')
+            item_x_axis.setData((None, common.AXIS_MAP))
+
+            item_y_axis = self.childItem(item, 'y-axis')
+            item_y_axis.setData((None, common.AXIS_MAP))
+
+            item_legend = self.childItem(item, 'legend')
+            item_legend.setData((None, common.LEGEND_MAP))
+
+            self.windowResult.append(graph)
+            self.windowResult.update()
+
+            self.resultAdded.emit()
 
     def addVPPPlot(self):
         item, params = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)

@@ -10,14 +10,30 @@ time_unit = 1
 time_unit_str = 'seconds'
 
 # map for remapping axis arguments
-PLOT_AXIS_MAP = {
+AXIS_MAP = {
+    'axis-visible': 'axis_visible',
     'font-size': 'font_size',
+    'font-color': 'font_color',
+    'grid-color': 'grid_color',
+    'labels-visible': 'labels_visible',
     'range': 'lim',
-    'num-ticks': 'num_ticks'
+    'num-ticks': 'num_ticks',
+    'ticks-visible': 'ticks_visible'
+}
+
+LEGEND_MAP = {
+    'halign': 'horizontal_alignment',
+    'valign': 'vertical_alignment',
+    'position': 'point',
+    'label-color': 'label_color',
+    'label-font-size': 'label_font_size',
+    'border-color': 'border_color',
+    'border-opacity': 'border_opacity',
+    'border-width': 'border_width'
 }
 
 def remapPlotAxis(args):
-    return remap(args, PLOT_AXIS_MAP)
+    return remap(args, AXIS_MAP)
 
 def remap(args, map):
     remapped_args = {}

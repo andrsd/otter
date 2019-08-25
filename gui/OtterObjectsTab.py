@@ -13,14 +13,14 @@ class OtterObjectsTab(QWidget):
     INDENT = 14
 
     PARAMS_AXIS = [
-        { 'name': 'axis-visible', 'value': True, 'hint': 'Visibility of the axis', 'req': False },
-        { 'name': 'font-size', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'axis-visible', 'value': False, 'hint': 'Visibility of the axis', 'req': False },
+        { 'name': 'font-size', 'value': 30, 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'font-color', 'value': [1,1,1], 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'grid', 'value': True, 'hint': 'Show the grid', 'req': False },
         { 'name': 'grid-color', 'value': [0.25, 0.25, 0.25], 'hint': 'The color of the grid', 'req': False },
         { 'name': 'labels-visible', 'value': True, 'hint': 'Visibility of the labels', 'req': False },
         { 'name': 'notation', 'value': None, 'hint': 'The type of notation [standard, scientific, fixed, printf]', 'req': False },
-        { 'name': 'num-ticks', 'value': None, 'hint': 'The number of tick on the axis', 'req': False },
+        { 'name': 'num-ticks', 'value': 5, 'hint': 'The number of tick on the axis', 'req': False },
         { 'name': 'precision', 'value': None, 'hint': 'The size of the font used for the numbers', 'req': False },
         { 'name': 'range', 'value': [0, 1], 'hint': 'The range of the axis', 'req': False },
         { 'name': 'ticks-visible', 'value': True, 'hint': 'Visibilitty of the tickmarks', 'req': False },
@@ -58,6 +58,13 @@ class OtterObjectsTab(QWidget):
         """
         return False
 
+    def childItem(self, parent, name):
+        for row in range(parent.rowCount()):
+            child = parent.child(row)
+            if child.text() == name:
+                return child
+        return None
+
     def setInputParam(self, map, key, value, **kwargs):
         for item in map:
             if item['name'] == key:
@@ -74,7 +81,7 @@ class OtterObjectsTab(QWidget):
 
     def onItemChanged(self, item):
         parent = item.parent()
-        if parent != None:
+        if parent != None and item.column() == 1:
             model = item.model()
             row = item.row()
 
@@ -88,12 +95,35 @@ class OtterObjectsTab(QWidget):
 
             if parent.data() != None:
                 chigger_object, map = parent.data()
-                kwargs = common.remap(params, map)
-                for key, val in kwargs.items():
-                    if chigger_object.getOptions().hasOption(key):
-                        chigger_object.update(**{key: val})
+                if chigger_object == None:
+                    root = parent.parent()
+                    chigger_object, group_map = root.data()
+
+                    group_params = { parent.text().encode("ascii"): "" }
+                    group_kwargs = common.remap(group_params, group_map)
+                    group = group_kwargs.keys()[0]
+
+                    kwargs = common.remap(params, map)
+                    for key, val in kwargs.items():
+                        if chigger_object.getOptions().hasOption(group) and chigger_object.getOptions()[group].hasOption(key):
+                            chigger_object.setOptions(group, **{key: val})
+                    chigger_object.update()
+                else:
+                    kwargs = common.remap(params, map)
+                    for key, val in kwargs.items():
+                        if chigger_object.getOptions().hasOption(key):
+                            chigger_object.update(**{key: val})
                 self.windowResult.update()
+
             self.modified.emit()
+
+    def itemParams(self, item):
+        params = {}
+        for row in range(item.rowCount()):
+            name = item.child(row, 0).text().encode("ascii")
+            value = item.child(row, 1).text().encode("ascii")
+            params[name] = value
+        return params
 
     def addGroup(self, params, spanned = True, name = ''):
         args = {}
@@ -121,13 +151,10 @@ class OtterObjectsTab(QWidget):
                     group.setToolTip(item['hint'])
                 si.setChild(i, 0, group)
 
-                child_args = {}
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
-                    child_args[subitem['name']] = subitem['value']
 
                 self.ctlObjects.setFirstColumnSpanned(i, si.index(), True)
-                args[item['name']] = child_args
             else:
                 self.buildChildParam(i, si, item)
                 args[item['name']] = item['value']

@@ -177,17 +177,6 @@ class ViewportVPPPlot(Viewport):
     LINE_MAP = {
     }
 
-    LEGEND_MAP = {
-        'halign': 'horizontal_alignment',
-        'valign': 'vertical_alignment',
-        'position': 'point',
-        'label-color': 'label_color',
-        'label-font-size': 'label_font_size',
-        'border-color': 'border_color',
-        'border-opacity': 'border_opacity',
-        'border-width': 'border_width'
-    }
-
     def __init__(self, viewport):
         super(ViewportVPPPlot, self).__init__(viewport)
 
@@ -219,7 +208,7 @@ class ViewportVPPPlot(Viewport):
 
         if 'legend' in viewport:
             legend = viewport['legend']
-            args = common.remap(legend, self.LEGEND_MAP)
+            args = common.remap(legend, common.LEGEND_MAP)
             self.graph.setOptions('legend', **args)
 
         if 'x-axis' in viewport:
@@ -258,6 +247,11 @@ class ViewportPlotOverTime(Viewport):
     """
     Plot over time
     """
+
+    MAP = {
+        'x-axis': 'xaxis',
+        'y-axis': 'yaxis'
+    }
 
     def __init__(self, viewport):
         super(ViewportPlotOverTime, self).__init__(viewport)
