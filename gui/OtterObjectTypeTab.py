@@ -316,8 +316,8 @@ class OtterObjectTypeTab(QWidget):
 
         str = ""
         str += "{} = {{\n".format(obj_type)
-        for name, value in self.args().iteritems():
-            if isinstance(value, basestring):
+        for name, value in self.args().items():
+            if isinstance(value, str):
                 str += "    '{}': '{}',\n".format(name, value)
             else:
                 str += "    '{}': {},\n".format(name, value)

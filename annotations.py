@@ -1,5 +1,5 @@
 import chigger
-import common
+from . import common
 
 
 class AnnotationText(object):
@@ -92,5 +92,5 @@ def process(annotations):
             if obj != None:
                 objs.append(obj)
         else:
-            print "No 'type' defined in annotation. Skipping..."
+            print("No 'type' defined in annotation. Skipping...")
     return objs

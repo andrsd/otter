@@ -1,10 +1,10 @@
 import vtk
 import chigger
-import filters
+from . import filters
 import otter
 if otter.HAVE_RELAP7:
     import relap7
-import common
+from . import common
 import mooseutils
 import numpy
 import bisect
@@ -352,5 +352,5 @@ def process(viewports):
             if obj != None:
                 objs.append(obj)
         else:
-            print "No 'type' defined in viewport. Skipping..."
+            print("No 'type' defined in viewport. Skipping...")
     return objs

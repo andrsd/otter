@@ -56,7 +56,7 @@ class OtterColorbarsTab(OtterObjectsTab):
     def onAddMenuAboutToShow(self):
         self.mnuAdd.clear()
         ers = self.mainWindow.exodusResults()
-        for i, er in ers.iteritems():
+        for i, er in ers.items():
             self.mnuAdd.addAction(er['name'], lambda : self.onAdd(i))
 
     def onResultAdded(self):
@@ -94,7 +94,7 @@ class OtterColorbarsTab(OtterObjectsTab):
         self.windowResult.update()
 
     def updateControls(self):
-        if len(self.mainWindow.exodusResults().keys()) > 0:
+        if len(list(self.mainWindow.exodusResults().keys())) > 0:
             self.btnAdd.setEnabled(True)
         else:
             self.btnAdd.setEnabled(False)

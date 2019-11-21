@@ -9,10 +9,10 @@ try:
     HAVE_RELAP7 = True
 except:
     HAVE_RELAP7 = False
-import common
-import viewports
-import colorbars
-import annotations
+from . import common
+from . import viewports
+from . import colorbars
+from . import annotations
 
 size = {
     '720p' : [1280, 720],
@@ -101,14 +101,14 @@ def movie(movie):
         percent = ("{0:.2f}").format(100 * (i / float(total)))
         filled_length = int(pb_len * i // total)
         bar = '#' * filled_length + ' ' * (pb_len - filled_length)
-        print '\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent),
+        print('\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent), end=' ')
         sys.stdout.flush()
 
         for item in items:
             item.update(t)
 
         window.write("{}/{}".format(location, filename).format(i))
-    print
+    print()
 
     chigger.utils.img2mov(
         '{}/{}'.format(location, frame),

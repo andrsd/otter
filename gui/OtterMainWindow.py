@@ -34,7 +34,7 @@ class OtterMainWindow(QMainWindow):
         self._save_as_action = fileMenu.addAction("Save As", self.onSaveInputFileAs, "Ctrl+Shift+S")
 
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
-        viewMenu = menubar.addMenu("View" + u'\u200C')
+        viewMenu = menubar.addMenu("View" + '\u200C')
         self._type_tab_action = viewMenu.addAction("Type", lambda: self.onActivateTab(0), "Ctrl+1")
         self._type_tab_action.setCheckable(True)
         self._viewports_tab_action = viewMenu.addAction("Viewports", lambda: self.onActivateTab(1), "Ctrl+2")

@@ -69,7 +69,7 @@ class OtterObjectsTab(QWidget):
         for item in map:
             if item['name'] == key:
                 item['value'] = value
-                for k, v in kwargs.iteritems():
+                for k, v in kwargs.items():
                     item[k] = v
                 return
 
@@ -101,16 +101,16 @@ class OtterObjectsTab(QWidget):
 
                     group_params = { parent.text().encode("ascii"): "" }
                     group_kwargs = common.remap(group_params, group_map)
-                    group = group_kwargs.keys()[0]
+                    group = list(group_kwargs.keys())[0]
 
                     kwargs = common.remap(params, map)
-                    for key, val in kwargs.items():
+                    for key, val in list(kwargs.items()):
                         if chigger_object.getOptions().hasOption(group) and chigger_object.getOptions()[group].hasOption(key):
                             chigger_object.setOptions(group, **{key: val})
                     chigger_object.update()
                 else:
                     kwargs = common.remap(params, map)
-                    for key, val in kwargs.items():
+                    for key, val in list(kwargs.items()):
                         if chigger_object.getOptions().hasOption(key):
                             chigger_object.update(**{key: val})
                 self.windowResult.update()
@@ -268,7 +268,7 @@ class OtterObjectsTab(QWidget):
         """
 
         str = ""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             str += "    " * level + "'{}': '{}',\n".format(name, value)
         else:
             str += "    " * level + "'{}': {},\n".format(name, value)
@@ -284,7 +284,7 @@ class OtterObjectsTab(QWidget):
         """
 
         str = "    " * level + "{\n"
-        for key, val in args.items():
+        for key, val in list(args.items()):
             str += self.argToText(key, val, level + 1)
         str += "    " * level + "},\n"
         return str
