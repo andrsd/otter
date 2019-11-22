@@ -4,6 +4,8 @@ import chigger
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
+
 class RetinaQVTKRenderWindowInteractor(QVTKRenderWindowInteractor):
     """
     Currently VTK7.1 and Qt5 do not work correctly on retina displays:
@@ -44,7 +46,10 @@ class OtterResultWindow(QMainWindow):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.vtkWidget = RetinaQVTKRenderWindowInteractor(self.frame)
+        if VTK_MAJOR_VERSION < 8:
+            self.vtkWidget = RetinaQVTKRenderWindowInteractor(self.frame)
+        else:
+            self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
         self.layout.addWidget(self.vtkWidget)
 
         args = {}
