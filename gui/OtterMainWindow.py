@@ -1,14 +1,12 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QActionGroup, QTabWidget, QFileDialog, QApplication, QStyle
 from PyQt5.QtCore import QFile, QTextStream, QEvent, Qt
-from OtterResultWindow import OtterResultWindow
-from OtterObjectTypeTab import OtterObjectTypeTab
-from OtterViewportsTab import OtterViewportsTab
-from OtterColorbarsTab import OtterColorbarsTab
-from OtterAnnotationsTab import OtterAnnotationsTab
+from gui.OtterResultWindow import OtterResultWindow
+from gui.OtterObjectTypeTab import OtterObjectTypeTab
+from gui.OtterViewportsTab import OtterViewportsTab
+from gui.OtterColorbarsTab import OtterColorbarsTab
+from gui.OtterAnnotationsTab import OtterAnnotationsTab
 import os
-import otter
+from otter import config
 
 class OtterMainWindow(QMainWindow):
 
@@ -209,7 +207,7 @@ class OtterMainWindow(QMainWindow):
             out << "\n"
             out << "import otter\n"
             out << "import numpy\n"
-            if otter.HAVE_RELAP7:
+            if config.HAVE_RELAP7:
                 out << "import relap7\n"
             out << "\n"
             out << self.tabViewports.toText()

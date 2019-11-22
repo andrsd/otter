@@ -1,9 +1,7 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
-from OtterObjectsTab import OtterObjectsTab
-import common
-import otter
+from gui.OtterObjectsTab import OtterObjectsTab
+from otter import common
+from otter import annotations
 import chigger
 
 class OtterAnnotationsTab(OtterObjectsTab):
@@ -33,7 +31,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
     PARAMS_TIME = [
         { 'name': 'font-size', 'value': 20, 'valid': '\d+', 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'format', 'value': None, 'hint': 'The format pattern for the time', 'req': False },
+        { 'name': 'format', 'value': annotations.AnnotationTime.FORMAT_STRING, 'hint': 'The format pattern for the time', 'req': False },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
         { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
@@ -72,7 +70,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         params = self.itemParams(item)
         item.setText("[text]")
 
-        map = otter.annotations.AnnotationText.MAP
+        map = annotations.AnnotationText.MAP
         kwargs = common.remap(params, map)
         ann = chigger.annotations.TextAnnotation(**kwargs)
         item.setData((ann[0], map))
@@ -84,7 +82,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         params = self.itemParams(item)
         item.setText("[image]")
 
-        map = otter.annotations.AnnotationImage.MAP
+        map = annotations.AnnotationImage.MAP
         kwargs = common.remap(params, map)
         ann = chigger.annotations.ImageAnnotation(**kwargs)
         item.setData((ann[0], map))
@@ -96,7 +94,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         params = self.itemParams(item)
         item.setText("[time]")
 
-        map = otter.annotations.AnnotationTime.MAP
+        map = annotations.AnnotationTime.MAP
         kwargs = common.remap(params, map)
         kwargs['text'] = common.formatTimeStr(kwargs['format'], common.t)
         ann = chigger.annotations.TextAnnotation(**kwargs)

@@ -4,15 +4,13 @@ import os
 import sys
 import re
 import chigger
-try:
-    import relap7
-    HAVE_RELAP7 = True
-except:
-    HAVE_RELAP7 = False
+
+from . import config
 from . import common
 from . import viewports
 from . import colorbars
 from . import annotations
+
 
 size = {
     '720p' : [1280, 720],

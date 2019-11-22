@@ -1,10 +1,10 @@
 import vtk
 import chigger
+from . import config
 from . import filters
-import otter
-if otter.HAVE_RELAP7:
-    import relap7
 from . import common
+if config.HAVE_RELAP7:
+    import relap7
 import mooseutils
 import numpy
 import bisect
@@ -198,8 +198,9 @@ class ViewportVPPPlot(Viewport):
             args['append'] = False
             line = chigger.graphs.Line(**args)
 
-            x = list(self.data('arc_length', time = idx))
-            y = list(self.data(var_name, time = idx))
+            self.data.update(time = idx)
+            x = list(self.data['arc_length'])
+            y = list(self.data[var_name])
 
             line.setOptions(x = x, y = y)
             self.lines.append(line)
@@ -229,8 +230,9 @@ class ViewportVPPPlot(Viewport):
 
         for v, line in zip(self.variables, self.lines):
             var_name = v['name']
-            x = list(self.data('arc_length', time = idx))
-            y = list(self.data(var_name, time = idx))
+            self.data.update(time = idx)
+            x = list(self.data['arc_length'])
+            y = list(self.data[var_name])
             line.setOptions(x = x, y = y)
 
     def _getTimeIndex(self, time):

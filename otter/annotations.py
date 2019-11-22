@@ -31,11 +31,13 @@ class AnnotationTime(AnnotationText):
     Time annotation object
     """
 
+    FORMAT_STRING = '{:1.2f}'
+
     def __init__(self, annotation):
         if 'format' in annotation:
             self.format_str = annotation.pop('format')
         else:
-            self.format_str = '{:1.2f}'
+            self.format_str = self.FORMAT_STRING
         annotation['text'] = self.getTimeText(common.t)
         super(AnnotationTime, self).__init__(annotation)
 

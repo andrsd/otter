@@ -1,10 +1,8 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu, QFileDialog
-from OtterObjectsTab import OtterObjectsTab
-import common
-import otter
+from gui.OtterObjectsTab import OtterObjectsTab
+from otter import common
+from otter import config
 import chigger
 
 class OtterViewportsTab(OtterObjectsTab):
@@ -98,7 +96,7 @@ class OtterViewportsTab(OtterObjectsTab):
         btn = QPushButton("Add", self)
         mnu = QMenu("Add", self)
         mnu.addAction("Exodus result", lambda : self.onAdd(self.EXODUS))
-        if otter.HAVE_RELAP7:
+        if config.HAVE_RELAP7:
             mnu.addAction("RELAP-7 result", lambda : self.onAdd(self.RELAP7_RESULT))
         mnu.addAction("Plot over time", lambda : self.onAdd(self.PLOT_OVER_TIME))
         mnu.addAction("VPP Plot", lambda : self.onAdd(self.VPP_PLOT))
@@ -208,6 +206,6 @@ class OtterViewportsTab(OtterObjectsTab):
             super(OtterViewportsTab, self).onItemChanged(item)
         else:
             if item.column() == 1:
-                name = item.text().encode("ascii")
+                name = item.text()
                 if item.row() in self.exodusResults:
                     self.exodusResults[item.row()]['name'] = name

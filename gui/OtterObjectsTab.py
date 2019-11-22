@@ -1,10 +1,8 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtCore import Qt, QVariant, QModelIndex, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
-from OtterParams import *
-import common
+from gui.OtterParams import *
+from otter import common
 
 class OtterObjectsTab(QWidget):
 
@@ -85,8 +83,8 @@ class OtterObjectsTab(QWidget):
             model = item.model()
             row = item.row()
 
-            name = parent.child(row, 0).text().encode("ascii")
-            value = item.text().encode("ascii")
+            name = parent.child(row, 0).text()
+            value = item.text()
             if item.isCheckable():
                 value = self.toPython(item.checkState() == Qt.Checked)
             else:
@@ -99,7 +97,7 @@ class OtterObjectsTab(QWidget):
                     root = parent.parent()
                     chigger_object, group_map = root.data()
 
-                    group_params = { parent.text().encode("ascii"): "" }
+                    group_params = { parent.text(): "" }
                     group_kwargs = common.remap(group_params, group_map)
                     group = list(group_kwargs.keys())[0]
 
@@ -120,9 +118,9 @@ class OtterObjectsTab(QWidget):
     def itemParams(self, item):
         params = {}
         for row in range(item.rowCount()):
-            name = item.child(row, 0).text().encode("ascii")
+            name = item.child(row, 0).text()
             if item.child(row, 1) != None:
-                value = item.child(row, 1).text().encode("ascii")
+                value = item.child(row, 1).text()
                 if len(value) > 0:
                     params[name] = value
         return params
@@ -234,8 +232,8 @@ class OtterObjectsTab(QWidget):
 
         args = {}
         for idx in range(parent.rowCount()):
-            name = parent.child(idx, 0).text().encode("ascii")
-            value = parent.child(idx, 1).text().encode("ascii")
+            name = parent.child(idx, 0).text()
+            value = parent.child(idx, 1).text()
             if len(value) > 0:
                 args[name] = value
         return args
@@ -251,7 +249,7 @@ class OtterObjectsTab(QWidget):
             if parent.hasChildren():
                 argsGroup  = self.argsGroup(parent)
                 if self.needsName():
-                    parent_name = self.model.item(idx, 1).text().encode("ascii")
+                    parent_name = self.model.item(idx, 1).text()
                     argsGroup['name'] = parent_name
                 args.append(argsGroup)
 
@@ -267,12 +265,12 @@ class OtterObjectsTab(QWidget):
             level [int]
         """
 
-        str = ""
+        s = ""
         if isinstance(value, str):
-            str += "    " * level + "'{}': '{}',\n".format(name, value)
+            s += "    " * level + "'{}': '{}',\n".format(name, value)
         else:
-            str += "    " * level + "'{}': {},\n".format(name, value)
-        return str
+            s += "    " * level + "'{}': {},\n".format(name, value)
+        return s
 
     def groupToText(self, args, level):
         """
@@ -283,23 +281,23 @@ class OtterObjectsTab(QWidget):
             level [int] - indentation level
         """
 
-        str = "    " * level + "{\n"
+        s = "    " * level + "{\n"
         for key, val in list(args.items()):
-            str += self.argToText(key, val, level + 1)
-        str += "    " * level + "},\n"
-        return str
+            s += self.argToText(key, val, level + 1)
+        s += "    " * level + "},\n"
+        return s
 
     def toText(self):
         """
         Convert all otter objects into string representation of python code for outputting
         """
 
-        str = ""
-        str += "{} = [\n".format(self.pythonName())
+        s = ""
+        s += "{} = [\n".format(self.pythonName())
         for value in self.args():
-            str += self.groupToText(value, 1)
-        str += "]\n"
-        return str
+            s += self.groupToText(value, 1)
+        s += "]\n"
+        return s
 
     def toPython(self, value):
         if isinstance(value, bool):

@@ -1,11 +1,9 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
 from PyQt5.QtGui import QStandardItem, QBrush, QColor
-from OtterObjectsTab import OtterObjectsTab
-import otter
-import common
+from gui.OtterObjectsTab import OtterObjectsTab
+from otter import common
+from otter import colorbars
 import chigger
 
 class OtterColorbarsTab(OtterObjectsTab):
@@ -78,7 +76,7 @@ class OtterColorbarsTab(OtterObjectsTab):
         axis2_item = self.childItem(item, 'axis2')
         axis2_params = self.itemParams(axis2_item)
 
-        kwargs = common.remap(params, otter.colorbars.ColorBar.COLORBAR_MAP)
+        kwargs = common.remap(params, colorbars.ColorBar.COLORBAR_MAP)
         axis1_kwargs = common.remap(axis1_params, common.AXIS_MAP)
         axis2_kwargs = common.remap(axis2_params, common.AXIS_MAP)
 
@@ -86,7 +84,7 @@ class OtterColorbarsTab(OtterObjectsTab):
         cbar.setOptions('primary', **axis1_kwargs)
         cbar.setOptions('secondary', **axis2_kwargs)
 
-        item.setData((cbar, otter.colorbars.ColorBar.COLORBAR_MAP))
+        item.setData((cbar, colorbars.ColorBar.COLORBAR_MAP))
         axis1_item.setData((None, common.AXIS_MAP))
         axis2_item.setData((None, common.AXIS_MAP))
 

@@ -1,11 +1,9 @@
-#!/usr/bin/env python2
-
 from PyQt5.QtCore import Qt, QVariant, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from OtterParams import *
+from gui.OtterParams import *
 import re
-import common
+from otter import common
 
 class OtterObjectTypeTab(QWidget):
 
@@ -227,8 +225,8 @@ class OtterObjectTypeTab(QWidget):
 
         model = item.model()
         row = item.row()
-        name = model.item(row, 0).text().encode("ascii")
-        value = item.text().encode("ascii")
+        name = model.item(row, 0).text()
+        value = item.text()
         if name == 't':
             common.t = float(value)
             self.timeChanged.emit(common.t)
@@ -299,8 +297,8 @@ class OtterObjectTypeTab(QWidget):
         model = self.model()
         args = {}
         for idx in range(model.rowCount()):
-            name = model.item(idx, 0).text().encode("ascii")
-            value = model.item(idx, 1).text().encode("ascii")
+            name = model.item(idx, 0).text()
+            value = model.item(idx, 1).text()
             if value != "":
                 args[name] = self.toPython(value)
 
@@ -314,19 +312,19 @@ class OtterObjectTypeTab(QWidget):
         elif idx == self.IDX_MOVIE:
             obj_type = 'movie'
 
-        str = ""
-        str += "{} = {{\n".format(obj_type)
+        s = ""
+        s += "{} = {{\n".format(obj_type)
         for name, value in self.args().items():
             if isinstance(value, str):
-                str += "    '{}': '{}',\n".format(name, value)
+                s += "    '{}': '{}',\n".format(name, value)
             else:
-                str += "    '{}': {},\n".format(name, value)
+                s += "    '{}': {},\n".format(name, value)
 
-        str += "    'viewports': viewports,\n"
-        str += "    'colorbars': colorbars,\n"
-        str += "    'annotations': annotations\n"
-        str += "}\n"
-        str += "\n"
-        str += "otter.render({})\n".format(obj_type)
+        s += "    'viewports': viewports,\n"
+        s += "    'colorbars': colorbars,\n"
+        s += "    'annotations': annotations\n"
+        s += "}\n"
+        s += "\n"
+        s += "otter.render({})\n".format(obj_type)
 
-        return str
+        return s
