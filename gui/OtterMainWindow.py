@@ -202,7 +202,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
             out = QtCore.QTextStream(self.file)
 
-            out << "#!/usr/bin/env python2\n"
+            out << "#!/usr/bin/env python\n"
             out << "\n"
             out << "import otter\n"
             out << "import numpy\n"
