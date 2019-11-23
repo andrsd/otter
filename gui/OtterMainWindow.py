@@ -1,4 +1,6 @@
 import os
+import sys
+import importlib
 from PyQt5 import QtWidgets, QtCore
 from gui.OtterResultWindow import OtterResultWindow
 from gui.OtterObjectTypeTab import OtterObjectTypeTab
@@ -154,7 +156,11 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         pass
 
     def onOpenInputFile(self):
-        pass
+        # TODO: save file if there are unsaved changes
+
+        file_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File')
+        if file_name[0]:
+            self.loadFromFile(file_name[0])
 
     def onSaveInputFile(self):
         if self.file.fileName() == "":
@@ -234,3 +240,41 @@ class OtterMainWindow(QtWidgets.QMainWindow):
                 self,
                 "Information",
                 "Failed to save '{}'.".format(file_name))
+
+    def loadFromFile(self, file_name):
+        file = QtCore.QFile(file_name)
+        if file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
+            file.close()
+
+            dir = os.path.dirname(file_name)
+            module_name = os.path.splitext(os.path.basename(file_name))[0]
+            sys.path.append(dir)
+            temp = importlib.__import__(module_name, None, None, ['viewports', 'colorbars', 'annotations', 'image', 'movie'])
+            sys.path.remove(dir)
+
+            if hasattr(temp, 'movie'):
+                self.tabType.selectObjectType("Movie")
+                self.tabType.setObjectParams(temp.movie)
+            elif hasattr(temp, 'image') != None:
+                self.tabType.selectObjectType("Image")
+                self.tabType.setObjectParams(temp.image)
+            else:
+                mb = QtWidgets.QMessageBox.information(
+                    self,
+                    "Information",
+                    "Did not find 'image' or 'movie' in your otter script.  Nothing was loaded.")
+                # TODO: set defaults everywhere (?)
+                return
+
+            self.tabViewports.populate(temp.viewports)
+            self.tabColorBars.populate(temp.colorbars)
+            self.tabAnnotations.populate(temp.annotations)
+
+            self.file.setFileName(file_name)
+            self.modified = False
+            self.setTitle()
+        else:
+            mb = QtWidgets.QMessageBox.information(
+                self,
+                "Information",
+                "Failed to open '{}'.".format(file_name))

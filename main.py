@@ -71,6 +71,8 @@ def main(argv):
 
     main_win = OtterMainWindow()
     main_win.show()
+    if args.file != None:
+        main_win.loadFromFile(args.file)
 
     return qapp.exec_()
 

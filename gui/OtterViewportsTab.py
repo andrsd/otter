@@ -109,94 +109,113 @@ class OtterViewportsTab(OtterObjectsTab):
         btn.setMenu(mnu)
         return btn
 
+    def addObject(self, params):
+        type = params['type']
+        if type == 'ExodusResult':
+            item = self.addExodusResult(params['file'])
+            self.setObjectParams(item, params)
+        elif type == 'RELAP7Result':
+            item = self.addRELAP7Result()
+            self.setObjectParams(item, params)
+        elif type == 'VPPPlot':
+            item = self.addVPPPlot()
+            self.setObjectParams(item, params)
+        elif type == 'PlotOverTime':
+            item = self.addPlotOverTime(params['file'])
+            self.setObjectParams(item, params)
+
     def onAdd(self, type):
         if type == self.EXODUS:
-            self.addExodusResult()
+            file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select ExodusII File')
+            if file_names[0]:
+                self.addExodusResult(file_names[0])
         elif type == self.RELAP7_RESULT:
             self.addRELAP7Result()
         elif type == self.PLOT_OVER_TIME:
-            self.addPlotOverTime()
+            file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select CSV File')
+            if file_names[0]:
+                self.addPlotOverTime(file_names[0])
         elif type == self.VPP_PLOT:
             self.addVPPPlot()
 
-    def addExodusResult(self):
-        file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select ExodusII File')
-        if file_names[0]:
-            exodus_file = file_names[0]
+    def addExodusResult(self, exodus_file):
+        kwargs = {}
+        kwargs['time'] = common.t
+        kwargs['timestep'] = None
+        exodus_reader = chigger.exodus.ExodusReader(exodus_file, **kwargs)
+        exodus_reader.update()
+        vars = exodus_reader.getVariableInformation()
+        var_names = []
+        var_name = None
+        for vn in list(vars.keys()):
+            obj_type = vars[vn].object_type
+            if obj_type in [chigger.exodus.ExodusReader.NODAL, chigger.exodus.ExodusReader.ELEMENTAL]:
+                if var_name == None:
+                    var_name = vn
+                var_names.append(vn)
 
-            kwargs = {}
-            kwargs['time'] = common.t
-            kwargs['timestep'] = None
-            exodus_reader = chigger.exodus.ExodusReader(exodus_file, **kwargs)
-            exodus_reader.update()
-            vars = exodus_reader.getVariableInformation()
-            var_names = []
-            var_name = None
-            for vn in list(vars.keys()):
-                obj_type = vars[vn].object_type
-                if obj_type in [chigger.exodus.ExodusReader.NODAL, chigger.exodus.ExodusReader.ELEMENTAL]:
-                    if var_name == None:
-                        var_name = vn
-                    var_names.append(vn)
+        input_params = self.PARAMS_EXODUS_RESULT
+        self.setInputParam(input_params, 'file', exodus_file)
+        self.setInputParam(input_params, 'variable', var_name, enum = var_names)
 
-            input_params = self.PARAMS_EXODUS_RESULT
-            self.setInputParam(input_params, 'file', exodus_file)
-            self.setInputParam(input_params, 'variable', var_name, enum = var_names)
+        self.num_results = self.num_results + 1
+        exodus_result_name = 'result' + str(self.num_results)
+        item = self.addGroup(input_params, spanned = False, name = exodus_result_name)
+        params = self.itemParams(item)
+        item.setText("[exodus]")
 
-            self.num_results = self.num_results + 1
-            exodus_result_name = 'result' + str(self.num_results)
-            item = self.addGroup(input_params, spanned = False, name = exodus_result_name)
-            params = self.itemParams(item)
-            item.setText("[exodus]")
+        map = otter.viewports.ViewportExodusResult.MAP
+        kwargs = common.remap(params, map)
+        exodus_result = chigger.exodus.ExodusResult(exodus_reader, **kwargs)
+        self.exodusResults[item.row()] = { 'name' : exodus_result_name, 'result' : exodus_result }
 
-            map = otter.viewports.ViewportExodusResult.MAP
-            kwargs = common.remap(params, map)
-            exodus_result = chigger.exodus.ExodusResult(exodus_reader, **kwargs)
-            self.exodusResults[item.row()] = { 'name' : exodus_result_name, 'result' : exodus_result }
+        item.setData((exodus_result, map))
+        self.windowResult.append(exodus_result)
+        self.windowResult.update()
 
-            item.setData((exodus_result, map))
-            self.windowResult.append(exodus_result)
-            self.windowResult.update()
+        self.resultAdded.emit()
 
-            self.resultAdded.emit()
+        return item
 
     def addRELAP7Result(self):
         item = self.addGroup(self.PARAMS_RELAP7_RESULT, spanned = False)
         params = self.itemParams(item)
         item.setText("[RELAP-7 result]")
+        return item
 
-    def addPlotOverTime(self):
-        file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select CSV File')
-        if file_names[0]:
-            item = self.addGroup(self.PARAMS_PLOT_OVER_TIME, spanned = False)
-            params = self.itemParams(item)
-            item.setText("[plot over time]")
+    def addPlotOverTime(self, cvs_file):
+        item = self.addGroup(self.PARAMS_PLOT_OVER_TIME, spanned = False)
+        params = self.itemParams(item)
+        item.setText("[plot over time]")
 
-            map = otter.viewports.ViewportPlotOverTime.MAP
-            kwargs = common.remap(params, map)
-            lines = []
-            graph = chigger.graphs.Graph(*lines, **kwargs)
+        map = otter.viewports.ViewportPlotOverTime.MAP
+        kwargs = common.remap(params, map)
+        lines = []
+        graph = chigger.graphs.Graph(*lines, **kwargs)
 
-            item.setData((graph, map))
+        item.setData((graph, map))
 
-            item_x_axis = self.childItem(item, 'x-axis')
-            item_x_axis.setData((None, common.AXIS_MAP))
+        item_x_axis = self.childItem(item, 'x-axis')
+        item_x_axis.setData((None, common.AXIS_MAP))
 
-            item_y_axis = self.childItem(item, 'y-axis')
-            item_y_axis.setData((None, common.AXIS_MAP))
+        item_y_axis = self.childItem(item, 'y-axis')
+        item_y_axis.setData((None, common.AXIS_MAP))
 
-            item_legend = self.childItem(item, 'legend')
-            item_legend.setData((None, common.LEGEND_MAP))
+        item_legend = self.childItem(item, 'legend')
+        item_legend.setData((None, common.LEGEND_MAP))
 
-            self.windowResult.append(graph)
-            self.windowResult.update()
+        self.windowResult.append(graph)
+        self.windowResult.update()
 
-            self.resultAdded.emit()
+        self.resultAdded.emit()
+
+        return item
 
     def addVPPPlot(self):
         item = self.addGroup(self.PARAMS_VPP_PLOT, spanned = False)
         params = self.itemParams(item)
         item.setText("[vpp plot]")
+        return item
 
     def onTimeChanged(self, time):
         # update time in exodus-based results

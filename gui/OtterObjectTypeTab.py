@@ -165,6 +165,7 @@ class OtterObjectTypeTab(QtWidgets.QWidget):
                 font = si.font()
                 font.setBold(True)
                 si.setFont(font)
+            si.setData(item)
             model.setItem(i, 0, si)
 
             val = item['value']
@@ -263,6 +264,34 @@ class OtterObjectTypeTab(QtWidgets.QWidget):
         else:
             return None
 
+    def selectObjectType(self, type):
+        idx = self.ctlType.findText(type)
+        if idx != -1:
+            self.ctlType.setCurrentIndex(idx)
+        else:
+            print("Trying to set unknown type '{}'".format(type))
+
+    def setObjectParams(self, params):
+        for row in range(self.model().rowCount()):
+            item0 = self.model().item(row)
+            default_param = item0.data()
+            name = item0.text()
+
+            item1 = self.model().item(row, 1)
+            if name in params:
+                value = params[name]
+            else:
+                value = default_param['value']
+
+            if isinstance(value, bool):
+                if value:
+                    item1.setCheckState(QtCore.Qt.Checked)
+                else:
+                    item1.setCheckState(QtCore.Qt.Unchecked)
+            else:
+                item1.setText(str(value))
+
+
     def toPython(self, value):
         if isinstance(value, bool):
             return value
@@ -344,6 +373,7 @@ class OtterObjectTypeTab(QtWidgets.QWidget):
         s += "    'annotations': annotations\n"
         s += "}\n"
         s += "\n"
-        s += "otter.render({})\n".format(obj_type)
+        s += "if __name__ == '__main__':\n"
+        s += "    otter.render({})\n".format(obj_type)
 
         return s

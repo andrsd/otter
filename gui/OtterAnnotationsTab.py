@@ -63,6 +63,18 @@ class OtterAnnotationsTab(OtterObjectsTab):
         btn.setMenu(mnu)
         return btn
 
+    def addObject(self, params):
+        type = params['type']
+        if type == 'Text':
+            obj_item = self.addTextAnnotation()
+            self.setObjectParams(obj_item, params)
+        elif type == 'Image':
+            obj_item = self.addImageAnnotation()
+            self.setObjectParams(obj_item, params)
+        elif type == 'Time':
+            obj_item = self.addTimeAnnotation()
+            self.setObjectParams(obj_item, params)
+
     def onAdd(self, type):
         if type == self.TEXT:
             self.addTextAnnotation()
@@ -82,6 +94,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         item.setData((ann[0], map))
         self.windowResult.append(ann)
         self.windowResult.update()
+        return item
 
     def addImageAnnotation(self):
         item = self.addGroup(self.PARAMS_IMAGE, spanned = False)
@@ -94,6 +107,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         item.setData((ann[0], map))
         self.windowResult.append(ann)
         self.windowResult.update()
+        return item
 
     def addTimeAnnotation(self):
         item = self.addGroup(self.PARAMS_TIME, spanned = False)
@@ -107,6 +121,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
         item.setData((ann[0], map))
         self.windowResult.append(ann)
         self.windowResult.update()
+        return item
 
     def onTimeChanged(self, time):
         self.updateTimeAnnotations()

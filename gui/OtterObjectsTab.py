@@ -174,6 +174,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
             font = child.font()
             font.setBold(True)
             child.setFont(font)
+        child.setData(item)
         parent.setChild(idx, 0, child)
 
         val = item['value']
@@ -225,6 +226,31 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 valid = None
             child.setData(QtCore.QVariant(OtterParamLineEdit('str', valid)))
         parent.setChild(idx, 1, child)
+
+    def populate(self, items):
+        for params in items:
+            self.addObject(params)
+
+    def setObjectParams(self, obj_item, params):
+        for row in range(obj_item.rowCount()):
+            item0 = obj_item.child(row)
+            default_param = item0.data()
+            name = item0.text()
+
+            item1 = obj_item.child(row, 1)
+            if item1 != None:
+                if name in params:
+                    value = params[name]
+                else:
+                    value = default_param['value']
+
+                if isinstance(value, bool):
+                    if value:
+                        item1.setCheckState(QtCore.Qt.Checked)
+                    else:
+                        item1.setCheckState(QtCore.Qt.Unchecked)
+                elif value != None:
+                    item1.setText(str(value))
 
     def argsGroup(self, parent):
         """

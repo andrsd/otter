@@ -58,6 +58,14 @@ class OtterColorbarsTab(OtterObjectsTab):
     def onResultAdded(self):
         self.updateControls()
 
+    def addObject(self, params):
+        ex_result_name = params['axis1']['result']
+        for idx, ex_result in self.mainWindow.exodusResults().items():
+            if ex_result['name'] == ex_result_name:
+                obj_item = self.onAdd(idx)
+                self.setObjectParams(obj_item, params)
+                break
+
     def onAdd(self, idx):
         ex_result = self.mainWindow.exodusResults()[idx]
 
@@ -88,6 +96,8 @@ class OtterColorbarsTab(OtterObjectsTab):
 
         self.windowResult.append(cbar)
         self.windowResult.update()
+
+        return item
 
     def updateControls(self):
         if len(list(self.mainWindow.exodusResults().keys())) > 0:
