@@ -1,17 +1,15 @@
-from PyQt5.QtCore import Qt, QVariant, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTreeView, QComboBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
-import re
 from otter import common
+import re
 
-class OtterObjectTypeTab(QWidget):
+class OtterObjectTypeTab(QtWidgets.QWidget):
 
-    modified = pyqtSignal()
+    modified = QtCore.pyqtSignal()
     # When user changed the time parameter (arg: the new time)
-    timeChanged = pyqtSignal(float)
+    timeChanged = QtCore.pyqtSignal(float)
     # When user changed time unit
-    timeUnitChanged = pyqtSignal(str)
+    timeUnitChanged = QtCore.pyqtSignal(str)
 
     PARAMS_IMAGE = [
         {
@@ -119,17 +117,17 @@ class OtterObjectTypeTab(QWidget):
 
         self.populateModels()
 
-        layout = QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(6, 4, 6, 3)
         self.setLayout(layout)
 
-        self.ctlType = QComboBox(self)
+        self.ctlType = QtWidgets.QComboBox(self)
         self.ctlType.addItem("Image")
         self.ctlType.addItem("Movie")
         self.ctlType.currentIndexChanged.connect(self.onTypeChanged)
         layout.addWidget(self.ctlType)
 
-        self.ctlParams = QTreeView(self)
+        self.ctlParams = QtWidgets.QTreeView(self)
         self.ctlParams.setRootIsDecorated(False)
         self.ctlParams.setItemDelegate(OtterParamDelegate(self.ctlParams))
         layout.addWidget(self.ctlParams)
@@ -147,8 +145,8 @@ class OtterObjectTypeTab(QWidget):
             self.modified.emit()
 
     def populateModels(self):
-        self.modelImage = QStandardItemModel(self)
-        self.modelMovie = QStandardItemModel(self)
+        self.modelImage = QtGui.QStandardItemModel(self)
+        self.modelMovie = QtGui.QStandardItemModel(self)
 
         self.modelImage.itemChanged.connect(self.onParamChanged)
         self.modelMovie.itemChanged.connect(self.onParamChanged)
@@ -159,7 +157,7 @@ class OtterObjectTypeTab(QWidget):
     def populateParams(self, model, params):
         model.setHorizontalHeaderLabels(["Parameter", "Value"])
         for i, item in enumerate(params):
-            si = QStandardItem(item['name'])
+            si = QtGui.QStandardItem(item['name'])
             si.setEditable(False)
             if 'hint' in item:
                 si.setToolTip(item['hint'])
@@ -171,52 +169,52 @@ class OtterObjectTypeTab(QWidget):
 
             val = item['value']
             if 'enum' in item:
-                si = QStandardItem(val)
+                si = QtGui.QStandardItem(val)
                 si.setEditable(True)
-                si.setData(QVariant(OtterParamOptions(item['enum'])))
+                si.setData(QtCore.QVariant(OtterParamOptions(item['enum'])))
             elif val == None:
-                si = QStandardItem()
+                si = QtGui.QStandardItem()
                 si.setEditable(True)
             elif type(val) == bool:
-                si = QStandardItem()
+                si = QtGui.QStandardItem()
                 si.setEditable(False)
                 si.setCheckable(True)
                 if val:
-                    si.setCheckState(Qt.Checked)
+                    si.setCheckState(QtCore.Qt.Checked)
                 else:
-                    si.setCheckState(Qt.Unchecked)
+                    si.setCheckState(QtCore.Qt.Unchecked)
             elif type(val) == str:
-                si = QStandardItem(val)
+                si = QtGui.QStandardItem(val)
                 si.setEditable(True)
                 if 'valid' in item:
                     valid = item['valid']
                 else:
                     valid = None
-                si.setData(QVariant(OtterParamLineEdit('str', valid)))
+                si.setData(QtCore.QVariant(OtterParamLineEdit('str', valid)))
             elif type(val) == int:
-                si = QStandardItem(str(val))
+                si = QtGui.QStandardItem(str(val))
                 si.setEditable(True)
                 if 'limits' in item:
                     limits = item['limits']
                 else:
                     limits = None
-                si.setData(QVariant(OtterParamLineEdit('int', limits)))
+                si.setData(QtCore.QVariant(OtterParamLineEdit('int', limits)))
             elif type(val) == float:
-                si = QStandardItem(str(val))
+                si = QtGui.QStandardItem(str(val))
                 si.setEditable(True)
                 if 'limits' in item:
                     limits = item['limits']
                 else:
                     limits = None
-                si.setData(QVariant(OtterParamLineEdit('float', limits)))
+                si.setData(QtCore.QVariant(OtterParamLineEdit('float', limits)))
             else:
-                si = QStandardItem(str(val))
+                si = QtGui.QStandardItem(str(val))
                 si.setEditable(True)
                 if 'valid' in item:
                     valid = item['valid']
                 else:
                     valid = None
-                si.setData(QVariant(OtterParamLineEdit('str', valid)))
+                si.setData(QtCore.QVariant(OtterParamLineEdit('str', valid)))
             model.setItem(i, 1, si)
 
     def onParamChanged(self, item):
@@ -241,7 +239,7 @@ class OtterObjectTypeTab(QWidget):
             pass
         else:
             if item.isCheckable():
-                param = self.toPython(item.checkState() == Qt.Checked)
+                param = self.toPython(item.checkState() == QtCore.Qt.Checked)
             else:
                 param = self.toPython(value)
             self.windowResult.setParam(name, param)

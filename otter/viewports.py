@@ -1,8 +1,6 @@
 import vtk
 import chigger
-from . import config
-from . import filters
-from . import common
+from . import config, filters, common
 if config.HAVE_RELAP7:
     import relap7
 import mooseutils

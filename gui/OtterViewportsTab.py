@@ -1,13 +1,11 @@
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu, QFileDialog
+from PyQt5 import QtCore, QtWidgets
 from gui.OtterObjectsTab import OtterObjectsTab
-from otter import common
-from otter import config
+from otter import common, config
 import chigger
 
 class OtterViewportsTab(OtterObjectsTab):
 
-    resultAdded = pyqtSignal()
+    resultAdded = QtCore.pyqtSignal()
 
     EXODUS = 0
     RELAP7_RESULT = 1
@@ -93,8 +91,8 @@ class OtterViewportsTab(OtterObjectsTab):
         return True
 
     def buildAddButton(self):
-        btn = QPushButton("Add", self)
-        mnu = QMenu("Add", self)
+        btn = QtWidgets.QPushButton("Add", self)
+        mnu = QtWidgets.QMenu("Add", self)
         mnu.addAction("Exodus result", lambda : self.onAdd(self.EXODUS))
         if config.HAVE_RELAP7:
             mnu.addAction("RELAP-7 result", lambda : self.onAdd(self.RELAP7_RESULT))
@@ -114,7 +112,7 @@ class OtterViewportsTab(OtterObjectsTab):
             self.addVPPPlot()
 
     def addExodusResult(self):
-        file_names = QFileDialog.getOpenFileName(self, 'Select ExodusII File')
+        file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select ExodusII File')
         if file_names[0]:
             exodus_file = file_names[0]
 
@@ -160,7 +158,7 @@ class OtterViewportsTab(OtterObjectsTab):
         item.setText("[RELAP-7 result]")
 
     def addPlotOverLine(self):
-        file_names = QFileDialog.getOpenFileName(self, 'Select CSV File')
+        file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select CSV File')
         if file_names[0]:
             item = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
             params = self.itemParams(item)

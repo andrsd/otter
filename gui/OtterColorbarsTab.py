@@ -1,9 +1,6 @@
-from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
-from PyQt5.QtGui import QStandardItem, QBrush, QColor
+from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterObjectsTab import OtterObjectsTab
-from otter import common
-from otter import colorbars
+from otter import common, colorbars
 import chigger
 
 class OtterColorbarsTab(OtterObjectsTab):
@@ -45,8 +42,8 @@ class OtterColorbarsTab(OtterObjectsTab):
         return "colorbars"
 
     def buildAddButton(self):
-        self.btnAdd = QPushButton("Add", self)
-        self.mnuAdd = QMenu("Add", self)
+        self.btnAdd = QtWidgets.QPushButton("Add", self)
+        self.mnuAdd = QtWidgets.QMenu("Add", self)
         self.mnuAdd.aboutToShow.connect(self.onAddMenuAboutToShow)
         self.btnAdd.setMenu(self.mnuAdd)
         return self.btnAdd

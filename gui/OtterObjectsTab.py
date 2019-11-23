@@ -1,12 +1,10 @@
-from PyQt5.QtCore import Qt, QVariant, QModelIndex, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
+from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
 from otter import common
 
-class OtterObjectsTab(QWidget):
+class OtterObjectsTab(QtWidgets.QWidget):
 
-    modified = pyqtSignal()
+    modified = QtCore.pyqtSignal()
 
     INDENT = 14
 
@@ -28,18 +26,18 @@ class OtterObjectsTab(QWidget):
     def __init__(self, parent, resultWindow):
         super(OtterObjectsTab, self).__init__(parent)
 
-        layout = QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 3)
         self.setLayout(layout)
 
         btn = self.buildAddButton()
         layout.addWidget(btn)
 
-        self.model = QStandardItemModel(0, 2, self)
+        self.model = QtGui.QStandardItemModel(0, 2, self)
         self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
         self.model.itemChanged.connect(self.onItemChanged)
 
-        self.ctlObjects = QTreeView(self)
+        self.ctlObjects = QtWidgets.QTreeView(self)
         self.ctlObjects.setModel(self.model)
         self.ctlObjects.header().resizeSection(0, 140)
         self.ctlObjects.setRootIsDecorated(False)
@@ -86,7 +84,7 @@ class OtterObjectsTab(QWidget):
             name = parent.child(row, 0).text()
             value = item.text()
             if item.isCheckable():
-                value = self.toPython(item.checkState() == Qt.Checked)
+                value = self.toPython(item.checkState() == QtCore.Qt.Checked)
             else:
                 value = self.toPython(value)
             params = { name: value }
@@ -127,24 +125,24 @@ class OtterObjectsTab(QWidget):
 
     def addGroup(self, params, spanned = True, name = ''):
         idx = self.model.rowCount()
-        si = QStandardItem()
+        si = QtGui.QStandardItem()
         si.setEditable(False)
         # FIXME: use color from the GUI color scheme
-        brush = QBrush(QColor(192, 192, 192))
+        brush = QtGui.QBrush(QtGui.QColor(192, 192, 192))
         si.setBackground(brush)
         self.model.setItem(idx, si)
         if spanned:
-            self.ctlObjects.setFirstColumnSpanned(idx, QModelIndex(), spanned)
+            self.ctlObjects.setFirstColumnSpanned(idx, QtCore.QModelIndex(), spanned)
         else:
             si.setText("name")
-            si2 = QStandardItem(name)
+            si2 = QtGui.QStandardItem(name)
             si2.setEditable(True)
             si2.setBackground(brush)
             self.model.setItem(idx, 1, si2)
 
         for i, item in enumerate(params):
             if 'group' in item and item['group']:
-                group = QStandardItem(item['name'])
+                group = QtGui.QStandardItem(item['name'])
                 group.setEditable(False)
                 if 'hint' in item:
                     group.setToolTip(item['hint'])
@@ -162,7 +160,7 @@ class OtterObjectsTab(QWidget):
         return si
 
     def buildChildParam(self, idx, parent, item):
-        child = QStandardItem(item['name'])
+        child = QtGui.QStandardItem(item['name'])
         child.setEditable(False)
         if 'hint' in item:
             child.setToolTip(item['hint'])
@@ -174,52 +172,52 @@ class OtterObjectsTab(QWidget):
 
         val = item['value']
         if 'enum' in item:
-            child = QStandardItem(val)
+            child = QtGui.QStandardItem(val)
             child.setEditable(True)
-            child.setData(QVariant(OtterParamOptions(item['enum'])))
+            child.setData(QtCore.QVariant(OtterParamOptions(item['enum'])))
         elif val == None:
-            child = QStandardItem()
+            child = QtGui.QStandardItem()
             child.setEditable(True)
         elif type(val) == bool:
-            child = QStandardItem()
+            child = QtGui.QStandardItem()
             child.setEditable(False)
             child.setCheckable(True)
             if val:
-                child.setCheckState(Qt.Checked)
+                child.setCheckState(QtCore.Qt.Checked)
             else:
-                child.setCheckState(Qt.Unchecked)
+                child.setCheckState(QtCore.Qt.Unchecked)
         elif type(val) == str:
-            child = QStandardItem(val)
+            child = QtGui.QStandardItem(val)
             child.setEditable(True)
             if 'valid' in item:
                 valid = item['valid']
             else:
                 valid = None
-            child.setData(QVariant(OtterParamLineEdit('str', valid)))
+            child.setData(QtCore.QVariant(OtterParamLineEdit('str', valid)))
         elif type(val) == int:
-            child = QStandardItem(str(val))
+            child = QtGui.QStandardItem(str(val))
             child.setEditable(True)
             if 'limits' in item:
                 limits = item['limits']
             else:
                 limits = None
-            child.setData(QVariant(OtterParamLineEdit('int', limits)))
+            child.setData(QtCore.QVariant(OtterParamLineEdit('int', limits)))
         elif type(val) == float:
-            child = QStandardItem(str(val))
+            child = QtGui.QStandardItem(str(val))
             child.setEditable(True)
             if 'limits' in item:
                 limits = item['limits']
             else:
                 limits = None
-            child.setData(QVariant(OtterParamLineEdit('float', limits)))
+            child.setData(QtCore.QVariant(OtterParamLineEdit('float', limits)))
         else:
-            child = QStandardItem(str(val))
+            child = QtGui.QStandardItem(str(val))
             child.setEditable(True)
             if 'valid' in item:
                 valid = item['valid']
             else:
                 valid = None
-            child.setData(QVariant(OtterParamLineEdit('str', valid)))
+            child.setData(QtCore.QVariant(OtterParamLineEdit('str', valid)))
         parent.setChild(idx, 1, child)
 
     def argsGroup(self, parent):
@@ -227,7 +225,7 @@ class OtterObjectsTab(QWidget):
         Build python dictionary for an otter object
 
         Inputs:
-            parent [QStandardItem] - parent item from the model, childern of this key will be stored into the python dictionary
+            parent [QtGui.QStandardItem] - parent item from the model, childern of this key will be stored into the python dictionary
         """
 
         args = {}

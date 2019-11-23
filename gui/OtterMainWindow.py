@@ -1,18 +1,17 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QMenu, QActionGroup, QTabWidget, QFileDialog, QApplication, QStyle
-from PyQt5.QtCore import QFile, QTextStream, QEvent, Qt
+import os
+from PyQt5 import QtWidgets, QtCore
 from gui.OtterResultWindow import OtterResultWindow
 from gui.OtterObjectTypeTab import OtterObjectTypeTab
 from gui.OtterViewportsTab import OtterViewportsTab
 from gui.OtterColorbarsTab import OtterColorbarsTab
 from gui.OtterAnnotationsTab import OtterAnnotationsTab
-import os
 from otter import config
 
-class OtterMainWindow(QMainWindow):
+class OtterMainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(OtterMainWindow, self).__init__()
-        self.file = QFile()
+        self.file = QtCore.QFile()
         self.modified = False
         self.windowResult = None
         self.ctlObjType = None
@@ -42,7 +41,7 @@ class OtterMainWindow(QMainWindow):
         self._annotations_tab_action = viewMenu.addAction("Annotations", lambda: self.onActivateTab(3), "Ctrl+4")
         self._annotations_tab_action.setCheckable(True)
 
-        self._tab_group_windows = QActionGroup(self)
+        self._tab_group_windows = QtWidgets.QActionGroup(self)
         self._tab_group_windows.addAction(self._type_tab_action)
         self._tab_group_windows.addAction(self._viewports_tab_action)
         self._tab_group_windows.addAction(self._colorbars_tab_action)
@@ -58,12 +57,12 @@ class OtterMainWindow(QMainWindow):
         self._result_window = windowMenu.addAction(self.windowResult.windowTitle(), self.onShowChiggerWindow)
         self._result_window.setCheckable(True)
 
-        self._action_group_windows = QActionGroup(self)
+        self._action_group_windows = QtWidgets.QActionGroup(self)
         self._action_group_windows.addAction(self._main_window)
         self._action_group_windows.addAction(self._result_window)
 
     def updateMenuBar(self):
-        qapp = QApplication.instance()
+        qapp = QtWidgets.QApplication.instance()
         active_window = qapp.activeWindow()
         if active_window == self:
             self._main_window.setChecked(True)
@@ -83,10 +82,10 @@ class OtterMainWindow(QMainWindow):
     def setupWidgets(self):
         self.windowResult = OtterResultWindow(self)
 
-        w = QWidget(self)
-        layout = QVBoxLayout()
+        w = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout()
 
-        self.ctlObjType = QTabWidget(self)
+        self.ctlObjType = QtWidgets.QTabWidget(self)
 
         self.tabType = OtterObjectTypeTab(self, self.windowResult)
         self.tabType.modified.connect(self.setModified)
@@ -114,9 +113,9 @@ class OtterMainWindow(QMainWindow):
         w.setLayout(layout)
         self.setCentralWidget(w)
 
-        qapp = QApplication.instance()
+        qapp = QtWidgets.QApplication.instance()
         self.windowResult.setGeometry(
-            QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.windowResult.size(), qapp.desktop().availableGeometry()))
+            QtWidgets.QStyle.alignedRect(QtCore.Qt.LeftToRight, QtCore.Qt.AlignCenter, self.windowResult.size(), qapp.desktop().availableGeometry()))
         self.windowResult.show()
 
     def setModified(self):
@@ -156,7 +155,7 @@ class OtterMainWindow(QMainWindow):
 
     def onSaveInputFile(self):
         if self.file.fileName() == "":
-            file_name = QFileDialog.getSaveFileName(self, 'Save File')
+            file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
                 self.file.setFileName(file_name[0])
             else:
@@ -166,7 +165,7 @@ class OtterMainWindow(QMainWindow):
         self.setTitle()
 
     def onSaveInputFileAs(self):
-        file_name = QFileDialog.getSaveFileName(self, 'Save File As')
+        file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
         if file_name[0]:
             self.file.setFileName(file_name[0])
             self.saveIntoFile()
@@ -174,7 +173,7 @@ class OtterMainWindow(QMainWindow):
             self.setTitle()
 
     def onMinimize(self):
-        qapp = QApplication.instance()
+        qapp = QtWidgets.QApplication.instance()
         qapp.activeWindow().showMinimized()
 
     def onBringAllToFront(self):
@@ -195,13 +194,13 @@ class OtterMainWindow(QMainWindow):
         self.ctlObjType.setCurrentIndex(tab)
 
     def event(self, e):
-        if (e.type() == QEvent.WindowActivate):
+        if (e.type() == QtCore.QEvent.WindowActivate):
             self.updateMenuBar()
         return super(OtterMainWindow, self).event(e);
 
     def saveIntoFile(self):
-        if self.file.open(QFile.WriteOnly | QFile.Text):
-            out = QTextStream(self.file)
+        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
+            out = QtCore.QTextStream(self.file)
 
             out << "#!/usr/bin/env python2\n"
             out << "\n"

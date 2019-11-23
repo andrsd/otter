@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QFrame
-from PyQt5.QtCore import QEvent, pyqtSignal, pyqtSlot
+from PyQt5 import QtCore, QtWidgets
 import chigger
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -12,7 +11,7 @@ class RetinaQVTKRenderWindowInteractor(QVTKRenderWindowInteractor):
     http://public.kitware.com/pipermail/vtk-developers/2017-February/034738.html
 
     However, creating a custom resizeEvent method and wrapping the QVTKRenderWindowInteractor object
-    in a QFrame allowed it to work for now. The idea for this wrapping came from:
+    in a QtWidgets.QFrame allowed it to work for now. The idea for this wrapping came from:
         https://github.com/siudej/Eigenvalues/blob/master/qvtk.py
     """
     def resizeEvent(self, event):
@@ -35,15 +34,15 @@ class RetinaQVTKRenderWindowInteractor(QVTKRenderWindowInteractor):
         self.update()
 
 
-class OtterResultWindow(QMainWindow):
+class OtterResultWindow(QtWidgets.QMainWindow):
 
-    resized = pyqtSignal(int, int)
+    resized = QtCore.pyqtSignal(int, int)
 
     def __init__(self, parent = None):
         super(OtterResultWindow, self).__init__(parent)
 
-        self.frame = QFrame()
-        self.layout = QVBoxLayout()
+        self.frame = QtWidgets.QFrame()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         if VTK_MAJOR_VERSION < 8:
@@ -76,7 +75,7 @@ class OtterResultWindow(QMainWindow):
         self.chiggerWindow.append(chigger_object)
 
     def event(self, event):
-        if (event.type() == QEvent.WindowActivate):
+        if (event.type() == QtCore.QEvent.WindowActivate):
             self.parentWidget().updateMenuBar()
         return super(OtterResultWindow, self).event(event);
 

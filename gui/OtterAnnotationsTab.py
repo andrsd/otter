@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTreeView, QMenu
+from PyQt5 import QtWidgets
 from gui.OtterObjectsTab import OtterObjectsTab
-from otter import common
-from otter import annotations
+from otter import common, annotations
 import chigger
 
 class OtterAnnotationsTab(OtterObjectsTab):
@@ -51,8 +50,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         return "annotations"
 
     def buildAddButton(self):
-        btn = QPushButton("Add", self)
-        mnu = QMenu("Add", self)
+        btn = QtWidgets.QPushButton("Add", self)
+        mnu = QtWidgets.QMenu("Add", self)
         mnu.addAction("Text", lambda : self.onAdd(self.TEXT))
         mnu.addAction("Image", lambda : self.onAdd(self.IMAGE))
         mnu.addAction("Time", lambda : self.onAdd(self.TIME))

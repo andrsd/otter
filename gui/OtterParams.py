@@ -1,9 +1,6 @@
-from PyQt5.QtCore import Qt, QRegExp
-from PyQt5.QtWidgets import QComboBox, QLineEdit, QItemDelegate
-from PyQt5.QtGui import QValidator, QDoubleValidator, QIntValidator, QRegExpValidator
+from PyQt5 import QtCore, QtWidgets, QtGui
 
-
-class OtterParamDelegate(QItemDelegate):
+class OtterParamDelegate(QtWidgets.QItemDelegate):
     def __init__(self, parent):
         super(OtterParamDelegate, self).__init__(parent)
 
@@ -19,7 +16,7 @@ class OtterParamDelegate(QItemDelegate):
         model = index.model()
         data = model.itemFromIndex(index).data()
         if isinstance(data, OtterParamBase):
-            value = model.data(index, Qt.EditRole)
+            value = model.data(index, QtCore.Qt.EditRole)
             data.setEditorData(editor, value)
         else:
             return super(OtterParamDelegate, self).setEditorData(editor, index)
@@ -28,7 +25,7 @@ class OtterParamDelegate(QItemDelegate):
         data = model.itemFromIndex(index).data()
         if isinstance(data, OtterParamBase):
             value = data.setModelData(editor)
-            model.setData(index, value, Qt.EditRole)
+            model.setData(index, value, QtCore.Qt.EditRole)
         else:
             return super(OtterParamDelegate, self).setModelData(editor, model, index)
 
@@ -51,7 +48,7 @@ class OtterParamBase(object):
 
 class OtterParamOptions(OtterParamBase):
     """
-    Delegate for selecting options via QComboBox
+    Delegate for selecting options via QtWidgets.QComboBox
     """
 
     def __init__(self, options):
@@ -59,7 +56,7 @@ class OtterParamOptions(OtterParamBase):
         self.options = options
 
     def createEditor(self, parent):
-        editor = QComboBox(parent)
+        editor = QtWidgets.QComboBox(parent)
         for opt in self.options:
             editor.addItem(opt)
         return editor
@@ -83,24 +80,24 @@ class OtterParamLineEdit(OtterParamBase):
         self.limits = limits
 
     def createEditor(self, parent):
-        editor = QLineEdit(parent)
+        editor = QtWidgets.QLineEdit(parent)
         if self.limits != None:
             if self.type == 'int':
-                validator = QIntValidator()
+                validator = QtGui.QIntValidator()
                 if self.limits[0] != None:
                     validator.setBottom(self.limits[0])
                 if self.limits[1] != None:
                     validator.setTop(self.limits[1])
                 editor.setValidator(validator)
             elif self.type == 'float':
-                validator = QDoubleValidator()
+                validator = QtGui.QDoubleValidator()
                 if self.limits[0] != None:
                     validator.setBottom(self.limits[0])
                 if self.limits[1] != None:
                     validator.setTop(self.limits[1])
                 editor.setValidator(validator)
             elif self.type == 'str':
-                validator = QRegExpValidator(QRegExp(self.limits))
+                validator = QtGui.QRegExpValidator(QtCore.QRegExp(self.limits))
                 editor.setValidator(validator)
             else:
                 pass

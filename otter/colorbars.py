@@ -1,6 +1,5 @@
 import chigger
-from . import common
-from . import viewports
+from . import common, viewports
 
 class ColorBar(object):
     """
