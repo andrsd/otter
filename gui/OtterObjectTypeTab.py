@@ -310,9 +310,16 @@ class OtterObjectTypeTab(QtWidgets.QWidget):
         args = {}
         for idx in range(model.rowCount()):
             name = model.item(idx, 0).text()
-            value = model.item(idx, 1).text()
-            if value != "":
-                args[name] = self.toPython(value)
+            item1 = model.item(idx, 1)
+            if item1.isCheckable():
+                if item1.checkState() == QtCore.Qt.Checked:
+                    args[name] = True
+                else:
+                    args[name] = False
+            else:
+                value = item1.text()
+                if value != "":
+                    args[name] = self.toPython(value)
 
         return args
 
