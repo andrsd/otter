@@ -177,7 +177,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         qapp.activeWindow().showMinimized()
 
     def onBringAllToFront(self):
-        self.tabType.showChiggerWindow()
+        self.windowResult.showNormal()
         self.showNormal()
 
     def onShowMainWindow(self):
