@@ -157,20 +157,17 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         if self.file.fileName() == "":
             file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
-                self.file.setFileName(file_name[0])
+                self.saveToFile(file_name[0])
             else:
+                # what error state could this be?
                 return
-        self.saveIntoFile()
-        self.modified = False
-        self.setTitle()
+        else:
+            self.saveToFile(self.file.fileName())
 
     def onSaveInputFileAs(self):
         file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
         if file_name[0]:
-            self.file.setFileName(file_name[0])
-            self.saveIntoFile()
-            self.modified = False
-            self.setTitle()
+            self.saveToFile(file_name[0])
 
     def onMinimize(self):
         qapp = QtWidgets.QApplication.instance()
@@ -198,9 +195,10 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
         return super(OtterMainWindow, self).event(e);
 
-    def saveIntoFile(self):
-        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            out = QtCore.QTextStream(self.file)
+    def saveToFile(self, file_name):
+        file = QtCore.QFile(file_name)
+        if file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
+            out = QtCore.QTextStream(file)
 
             out << "#!/usr/bin/env python\n"
             out << "\n"
@@ -217,5 +215,14 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             out << "\n"
             out << self.tabType.toText()
 
-            self.file.flush()
-            self.file.close()
+            file.flush()
+            file.close()
+
+            self.file.setFileName(file_name)
+            self.modified = False
+            self.setTitle()
+        else:
+            mb = QtWidgets.QMessageBox.information(
+                self,
+                "Information",
+                "Failed to save '{}'.".format(file_name))
