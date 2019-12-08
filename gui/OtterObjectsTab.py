@@ -230,10 +230,17 @@ class OtterObjectsTab(QtWidgets.QWidget):
 
         args = {}
         for idx in range(parent.rowCount()):
-            name = parent.child(idx, 0).text()
-            value = parent.child(idx, 1).text()
-            if len(value) > 0:
-                args[name] = value
+            child0 = parent.child(idx, 0)
+            name = child0.text()
+
+            child1 = parent.child(idx, 1)
+            if child1 != None:
+                value = child1.text()
+                if len(value) > 0:
+                    args[name] = value
+            else:
+                argsGroup = self.argsGroup(child0)
+                args[name] = argsGroup
         return args
 
     def args(self):
@@ -266,6 +273,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
         s = ""
         if isinstance(value, str):
             s += "    " * level + "'{}': '{}',\n".format(name, value)
+        elif isinstance(value, dict):
+            s += "    " * level + "'{}':\n".format(name)
+            s += self.groupToText(value, level + 1)
         else:
             s += "    " * level + "'{}': {},\n".format(name, value)
         return s
