@@ -58,7 +58,7 @@ class OtterViewportsTab(OtterObjectsTab):
         { 'name': 'viewport', 'value': [0, 0, 1, 1], 'hint': 'The viewport', 'req': False },
     ]
 
-    PARAMS_PLOT_OVER_LINE = [
+    PARAMS_PLOT_OVER_TIME = [
         { 'name': 'file', 'value': '', 'hint': 'The file name of the CSV file', 'req': True },
         { 'name': 'variables', 'value': [], 'hint': 'The list of the variables', 'req': True },
         { 'name': 'legend', 'group': True, 'childs': PARAMS_LEGEND, 'hint': 'The legend' },
@@ -108,7 +108,7 @@ class OtterViewportsTab(OtterObjectsTab):
         elif type == self.RELAP7_RESULT:
             self.addRELAP7Result()
         elif type == self.PLOT_OVER_TIME:
-            self.addPlotOverLine()
+            self.addPlotOverTime()
         elif type == self.VPP_PLOT:
             self.addVPPPlot()
 
@@ -158,12 +158,12 @@ class OtterViewportsTab(OtterObjectsTab):
         params = self.itemParams(item)
         item.setText("[RELAP-7 result]")
 
-    def addPlotOverLine(self):
+    def addPlotOverTime(self):
         file_names = QtWidgets.QFileDialog.getOpenFileName(self, 'Select CSV File')
         if file_names[0]:
-            item = self.addGroup(self.PARAMS_PLOT_OVER_LINE, spanned = False)
+            item = self.addGroup(self.PARAMS_PLOT_OVER_TIME, spanned = False)
             params = self.itemParams(item)
-            item.setText("[plot over line]")
+            item.setText("[plot over time]")
 
             map = otter.viewports.ViewportPlotOverTime.MAP
             kwargs = common.remap(params, map)
