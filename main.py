@@ -41,12 +41,17 @@ def checkRequirements():
 Run the main application
 """
 def main(args):
+    global otter_dir
+
     checkRequirements()
     # these might not work until the path is set
-    from PyQt5 import QtWidgets
+    from PyQt5 import QtWidgets, QtGui
     from gui.OtterMainWindow import OtterMainWindow
 
     qapp = QtWidgets.QApplication(args)
+    icon_path = os.path.join(otter_dir, "icons", "otter.png")
+    qapp.setWindowIcon(QtGui.QIcon(icon_path))
+
     main_win = OtterMainWindow()
     main_win.show()
 
@@ -57,6 +62,8 @@ def main(args):
 Run otter GUI
 """
 def run_otter():
+    global otter_dir
+
     otter_dir = os.path.dirname(os.path.realpath(__file__))
     moose_dir = os.environ.get("MOOSE_DIR", None)
     if moose_dir == None:
