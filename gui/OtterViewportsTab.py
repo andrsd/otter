@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtWidgets
 from gui.OtterObjectsTab import OtterObjectsTab
 from otter import common, config
 import chigger
+import otter
 
 class OtterViewportsTab(OtterObjectsTab):
 
