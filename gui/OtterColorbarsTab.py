@@ -32,6 +32,7 @@ class OtterColorbarsTab(OtterObjectsTab):
 
     def __init__(self, parent, chigger_window):
         super(OtterColorbarsTab, self).__init__(parent, chigger_window)
+        self._text_to_type = {}
         self.mainWindow = parent
         self.updateControls()
 

@@ -79,6 +79,13 @@ class OtterViewportsTab(OtterObjectsTab):
 
     def __init__(self, parent, chigger_window):
         super(OtterViewportsTab, self).__init__(parent, chigger_window)
+        self._text_to_type = {
+            '[exodus]': 'ExodusResult',
+            '[RELAP-7 result]': 'RELAP7Result',
+            '[vpp plot]': 'VPPPlot',
+            '[plot over time]': 'PlotOverTime'
+        }
+
         self.num_results = 0
         self.exodusResults = {}
 

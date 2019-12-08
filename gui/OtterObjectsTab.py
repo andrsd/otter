@@ -54,6 +54,12 @@ class OtterObjectsTab(QtWidgets.QWidget):
         """
         return False
 
+    def itemText2Type(self, text):
+        if text in self._text_to_type:
+            return self._text_to_type[text]
+        else:
+            return None
+
     def childItem(self, parent, name):
         for row in range(parent.rowCount()):
             child = parent.child(row)
@@ -241,6 +247,11 @@ class OtterObjectsTab(QtWidgets.QWidget):
             else:
                 argsGroup = self.argsGroup(child0)
                 args[name] = argsGroup
+
+        type = self.itemText2Type(parent.text())
+        if type != None:
+            args['type'] = type
+
         return args
 
     def args(self):
@@ -252,7 +263,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         for idx in range(self.model.rowCount()):
             parent = self.model.item(idx, 0)
             if parent.hasChildren():
-                argsGroup  = self.argsGroup(parent)
+                argsGroup = self.argsGroup(parent)
                 if self.needsName():
                     parent_name = self.model.item(idx, 1).text()
                     argsGroup['name'] = parent_name
