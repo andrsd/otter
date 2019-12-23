@@ -5,6 +5,7 @@ from gui.OtterObjectTypeTab import OtterObjectTypeTab
 from gui.OtterViewportsTab import OtterViewportsTab
 from gui.OtterColorbarsTab import OtterColorbarsTab
 from gui.OtterAnnotationsTab import OtterAnnotationsTab
+from gui.OtterAboutDialog import OtterAboutDialog
 from otter import config
 
 class OtterMainWindow(QtWidgets.QMainWindow):
@@ -15,6 +16,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self.modified = False
         self.windowResult = None
         self.ctlObjType = None
+        self._about_dlg = None
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -29,6 +31,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         fileMenu.addSeparator()
         self._save_action = fileMenu.addAction("Save", self.onSaveInputFile, "Ctrl+S")
         self._save_as_action = fileMenu.addAction("Save As", self.onSaveInputFileAs, "Ctrl+Shift+S")
+        self._about_box_action = fileMenu.addAction("About", self.onAboutApplication)
 
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
         viewMenu = menubar.addMenu("View" + '\u200C')
@@ -189,6 +192,11 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
     def onActivateTab(self, tab):
         self.ctlObjType.setCurrentIndex(tab)
+
+    def onAboutApplication(self):
+        if self._about_dlg == None:
+            self._about_dlg = OtterAboutDialog(self)
+        self._about_dlg.show()
 
     def event(self, e):
         if (e.type() == QtCore.QEvent.WindowActivate):
