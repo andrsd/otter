@@ -278,3 +278,24 @@ class OtterMainWindow(QtWidgets.QMainWindow):
                 self,
                 "Information",
                 "Failed to open '{}'.".format(file_name))
+
+    def closeEvent(self, event):
+        if self.modified:
+            res = QtWidgets.QMessageBox.question(self,
+                "Unsaved changes",
+                "You have unsaved changes. Save?",
+                QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes,
+                QtWidgets.QMessageBox.Yes)
+            if res == QtWidgets.QMessageBox.Yes:
+                self.onSaveInputFile()
+                self.modified = False
+                event.accept()
+                QtWidgets.QApplication.quit()
+            elif res == QtWidgets.QMessageBox.No:
+                event.accept()
+                QtWidgets.QApplication.quit()
+            elif res == QtWidgets.QMessageBox.Cancel:
+                event.ignore()
+        else:
+            event.accept()
+            QtWidgets.QApplication.quit()
