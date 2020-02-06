@@ -3,7 +3,7 @@ import sys
 import importlib
 from PyQt5 import QtWidgets, QtCore
 from gui.OtterResultWindow import OtterResultWindow
-from gui.OtterObjectTypeTab import OtterObjectTypeTab
+from gui.OtterMediaTab import OtterMediaTab
 from gui.OtterViewportsTab import OtterViewportsTab
 from gui.OtterColorbarsTab import OtterColorbarsTab
 from gui.OtterAnnotationsTab import OtterAnnotationsTab
@@ -37,8 +37,8 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
         viewMenu = menubar.addMenu("View" + '\u200C')
-        self._type_tab_action = viewMenu.addAction("Type", lambda: self.onActivateTab(0), "Ctrl+1")
-        self._type_tab_action.setCheckable(True)
+        self._media_tab_action = viewMenu.addAction("Media", lambda: self.onActivateTab(0), "Ctrl+1")
+        self._media_tab_action.setCheckable(True)
         self._viewports_tab_action = viewMenu.addAction("Viewports", lambda: self.onActivateTab(1), "Ctrl+2")
         self._viewports_tab_action.setCheckable(True)
         self._colorbars_tab_action = viewMenu.addAction("Color bars", lambda: self.onActivateTab(2), "Ctrl+3")
@@ -47,7 +47,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self._annotations_tab_action.setCheckable(True)
 
         self._tab_group_windows = QtWidgets.QActionGroup(self)
-        self._tab_group_windows.addAction(self._type_tab_action)
+        self._tab_group_windows.addAction(self._media_tab_action)
         self._tab_group_windows.addAction(self._viewports_tab_action)
         self._tab_group_windows.addAction(self._colorbars_tab_action)
         self._tab_group_windows.addAction(self._annotations_tab_action)
@@ -76,7 +76,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
         if self.ctlObjType != None:
             tabs = [
-                self._type_tab_action,
+                self._media_tab_action,
                 self._viewports_tab_action,
                 self._colorbars_tab_action,
                 self._annotations_tab_action
@@ -92,11 +92,11 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
         self.ctlObjType = QtWidgets.QTabWidget(self)
 
-        self.tabType = OtterObjectTypeTab(self, self.windowResult)
-        self.tabType.modified.connect(self.setModified)
-        self.tabType.timeChanged.connect(self.onTimeChanged)
-        self.tabType.timeUnitChanged.connect(self.onTimeUnitChanged)
-        self.ctlObjType.addTab(self.tabType, "Type")
+        self.tabMedia = OtterMediaTab(self, self.windowResult)
+        self.tabMedia.modified.connect(self.setModified)
+        self.tabMedia.timeChanged.connect(self.onTimeChanged)
+        self.tabMedia.timeUnitChanged.connect(self.onTimeUnitChanged)
+        self.ctlObjType.addTab(self.tabMedia, "Media")
 
         self.tabViewports = OtterViewportsTab(self, self.windowResult)
         self.tabViewports.modified.connect(self.setModified)
@@ -227,7 +227,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             out << "\n"
             out << self.tabAnnotations.toText()
             out << "\n"
-            out << self.tabType.toText()
+            out << self.tabMedia.toText()
 
             file.flush()
             file.close()
@@ -253,11 +253,11 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             sys.path.remove(dir)
 
             if hasattr(temp, 'movie'):
-                self.tabType.selectObjectType("Movie")
-                self.tabType.setObjectParams(temp.movie)
+                self.tabMedia.selectObjectType("Movie")
+                self.tabMedia.setObjectParams(temp.movie)
             elif hasattr(temp, 'image') != None:
-                self.tabType.selectObjectType("Image")
-                self.tabType.setObjectParams(temp.image)
+                self.tabMedia.selectObjectType("Image")
+                self.tabMedia.setObjectParams(temp.image)
             else:
                 mb = QtWidgets.QMessageBox.information(
                     self,

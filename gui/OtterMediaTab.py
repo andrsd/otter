@@ -3,7 +3,7 @@ from gui.OtterParams import *
 from otter import common
 import re
 
-class OtterObjectTypeTab(QtWidgets.QWidget):
+class OtterMediaTab(QtWidgets.QWidget):
 
     modified = QtCore.pyqtSignal()
     # When user changed the time parameter (arg: the new time)
@@ -111,7 +111,7 @@ class OtterObjectTypeTab(QtWidgets.QWidget):
     IDX_MOVIE = 1
 
     def __init__(self, parent, resultWindow):
-        super(OtterObjectTypeTab, self).__init__(parent)
+        super(OtterMediaTab, self).__init__(parent)
         self.windowResult = resultWindow
         self.windowResult.resized.connect(self.onWindowResized)
 
