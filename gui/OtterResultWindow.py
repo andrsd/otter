@@ -86,6 +86,9 @@ class OtterResultWindow(QtWidgets.QMainWindow):
         if chigger_object in self.chigger_window._results:
             self.chigger_window._results.remove(chigger_object)
 
+    def write(self, file_name):
+        self.chigger_window.write(file_name)
+
     def event(self, event):
         if (event.type() == QtCore.QEvent.WindowActivate):
             self.parentWidget().updateMenuBar()

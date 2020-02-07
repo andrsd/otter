@@ -2,6 +2,9 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
 from otter import common
 import re
+import os
+import tempfile
+import chigger
 
 class OtterMediaTab(QtWidgets.QWidget):
 
@@ -77,13 +80,13 @@ class OtterMediaTab(QtWidgets.QWidget):
             'name': 'frame',
             'value': 'frame_*.png',
             'hint': 'The file name pattern of the rendered frames',
-            'req': True
+            'req': False
         },
         {
             'name': 'location',
             'value': '',
             'hint': 'The location where the images for the movie will be rendered',
-            'req': True
+            'req': False
         },
         {
             'name': 'size',
@@ -245,6 +248,7 @@ class OtterMediaTab(QtWidgets.QWidget):
             else:
                 param = self.toPython(value)
             self.WindowResult.setParam(name, param)
+        self.modified.emit()
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')
@@ -291,6 +295,78 @@ class OtterMediaTab(QtWidgets.QWidget):
                     item1.setCheckState(QtCore.Qt.Unchecked)
             else:
                 item1.setText(str(value))
+
+    def render(self):
+        idx = self.Type.currentIndex()
+        if idx == self.IDX_IMAGE:
+            self.renderImage()
+        elif idx == self.IDX_MOVIE:
+            self.renderMovie()
+
+    def renderImage(self):
+        output_file = self.args()['output']
+        self.WindowResult.write(output_file)
+        mb = QtWidgets.QMessageBox.information(
+            self,
+            "Information",
+            "Image saved to '{}'.".format(output_file))
+
+    def renderMovie(self):
+        args = self.args()
+
+        if 'location' in args:
+            location = args['location']
+            cleanup_dir = False
+        else:
+            location = tempfile.mkdtemp()
+            cleanup_dir = True
+
+        if 'frame' in args:
+            frame = args['frame']
+            if frame.find('*') != -1:
+                filename = frame.replace("*", "{:04d}")
+            else:
+                mb = QtWidgets.QMessageBox.critical(
+                    self,
+                    "Error",
+                    "The 'frame' parameter needs to contain '*'.")
+                return
+        else:
+            filename = "{}{{:06d}}.png".format(tempfile.gettempprefix())
+
+        chigger_objects = self.getChiggerObjects()
+        # FIXME: set times properly
+        times = range(100)
+
+        total = len(times)
+        progress = QtWidgets.QProgressDialog("", "Abort", 0, total + 1, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setLabelText("Rendering frames...")
+        for i, t in enumerate(times):
+            progress.setValue(i)
+            if progress.wasCanceled():
+                break
+
+            for obj in chigger_objects:
+                obj.update(t)
+            self.WindowResult.write("{}/{}".format(location, filename).format(i))
+
+        if not progress.wasCanceled():
+            progress.setValue(total)
+
+            progress.setLabelText("Rendering movie...")
+            chigger.utils.img2mov(
+                '{}/{}'.format(location, frame),
+                args['file'],
+                duration = float(args['duration']),
+                num_threads = 2,
+                overwrite = True)
+            progress.setValue(total + 1)
+
+        if cleanup_dir:
+            for f in os.listdir(location):
+                os.remove(os.path.join(location, f))
+            os.removedirs(location)
 
 
     def toPython(self, value):

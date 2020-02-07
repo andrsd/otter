@@ -33,6 +33,9 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         fileMenu.addSeparator()
         self._save_action = fileMenu.addAction("Save", self.onSaveInputFile, "Ctrl+S")
         self._save_as_action = fileMenu.addAction("Save As", self.onSaveInputFileAs, "Ctrl+Shift+S")
+        fileMenu.addSeparator()
+        self._render_action = fileMenu.addAction("Render", self.onRender, "Ctrl+Shift+R")
+        fileMenu.addSeparator()
         self._about_box_action = fileMenu.addAction("About", self.onAboutApplication)
 
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
@@ -84,6 +87,15 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             idx = self.ObjectType.currentIndex()
             tabs[idx].setChecked(True)
 
+        if self.MediaTab != None:
+            idx = self.MediaTab.ctlType.currentIndex()
+            if idx == OtterMediaTab.IDX_IMAGE:
+                args = self.MediaTab.args()
+                self._render_action.setEnabled('output' in args)
+            elif idx == OtterMediaTab.IDX_MOVIE:
+                args = self.MediaTab.args()
+                self._render_action.setEnabled('file' in args)
+
     def setupWidgets(self):
         self.WindowResult = OtterResultWindow(self)
 
@@ -126,6 +138,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
     def setModified(self):
         self.modified = True
         self.setTitle()
+        self.updateMenuBar()
 
     def onTimeChanged(self, time):
         self.ViewportsTab.onTimeChanged(time)
@@ -148,6 +161,13 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
     def exodusResults(self):
         return self.ViewportsTab.exodusResults;
+
+    def getChiggerObjects(self):
+        objects = []
+        objects.extend(self.tabViewports.getChiggerObjects())
+        objects.extend(self.tabColorBars.getChiggerObjects())
+        objects.extend(self.tabAnnotations.getChiggerObjects())
+        return objects
 
     def setTitle(self):
         self.setWindowTitle(self.title())
@@ -299,3 +319,6 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         else:
             event.accept()
             QtWidgets.QApplication.quit()
+
+    def onRender(self):
+        self.MediaTab.render()

@@ -294,6 +294,16 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 elif value != None:
                     item1.setText(str(value))
 
+    def getChiggerObjects(self):
+        objects = []
+
+        for row in range(self.Model.rowCount()):
+            item = self.Model.item(row, 0)
+            (obj, map) = item.data()
+            objects.append(obj)
+
+        return objects
+
     def argsGroup(self, parent):
         """
         Build python dictionary for an otter object
