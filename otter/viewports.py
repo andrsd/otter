@@ -264,7 +264,7 @@ class ViewportPlotOverTime(Viewport):
         self.csv = mooseutils.PostprocessorReader(viewport['file'])
 
         # remap global time to local time (i.e this plot's time)
-        data_x = self.csv('time').tolist()
+        data_x = self.csv['time'].tolist()
         if common.times is None:
             self.times = [i * common.time_unit for i in data_x]
         else:
@@ -285,7 +285,7 @@ class ViewportPlotOverTime(Viewport):
                 scale = 1.
 
             var_name = var.pop('name')
-            data_y = self.csv(var_name).multiply(scale).tolist()
+            data_y = self.csv[var_name].multiply(scale).tolist()
 
             if common.times is None:
                 vals = data_y
