@@ -31,7 +31,7 @@ class OtterAboutDialog(QtWidgets.QDialog):
             "\n"
             "Application icon by partimonio design\n"
             "\n"
-            "(c) 2019 David Andrs. All rights reserved.".format(otter.VERSION)
+            "{}".format(otter.VERSION, otter.COPYRIGHT)
         )
         font = self.lblText.font()
         font.setPointSize(int(0.9 * font.pointSize()))
