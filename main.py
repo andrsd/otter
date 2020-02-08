@@ -66,7 +66,7 @@ def main(argv):
     args = parser.parse_args()
 
     qapp = QtWidgets.QApplication(argv)
-    icon_path = os.path.join(otter_dir, "icons", "otter.png")
+    icon_path = os.path.join(otter_dir, "otter.png")
     qapp.setWindowIcon(QtGui.QIcon(icon_path))
 
     main_win = OtterMainWindow()
