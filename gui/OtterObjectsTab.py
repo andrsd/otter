@@ -27,11 +27,19 @@ class OtterObjectsTab(QtWidgets.QWidget):
         super(OtterObjectsTab, self).__init__(parent)
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 3)
+        layout.setContentsMargins(6, 3, 6, 0)
+        layout.setSpacing(0)
         self.setLayout(layout)
 
+        self.ButtonLayout = QtWidgets.QHBoxLayout()
+        self.ButtonLayout.setContentsMargins(0, 0, 0, 0)
+        self.ButtonLayout.setSpacing(0)
+
         btn = self.buildAddButton()
-        layout.addWidget(btn)
+        self.ButtonLayout.addWidget(btn)
+
+        self.ButtonLayout.addSpacing(2)
+
 
         self.model = QtGui.QStandardItemModel(0, 2, self)
         self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
@@ -44,6 +52,8 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ctlObjects.setItemDelegate(OtterParamDelegate(self.ctlObjects))
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         layout.addWidget(self.ctlObjects)
+
+        layout.addLayout(self.ButtonLayout)
 
         self.windowResult = resultWindow
 

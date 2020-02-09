@@ -55,12 +55,13 @@ class OtterAnnotationsTab(OtterObjectsTab):
         return "annotations"
 
     def buildAddButton(self):
-        btn = QtWidgets.QPushButton("Add", self)
+        btn = QtWidgets.QPushButton("   +", self)
         mnu = QtWidgets.QMenu("Add", self)
         mnu.addAction("Text", lambda : self.onAdd(self.TEXT))
         mnu.addAction("Image", lambda : self.onAdd(self.IMAGE))
         mnu.addAction("Time", lambda : self.onAdd(self.TIME))
         btn.setMenu(mnu)
+        btn.setStyleSheet("::menu-indicator{ image: none; }")
         return btn
 
     def addObject(self, params):

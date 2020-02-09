@@ -99,7 +99,7 @@ class OtterViewportsTab(OtterObjectsTab):
         return True
 
     def buildAddButton(self):
-        btn = QtWidgets.QPushButton("Add", self)
+        btn = QtWidgets.QPushButton("   +", self)
         mnu = QtWidgets.QMenu("Add", self)
         mnu.addAction("Exodus result", lambda : self.onAdd(self.EXODUS))
         if config.HAVE_RELAP7:
@@ -107,6 +107,7 @@ class OtterViewportsTab(OtterObjectsTab):
         mnu.addAction("Plot over time", lambda : self.onAdd(self.PLOT_OVER_TIME))
         mnu.addAction("VPP Plot", lambda : self.onAdd(self.VPP_PLOT))
         btn.setMenu(mnu)
+        btn.setStyleSheet("::menu-indicator{ image: none; }")
         return btn
 
     def addObject(self, params):

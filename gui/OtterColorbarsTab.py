@@ -43,10 +43,11 @@ class OtterColorbarsTab(OtterObjectsTab):
         return "colorbars"
 
     def buildAddButton(self):
-        self.btnAdd = QtWidgets.QPushButton("Add", self)
+        self.btnAdd = QtWidgets.QPushButton("   +", self)
         self.mnuAdd = QtWidgets.QMenu("Add", self)
         self.mnuAdd.aboutToShow.connect(self.onAddMenuAboutToShow)
         self.btnAdd.setMenu(self.mnuAdd)
+        self.btnAdd.setStyleSheet("::menu-indicator{ image: none; }")
         return self.btnAdd
 
     def onAddMenuAboutToShow(self):
