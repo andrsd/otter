@@ -36,10 +36,20 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ButtonLayout.setSpacing(0)
 
         btn = self.buildAddButton()
+        btn.setMaximumWidth(62)
         self.ButtonLayout.addWidget(btn)
 
         self.ButtonLayout.addSpacing(2)
 
+        self.RemoveButton = QtWidgets.QPushButton("\u2212")
+        self.RemoveButton.setMaximumWidth(62)
+        self.RemoveButton.clicked.connect(self.onRemove)
+
+        self.RemoveShortcut = QtWidgets.QShortcut("Ctrl+Backspace", self)
+        self.RemoveShortcut.activated.connect(self.onRemove)
+
+        self.ButtonLayout.addWidget(self.RemoveButton)
+        self.ButtonLayout.addStretch()
 
         self.model = QtGui.QStandardItemModel(0, 2, self)
         self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
@@ -51,6 +61,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ctlObjects.setRootIsDecorated(False)
         self.ctlObjects.setItemDelegate(OtterParamDelegate(self.ctlObjects))
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
+        self.ctlObjects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
         layout.addWidget(self.ctlObjects)
 
         layout.addLayout(self.ButtonLayout)
@@ -90,6 +101,26 @@ class OtterObjectsTab(QtWidgets.QWidget):
             if item['name'] == group_name and item['group'] == True:
                 self.setInputParam(item['childs'], key, value, **kwargs)
                 return
+
+    def onRemove(self):
+        index = self.ctlObjects.currentIndex()
+        row = index.row()
+        item = self.model.item(row, 0)
+        (obj, map) = item.data()
+        self.model.removeRow(row)
+        self.windowResult.remove(obj)
+        self.windowResult.update()
+        self.modified.emit()
+
+    def onObjectSelectionChanged(self, selected, deselected):
+        index = self.ctlObjects.currentIndex()
+        parent = self.model.itemFromIndex(index.parent())
+        if parent == None:
+            self.RemoveButton.setEnabled(True)
+            self.RemoveShortcut.setEnabled(True)
+        else:
+            self.RemoveButton.setEnabled(False)
+            self.RemoveShortcut.setEnabled(False)
 
     def onItemChanged(self, item):
         parent = item.parent()

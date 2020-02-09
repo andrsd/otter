@@ -49,11 +49,12 @@ class OtterResultWindow(QtWidgets.QMainWindow):
             self.vtkWidget = RetinaQVTKRenderWindowInteractor(self.frame)
         else:
             self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
+        self.vtkWindow = self.vtkWidget.GetRenderWindow()
         self.layout.addWidget(self.vtkWidget)
 
         args = {}
         args['vtkinteractor'] = self.vtkWidget
-        args['vtkwindow'] = self.vtkWidget.GetRenderWindow()
+        args['vtkwindow'] = self.vtkWindow
         args['layer'] = 0
         self.chiggerWindow = chigger.RenderWindow(*[], **args)
 
@@ -73,6 +74,17 @@ class OtterResultWindow(QtWidgets.QMainWindow):
 
     def append(self, chigger_object):
         self.chiggerWindow.append(chigger_object)
+
+    def remove(self, chigger_object):
+        # NOTE: cannot use RenderWindow.remove(), becuase it handles only results
+        self.chiggerWindow.setNeedsUpdate(True)
+        vtk_renderer = chigger_object._vtkrenderer
+        vtk_actor = chigger_object._vtkactor
+        vtk_renderer.RemoveActor(vtk_actor)
+        if self.vtkWindow.HasRenderer(vtk_renderer):
+            self.vtkWindow.RemoveRenderer(vtk_renderer)
+        if chigger_object in self.chiggerWindow._results:
+            self.chiggerWindow._results.remove(chigger_object)
 
     def event(self, event):
         if (event.type() == QtCore.QEvent.WindowActivate):
