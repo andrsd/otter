@@ -51,23 +51,23 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ButtonLayout.addWidget(self.RemoveButton)
         self.ButtonLayout.addStretch()
 
-        self.model = QtGui.QStandardItemModel(0, 2, self)
-        self.model.setHorizontalHeaderLabels(["Parameter", "Value"])
-        self.model.itemChanged.connect(self.onItemChanged)
+        self.Model = QtGui.QStandardItemModel(0, 2, self)
+        self.Model.setHorizontalHeaderLabels(["Parameter", "Value"])
+        self.Model.itemChanged.connect(self.onItemChanged)
 
-        self.ctlObjects = QtWidgets.QTreeView(self)
-        self.ctlObjects.setModel(self.model)
-        self.ctlObjects.header().resizeSection(0, 140)
-        self.ctlObjects.setRootIsDecorated(False)
-        self.ctlObjects.setItemDelegate(OtterParamDelegate(self.ctlObjects))
-        self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
-        self.ctlObjects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
-        self.ctlObjects.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
-        layout.addWidget(self.ctlObjects)
+        self.Objects = QtWidgets.QTreeView(self)
+        self.Objects.setModel(self.Model)
+        self.Objects.header().resizeSection(0, 140)
+        self.Objects.setRootIsDecorated(False)
+        self.Objects.setItemDelegate(OtterParamDelegate(self.Objects))
+        self.Objects.setIndentation(OtterObjectsTab.INDENT)
+        self.Objects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
+        self.Objects.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
+        layout.addWidget(self.Objects)
 
         layout.addLayout(self.ButtonLayout)
 
-        self.windowResult = resultWindow
+        self.WindowResult = resultWindow
 
     def needsName(self):
         """
@@ -104,18 +104,18 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 return
 
     def onRemove(self):
-        index = self.ctlObjects.currentIndex()
+        index = self.Objects.currentIndex()
         row = index.row()
-        item = self.model.item(row, 0)
+        item = self.Model.item(row, 0)
         (obj, map) = item.data()
-        self.model.removeRow(row)
-        self.windowResult.remove(obj)
-        self.windowResult.update()
+        self.Model.removeRow(row)
+        self.WindowResult.remove(obj)
+        self.WindowResult.update()
         self.modified.emit()
 
     def onObjectSelectionChanged(self, selected, deselected):
-        index = self.ctlObjects.currentIndex()
-        parent = self.model.itemFromIndex(index.parent())
+        index = self.Objects.currentIndex()
+        parent = self.Model.itemFromIndex(index.parent())
         if parent == None:
             self.RemoveButton.setEnabled(True)
             self.RemoveShortcut.setEnabled(True)
@@ -157,7 +157,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
                     for key, val in list(kwargs.items()):
                         if chigger_object.getOptions().hasOption(key):
                             chigger_object.update(**{key: val})
-                self.windowResult.update()
+                self.WindowResult.update()
 
             self.modified.emit()
 
@@ -172,21 +172,21 @@ class OtterObjectsTab(QtWidgets.QWidget):
         return params
 
     def addGroup(self, params, spanned = True, name = ''):
-        idx = self.model.rowCount()
+        idx = self.Model.rowCount()
         si = QtGui.QStandardItem()
         si.setEditable(False)
         # FIXME: use color from the GUI color scheme
         brush = QtGui.QBrush(QtGui.QColor(192, 192, 192))
         si.setBackground(brush)
-        self.model.setItem(idx, si)
+        self.Model.setItem(idx, si)
         if spanned:
-            self.ctlObjects.setFirstColumnSpanned(idx, QtCore.QModelIndex(), spanned)
+            self.Objects.setFirstColumnSpanned(idx, QtCore.QModelIndex(), spanned)
         else:
             si.setText("name")
             si2 = QtGui.QStandardItem(name)
             si2.setEditable(True)
             si2.setBackground(brush)
-            self.model.setItem(idx, 1, si2)
+            self.Model.setItem(idx, 1, si2)
 
         for i, item in enumerate(params):
             if 'group' in item and item['group']:
@@ -199,11 +199,11 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
 
-                self.ctlObjects.setFirstColumnSpanned(i, si.index(), True)
+                self.Objects.setFirstColumnSpanned(i, si.index(), True)
             else:
                 self.buildChildParam(i, si, item)
 
-        self.ctlObjects.expand(si.index())
+        self.Objects.expand(si.index())
         self.modified.emit()
         return si
 
@@ -328,12 +328,12 @@ class OtterObjectsTab(QtWidgets.QWidget):
         """
 
         args = []
-        for idx in range(self.model.rowCount()):
-            parent = self.model.item(idx, 0)
+        for idx in range(self.Model.rowCount()):
+            parent = self.Model.item(idx, 0)
             if parent.hasChildren():
                 argsGroup = self.argsGroup(parent)
                 if self.needsName():
-                    parent_name = self.model.item(idx, 1).text()
+                    parent_name = self.Model.item(idx, 1).text()
                     argsGroup['name'] = parent_name
                 args.append(argsGroup)
 

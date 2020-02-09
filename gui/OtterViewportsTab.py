@@ -171,8 +171,8 @@ class OtterViewportsTab(OtterObjectsTab):
         self.exodusResults[item.row()] = { 'name' : exodus_result_name, 'result' : exodus_result }
 
         item.setData((exodus_result, map))
-        self.windowResult.append(exodus_result)
-        self.windowResult.update()
+        self.WindowResult.append(exodus_result)
+        self.WindowResult.update()
 
         self.resultAdded.emit()
 
@@ -205,8 +205,8 @@ class OtterViewportsTab(OtterObjectsTab):
         item_legend = self.childItem(item, 'legend')
         item_legend.setData((None, common.LEGEND_MAP))
 
-        self.windowResult.append(graph)
-        self.windowResult.update()
+        self.WindowResult.append(graph)
+        self.WindowResult.update()
 
         self.resultAdded.emit()
 
@@ -220,8 +220,8 @@ class OtterViewportsTab(OtterObjectsTab):
 
     def onTimeChanged(self, time):
         # update time in exodus-based results
-        for row in range(self.model.rowCount()):
-            item = self.model.item(row, 0)
+        for row in range(self.Model.rowCount()):
+            item = self.Model.item(row, 0)
             if item.text() in ['[exodus]', '[RELAP-7 result]']:
                 exo, map = item.data()
                 exo[0].getExodusReader().update(time = time, timestep = None)

@@ -33,7 +33,7 @@ class OtterColorbarsTab(OtterObjectsTab):
     def __init__(self, parent, chigger_window):
         super(OtterColorbarsTab, self).__init__(parent, chigger_window)
         self._text_to_type = {}
-        self.mainWindow = parent
+        self.MainWindow = parent
         self.updateControls()
 
     def name(self):
@@ -43,32 +43,32 @@ class OtterColorbarsTab(OtterObjectsTab):
         return "colorbars"
 
     def buildAddButton(self):
-        self.btnAdd = QtWidgets.QPushButton("   +", self)
-        self.mnuAdd = QtWidgets.QMenu("Add", self)
-        self.mnuAdd.aboutToShow.connect(self.onAddMenuAboutToShow)
-        self.btnAdd.setMenu(self.mnuAdd)
-        self.btnAdd.setStyleSheet("::menu-indicator{ image: none; }")
-        return self.btnAdd
+        self.AddButton = QtWidgets.QPushButton("   +", self)
+        self.AddMenu = QtWidgets.QMenu("Add", self)
+        self.AddMenu.aboutToShow.connect(self.onAddMenuAboutToShow)
+        self.AddButton.setMenu(self.AddMenu)
+        self.AddButton.setStyleSheet("::menu-indicator{ image: none; }")
+        return self.AddButton
 
     def onAddMenuAboutToShow(self):
-        self.mnuAdd.clear()
-        ers = self.mainWindow.exodusResults()
+        self.AddMenu.clear()
+        ers = self.MainWindow.exodusResults()
         for i, er in ers.items():
-            self.mnuAdd.addAction(er['name'], lambda : self.onAdd(i))
+            self.AddMenu.addAction(er['name'], lambda : self.onAdd(i))
 
     def onResultAdded(self):
         self.updateControls()
 
     def addObject(self, params):
         ex_result_name = params['axis1']['result']
-        for idx, ex_result in self.mainWindow.exodusResults().items():
+        for idx, ex_result in self.MainWindow.exodusResults().items():
             if ex_result['name'] == ex_result_name:
                 obj_item = self.onAdd(idx)
                 self.setObjectParams(obj_item, params)
                 break
 
     def onAdd(self, idx):
-        ex_result = self.mainWindow.exodusResults()[idx]
+        ex_result = self.MainWindow.exodusResults()[idx]
 
         input_params = self.PARAMS
         self.setGroupInputParam(input_params, 'axis1', 'result', ex_result['name'])
@@ -95,13 +95,13 @@ class OtterColorbarsTab(OtterObjectsTab):
         axis1_item.setData((None, common.AXIS_MAP))
         axis2_item.setData((None, common.AXIS_MAP))
 
-        self.windowResult.append(cbar)
-        self.windowResult.update()
+        self.WindowResult.append(cbar)
+        self.WindowResult.update()
 
         return item
 
     def updateControls(self):
-        if len(list(self.mainWindow.exodusResults().keys())) > 0:
-            self.btnAdd.setEnabled(True)
+        if len(list(self.MainWindow.exodusResults().keys())) > 0:
+            self.AddButton.setEnabled(True)
         else:
-            self.btnAdd.setEnabled(False)
+            self.AddButton.setEnabled(False)
