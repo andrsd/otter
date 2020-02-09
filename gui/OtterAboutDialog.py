@@ -8,23 +8,23 @@ class OtterAboutDialog(QtWidgets.QDialog):
         self.setWindowFlag(QtCore.Qt.CustomizeWindowHint, True)
         self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, False)
 
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.addSpacing(8)
+        self.Layout = QtWidgets.QVBoxLayout()
+        self.Layout.addSpacing(8)
 
         icon = QtWidgets.QApplication.windowIcon()
-        self.lblIcon = QtWidgets.QLabel()
-        self.lblIcon.setPixmap(icon.pixmap(64, 64))
-        self.layout.addWidget(self.lblIcon, 0, QtCore.Qt.AlignHCenter)
+        self.Icon = QtWidgets.QLabel()
+        self.Icon.setPixmap(icon.pixmap(64, 64))
+        self.Layout.addWidget(self.Icon, 0, QtCore.Qt.AlignHCenter)
 
-        self.lblTitle = QtWidgets.QLabel("Otter")
-        font = self.lblTitle.font()
+        self.Title = QtWidgets.QLabel("Otter")
+        font = self.Title.font()
         font.setBold(True)
         font.setPointSize(int(1.2 * font.pointSize()))
-        self.lblTitle.setFont(font)
-        self.lblTitle.setAlignment(QtCore.Qt.AlignHCenter)
-        self.layout.addWidget(self.lblTitle)
+        self.Title.setFont(font)
+        self.Title.setAlignment(QtCore.Qt.AlignHCenter)
+        self.Layout.addWidget(self.Title)
 
-        self.lblText = QtWidgets.QLabel(
+        self.Text = QtWidgets.QLabel(
             "Version {}\n"
             "\n"
             "Powered by chigger\n"
@@ -33,10 +33,10 @@ class OtterAboutDialog(QtWidgets.QDialog):
             "\n"
             "{}".format(otter.VERSION, otter.COPYRIGHT)
         )
-        font = self.lblText.font()
+        font = self.Text.font()
         font.setPointSize(int(0.9 * font.pointSize()))
-        self.lblText.setFont(font)
-        self.lblText.setAlignment(QtCore.Qt.AlignHCenter)
-        self.layout.addWidget(self.lblText)
+        self.Text.setFont(font)
+        self.Text.setAlignment(QtCore.Qt.AlignHCenter)
+        self.Layout.addWidget(self.Text)
 
-        self.setLayout(self.layout)
+        self.setLayout(self.Layout)
