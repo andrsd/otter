@@ -112,8 +112,8 @@ class OtterMediaTab(QtWidgets.QWidget):
 
     def __init__(self, parent, resultWindow):
         super(OtterMediaTab, self).__init__(parent)
-        self.windowResult = resultWindow
-        self.windowResult.resized.connect(self.onWindowResized)
+        self.WindowResult = resultWindow
+        self.WindowResult.resized.connect(self.onWindowResized)
 
         self.populateModels()
 
@@ -121,39 +121,39 @@ class OtterMediaTab(QtWidgets.QWidget):
         layout.setContentsMargins(6, 4, 6, 3)
         self.setLayout(layout)
 
-        self.ctlType = QtWidgets.QComboBox(self)
-        self.ctlType.addItem("Image")
-        self.ctlType.addItem("Movie")
-        self.ctlType.currentIndexChanged.connect(self.onTypeChanged)
-        layout.addWidget(self.ctlType)
+        self.Type = QtWidgets.QComboBox(self)
+        self.Type.addItem("Image")
+        self.Type.addItem("Movie")
+        self.Type.currentIndexChanged.connect(self.onTypeChanged)
+        layout.addWidget(self.Type)
 
-        self.ctlParams = QtWidgets.QTreeView(self)
-        self.ctlParams.setRootIsDecorated(False)
-        self.ctlParams.setItemDelegate(OtterParamDelegate(self.ctlParams))
-        self.ctlParams.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
-        layout.addWidget(self.ctlParams)
+        self.Params = QtWidgets.QTreeView(self)
+        self.Params.setRootIsDecorated(False)
+        self.Params.setItemDelegate(OtterParamDelegate(self.Params))
+        self.Params.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
+        layout.addWidget(self.Params)
 
         self.onTypeChanged(0)
 
     def onTypeChanged(self, idx):
         if idx == self.IDX_IMAGE:
-            self.ctlParams.setModel(self.modelImage)
-            self.ctlParams.header().resizeSection(0, 140)
+            self.Params.setModel(self.ModelImage)
+            self.Params.header().resizeSection(0, 140)
             self.modified.emit()
         elif idx == self.IDX_MOVIE:
-            self.ctlParams.setModel(self.modelMovie)
-            self.ctlParams.header().resizeSection(0, 140)
+            self.Params.setModel(self.ModelMovie)
+            self.Params.header().resizeSection(0, 140)
             self.modified.emit()
 
     def populateModels(self):
-        self.modelImage = QtGui.QStandardItemModel(self)
-        self.modelMovie = QtGui.QStandardItemModel(self)
+        self.ModelImage = QtGui.QStandardItemModel(self)
+        self.ModelMovie = QtGui.QStandardItemModel(self)
 
-        self.modelImage.itemChanged.connect(self.onParamChanged)
-        self.modelMovie.itemChanged.connect(self.onParamChanged)
+        self.ModelImage.itemChanged.connect(self.onParamChanged)
+        self.ModelMovie.itemChanged.connect(self.onParamChanged)
 
-        self.populateParams(self.modelImage, self.PARAMS_IMAGE)
-        self.populateParams(self.modelMovie, self.PARAMS_MOVIE)
+        self.populateParams(self.ModelImage, self.PARAMS_IMAGE)
+        self.populateParams(self.ModelMovie, self.PARAMS_MOVIE)
 
     def populateParams(self, model, params):
         model.setHorizontalHeaderLabels(["Parameter", "Value"])
@@ -236,7 +236,7 @@ class OtterMediaTab(QtWidgets.QWidget):
             self.timeUnitChanged.emit(time_unit)
         elif name == 'size':
             param = self.toPython(value)
-            self.windowResult.resize(param[0], param[1])
+            self.WindowResult.resize(param[0], param[1])
         elif name in ['output', 'location', 'duration', 'file', 'times', 'frame']:
             pass
         else:
@@ -244,7 +244,7 @@ class OtterMediaTab(QtWidgets.QWidget):
                 param = self.toPython(item.checkState() == QtCore.Qt.Checked)
             else:
                 param = self.toPython(value)
-            self.windowResult.setParam(name, param)
+            self.WindowResult.setParam(name, param)
 
     def setSizeParam(self, model, width, height):
         results = model.findItems('size')
@@ -253,22 +253,22 @@ class OtterMediaTab(QtWidgets.QWidget):
             model.item(item.row(), 1).setText("[{}, {}]".format(width, height))
 
     def onWindowResized(self, width, height):
-        self.setSizeParam(self.modelImage, width, height)
-        self.setSizeParam(self.modelMovie, width, height)
+        self.setSizeParam(self.ModelImage, width, height)
+        self.setSizeParam(self.ModelMovie, width, height)
 
     def model(self):
-        idx = self.ctlType.currentIndex()
+        idx = self.Type.currentIndex()
         if idx == self.IDX_IMAGE:
-            return self.modelImage
+            return self.ModelImage
         elif idx == self.IDX_MOVIE:
-            return self.modelMovie
+            return self.ModelMovie
         else:
             return None
 
     def selectObjectType(self, type):
-        idx = self.ctlType.findText(type)
+        idx = self.Type.findText(type)
         if idx != -1:
-            self.ctlType.setCurrentIndex(idx)
+            self.Type.setCurrentIndex(idx)
         else:
             print("Trying to set unknown type '{}'".format(type))
 
@@ -355,7 +355,7 @@ class OtterMediaTab(QtWidgets.QWidget):
 
     def toText(self):
         model = self.model()
-        idx = self.ctlType.currentIndex()
+        idx = self.Type.currentIndex()
         if idx == self.IDX_IMAGE:
             obj_type = 'image'
         elif idx == self.IDX_MOVIE:
