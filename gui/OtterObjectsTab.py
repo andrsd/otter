@@ -62,6 +62,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ctlObjects.setItemDelegate(OtterParamDelegate(self.ctlObjects))
         self.ctlObjects.setIndentation(OtterObjectsTab.INDENT)
         self.ctlObjects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
+        self.ctlObjects.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
         layout.addWidget(self.ctlObjects)
 
         layout.addLayout(self.ButtonLayout)

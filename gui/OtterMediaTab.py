@@ -130,6 +130,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         self.ctlParams = QtWidgets.QTreeView(self)
         self.ctlParams.setRootIsDecorated(False)
         self.ctlParams.setItemDelegate(OtterParamDelegate(self.ctlParams))
+        self.ctlParams.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
         layout.addWidget(self.ctlParams)
 
         self.onTypeChanged(0)
