@@ -16,8 +16,8 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         super(OtterMainWindow, self).__init__()
         self.file = QtCore.QFile()
         self.modified = False
-        self.windowResult = None
-        self.ctlObjType = None
+        self.WindowResult = None
+        self.ObjectType = None
         self._about_dlg = None
 
         self.setupWidgets()
@@ -59,7 +59,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         windowMenu.addSeparator()
         self._main_window = windowMenu.addAction("Main window - " + self.title(), self.onShowMainWindow)
         self._main_window.setCheckable(True)
-        self._result_window = windowMenu.addAction(self.windowResult.windowTitle(), self.onShowChiggerWindow)
+        self._result_window = windowMenu.addAction(self.WindowResult.windowTitle(), self.onShowChiggerWindow)
         self._result_window.setCheckable(True)
 
         self._action_group_windows = QtWidgets.QActionGroup(self)
@@ -71,71 +71,71 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         active_window = qapp.activeWindow()
         if active_window == self:
             self._main_window.setChecked(True)
-        elif active_window == self.windowResult:
+        elif active_window == self.WindowResult:
             self._result_window.setChecked(True)
 
-        if self.ctlObjType != None:
+        if self.ObjectType != None:
             tabs = [
                 self._media_tab_action,
                 self._viewports_tab_action,
                 self._colorbars_tab_action,
                 self._annotations_tab_action
             ]
-            idx = self.ctlObjType.currentIndex()
+            idx = self.ObjectType.currentIndex()
             tabs[idx].setChecked(True)
 
     def setupWidgets(self):
-        self.windowResult = OtterResultWindow(self)
+        self.WindowResult = OtterResultWindow(self)
 
         w = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
 
-        self.ctlObjType = QtWidgets.QTabWidget(self)
+        self.ObjectType = QtWidgets.QTabWidget(self)
 
-        self.tabMedia = OtterMediaTab(self, self.windowResult)
-        self.tabMedia.modified.connect(self.setModified)
-        self.tabMedia.timeChanged.connect(self.onTimeChanged)
-        self.tabMedia.timeUnitChanged.connect(self.onTimeUnitChanged)
-        self.ctlObjType.addTab(self.tabMedia, "Media")
+        self.MediaTab = OtterMediaTab(self, self.WindowResult)
+        self.MediaTab.modified.connect(self.setModified)
+        self.MediaTab.timeChanged.connect(self.onTimeChanged)
+        self.MediaTab.timeUnitChanged.connect(self.onTimeUnitChanged)
+        self.ObjectType.addTab(self.MediaTab, "Media")
 
-        self.tabViewports = OtterViewportsTab(self, self.windowResult)
-        self.tabViewports.modified.connect(self.setModified)
-        self.tabViewports.resultAdded.connect(self.onResultAdded)
+        self.ViewportsTab = OtterViewportsTab(self, self.WindowResult)
+        self.ViewportsTab.modified.connect(self.setModified)
+        self.ViewportsTab.resultAdded.connect(self.onResultAdded)
 
-        self.ctlObjType.addTab(self.tabViewports, self.tabViewports.name())
+        self.ObjectType.addTab(self.ViewportsTab, self.ViewportsTab.name())
 
-        self.tabColorBars = OtterColorbarsTab(self, self.windowResult)
-        self.tabColorBars.modified.connect(self.setModified)
-        self.ctlObjType.addTab(self.tabColorBars, self.tabColorBars.name())
+        self.ColorBarsTab = OtterColorbarsTab(self, self.WindowResult)
+        self.ColorBarsTab.modified.connect(self.setModified)
+        self.ObjectType.addTab(self.ColorBarsTab, self.ColorBarsTab.name())
 
-        self.tabAnnotations = OtterAnnotationsTab(self, self.windowResult)
-        self.tabAnnotations.modified.connect(self.setModified)
-        self.ctlObjType.addTab(self.tabAnnotations, self.tabAnnotations.name())
+        self.AnnotationsTab = OtterAnnotationsTab(self, self.WindowResult)
+        self.AnnotationsTab.modified.connect(self.setModified)
+        self.ObjectType.addTab(self.AnnotationsTab, self.AnnotationsTab.name())
 
-        layout.addWidget(self.ctlObjType)
-        self.ctlObjType.currentChanged.connect(self.updateMenuBar)
+        layout.addWidget(self.ObjectType)
+        self.ObjectType.currentChanged.connect(self.updateMenuBar)
 
         w.setLayout(layout)
         self.setCentralWidget(w)
 
         qapp = QtWidgets.QApplication.instance()
-        self.windowResult.setGeometry(
-            QtWidgets.QStyle.alignedRect(QtCore.Qt.LeftToRight, QtCore.Qt.AlignCenter, self.windowResult.size(), qapp.desktop().availableGeometry()))
-        self.windowResult.show()
+        self.WindowResult.setGeometry(
+            QtWidgets.QStyle.alignedRect(QtCore.Qt.LeftToRight, QtCore.Qt.AlignCenter, self.WindowResult.size(), qapp.desktop().availableGeometry()))
+        self.WindowResult.show()
 
     def setModified(self):
         self.modified = True
         self.setTitle()
 
     def onTimeChanged(self, time):
-        self.tabViewports.onTimeChanged(time)
-        self.tabAnnotations.onTimeChanged(time)
+        self.ViewportsTab.onTimeChanged(time)
+        self.AnnotationsTab.onTimeChanged(time)
 
     def onTimeUnitChanged(self, time_unit):
-        self.tabAnnotations.onTimeUnitChanged(time_unit)
+        self.AnnotationsTab.onTimeUnitChanged(time_unit)
 
     def onResultAdded(self):
-        self.tabColorBars.onResultAdded()
+        self.ColorBarsTab.onResultAdded()
 
     def title(self):
         if self.file.fileName():
@@ -147,7 +147,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         return title
 
     def exodusResults(self):
-        return self.tabViewports.exodusResults;
+        return self.ViewportsTab.exodusResults;
 
     def setTitle(self):
         self.setWindowTitle(self.title())
@@ -183,7 +183,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         qapp.activeWindow().showMinimized()
 
     def onBringAllToFront(self):
-        self.windowResult.showNormal()
+        self.WindowResult.showNormal()
         self.showNormal()
 
     def onShowMainWindow(self):
@@ -192,12 +192,12 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self.raise_()
 
     def onShowChiggerWindow(self):
-        self.windowResult.showNormal()
-        self.windowResult.activateWindow()
-        self.windowResult.raise_()
+        self.WindowResult.showNormal()
+        self.WindowResult.activateWindow()
+        self.WindowResult.raise_()
 
     def onActivateTab(self, tab):
-        self.ctlObjType.setCurrentIndex(tab)
+        self.ObjectType.setCurrentIndex(tab)
 
     def onAboutApplication(self):
         if self._about_dlg == None:
@@ -221,13 +221,13 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             if config.HAVE_RELAP7:
                 out << "import relap7\n"
             out << "\n"
-            out << self.tabViewports.toText()
+            out << self.ViewportsTab.toText()
             out << "\n"
-            out << self.tabColorBars.toText()
+            out << self.ColorBarsTab.toText()
             out << "\n"
-            out << self.tabAnnotations.toText()
+            out << self.AnnotationsTab.toText()
             out << "\n"
-            out << self.tabMedia.toText()
+            out << self.MediaTab.toText()
 
             file.flush()
             file.close()
@@ -253,11 +253,11 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             sys.path.remove(dir)
 
             if hasattr(temp, 'movie'):
-                self.tabMedia.selectObjectType("Movie")
-                self.tabMedia.setObjectParams(temp.movie)
+                self.MediaTab.selectObjectType("Movie")
+                self.MediaTab.setObjectParams(temp.movie)
             elif hasattr(temp, 'image') != None:
-                self.tabMedia.selectObjectType("Image")
-                self.tabMedia.setObjectParams(temp.image)
+                self.MediaTab.selectObjectType("Image")
+                self.MediaTab.setObjectParams(temp.image)
             else:
                 mb = QtWidgets.QMessageBox.information(
                     self,
@@ -266,9 +266,9 @@ class OtterMainWindow(QtWidgets.QMainWindow):
                 # TODO: set defaults everywhere (?)
                 return
 
-            self.tabViewports.populate(temp.viewports)
-            self.tabColorBars.populate(temp.colorbars)
-            self.tabAnnotations.populate(temp.annotations)
+            self.ViewportsTab.populate(temp.viewports)
+            self.ColorBarsTab.populate(temp.colorbars)
+            self.AnnotationsTab.populate(temp.annotations)
 
             self.file.setFileName(file_name)
             self.modified = False
