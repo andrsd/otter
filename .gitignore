@@ -1,1 +1,8 @@
 *.pyc
+
+# py2app
+.eggs/*
+venv/*
+
+# garbagge created by me
+tmp/*
