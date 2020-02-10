@@ -224,6 +224,10 @@ class OtterObjectsTab(QtWidgets.QWidget):
             child = QtGui.QStandardItem(val)
             child.setEditable(True)
             child.setData(QtCore.QVariant(OtterParamOptions(item['enum'])))
+        elif 'file' in item:
+            child = QtGui.QStandardItem(val)
+            child.setEditable(True)
+            child.setData(QtCore.QVariant(OtterParamFilePicker(item['file'])))
         elif val == None:
             child = QtGui.QStandardItem()
             child.setEditable(True)

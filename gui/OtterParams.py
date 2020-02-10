@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-class OtterParamDelegate(QtWidgets.QItemDelegate):
+class OtterParamDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
         super(OtterParamDelegate, self).__init__(parent)
 
@@ -19,15 +19,15 @@ class OtterParamDelegate(QtWidgets.QItemDelegate):
             value = model.data(index, QtCore.Qt.EditRole)
             data.setEditorData(editor, value)
         else:
-            return super(OtterParamDelegate, self).setEditorData(editor, index)
+            super(OtterParamDelegate, self).setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
         data = model.itemFromIndex(index).data()
         if isinstance(data, OtterParamBase):
-            value = data.setModelData(editor)
+            value = data.value(editor)
             model.setData(index, value, QtCore.Qt.EditRole)
         else:
-            return super(OtterParamDelegate, self).setModelData(editor, model, index)
+            super(OtterParamDelegate, self).setModelData(editor, model, index)
 
     def updateEditorGeometry(self, editor, option, index):
         model = index.model()
@@ -35,7 +35,7 @@ class OtterParamDelegate(QtWidgets.QItemDelegate):
         if isinstance(data, OtterParamBase):
             data.setGeometry(editor, option.rect)
         else:
-            return super(OtterParamDelegate, self).updateEditorGeometry(editor, option, index)
+            super(OtterParamDelegate, self).updateEditorGeometry(editor, option, index)
 
 
 class OtterParamBase(object):
@@ -64,13 +64,13 @@ class OtterParamOptions(OtterParamBase):
     def setEditorData(self, editor, value):
         editor.setCurrentIndex(editor.findText(value))
 
-    def setModelData(self, editor):
+    def value(self, editor):
         return editor.currentText()
 
     def setGeometry(self, editor, rect):
         rect.setTop(rect.top() - 2)
         rect.setBottom(rect.bottom() + 3)
-        return editor.setGeometry(rect)
+        editor.setGeometry(rect)
 
 
 class OtterParamLineEdit(OtterParamBase):
@@ -107,8 +107,53 @@ class OtterParamLineEdit(OtterParamBase):
     def setEditorData(self, editor, value):
         editor.setText(value)
 
-    def setModelData(self, editor):
+    def value(self, editor):
         return editor.text()
 
     def setGeometry(self, editor, rect):
-        return editor.setGeometry(rect)
+        editor.setGeometry(rect)
+
+
+class OtterParamFilePicker(OtterParamBase):
+    def __init__(self, load_save):
+        super(OtterParamFilePicker, self).__init__()
+        self.type = load_save
+        self.editor = None
+
+    def createEditor(self, parent):
+        btn = QtWidgets.QPushButton("...")
+        btn.setMaximumWidth(20)
+        btn.clicked.connect(self.onFileSelect)
+
+        editor = QtWidgets.QLineEdit(parent)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(btn)
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        editor.setLayout(layout)
+        self.editor = editor
+
+        return editor
+
+    def setEditorData(self, editor, value):
+        editor.setText(value)
+
+    def value(self, editor):
+        return editor.text()
+
+    def setGeometry(self, editor, rect):
+        editor.setGeometry(rect)
+
+    def onFileSelect(self):
+        if self.type == 'open':
+            file_names = QtWidgets.QFileDialog.getOpenFileName(None, 'Select a File')
+            if file_names[0]:
+                self.editor.setText(file_names[0])
+        elif self.type == 'save':
+            file_names = QtWidgets.QFileDialog.getSaveFileName(None, 'Select a File')
+            if file_names[0]:
+                self.editor.setText(file_names[0])
+        else:
+            print("Unknow type in OtterParamFilePicker.")

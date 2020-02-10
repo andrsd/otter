@@ -56,6 +56,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         },
         {
             'name': 'output',
+            'file': 'save',
             'value': '',
             'hint': 'The file name where image will be saved. If empty, image will be rendered on the screen',
             'req': False
@@ -73,6 +74,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         {
             'name': 'file',
             'value': '',
+            'file': 'save',
             'hint': 'The file name of the rendered movie',
             'req': True
         },
@@ -177,6 +179,10 @@ class OtterMediaTab(QtWidgets.QWidget):
                 si = QtGui.QStandardItem(val)
                 si.setEditable(True)
                 si.setData(QtCore.QVariant(OtterParamOptions(item['enum'])))
+            elif 'file' in item:
+                si = QtGui.QStandardItem(val)
+                si.setEditable(True)
+                si.setData(QtCore.QVariant(OtterParamFilePicker(item['file'])))
             elif val == None:
                 si = QtGui.QStandardItem()
                 si.setEditable(True)
