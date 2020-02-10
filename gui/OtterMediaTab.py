@@ -57,7 +57,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         {
             'name': 'output',
             'value': '',
-            'hint': 'The file name where image will be saved. If empty, image will be redered on the screen',
+            'hint': 'The file name where image will be saved. If empty, image will be rendered on the screen',
             'req': False
         }
     ]
