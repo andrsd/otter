@@ -88,7 +88,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             tabs[idx].setChecked(True)
 
         if self.MediaTab != None:
-            idx = self.MediaTab.ctlType.currentIndex()
+            idx = self.MediaTab.Type.currentIndex()
             if idx == OtterMediaTab.IDX_IMAGE:
                 args = self.MediaTab.args()
                 self._render_action.setEnabled('output' in args)
