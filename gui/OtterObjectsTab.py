@@ -297,6 +297,11 @@ class OtterObjectsTab(QtWidgets.QWidget):
                         item1.setCheckState(QtCore.Qt.Unchecked)
                 elif value != None:
                     item1.setText(str(value))
+            else:
+                # sub-group of parameters
+                if name in params:
+                    value = params[name]
+                    self.setObjectParams(item0, params[name])
 
     def getChiggerObjects(self):
         objects = []

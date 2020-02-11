@@ -37,9 +37,12 @@ class RetinaQVTKRenderWindowInteractor(QVTKRenderWindowInteractor):
 class OtterResultWindow(QtWidgets.QMainWindow):
 
     resized = QtCore.pyqtSignal(int, int)
+    cameraChanged = QtCore.pyqtSignal(object, object)
 
     def __init__(self, parent = None):
         super(OtterResultWindow, self).__init__(parent)
+
+        self.cameraOldMTime = None
 
         self.Frame = QtWidgets.QFrame()
         self.Layout = QtWidgets.QVBoxLayout()
@@ -62,6 +65,9 @@ class OtterResultWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.Frame)
         self.setWindowTitle("Result")
         self.show()
+
+        self.vtk_widget.AddObserver('StartInteractionEvent', self.onStartInteraction)
+        self.vtk_widget.AddObserver('EndInteractionEvent', self.onEndInteraction)
 
         self.chigger_window.update()
 
@@ -97,3 +103,15 @@ class OtterResultWindow(QtWidgets.QMainWindow):
     def resizeEvent(self, event):
         self.resized.emit(event.size().width(), event.size().height())
         return super(OtterResultWindow, self).resizeEvent(event)
+
+    def onStartInteraction(self, obj, event):
+        interactor_style = obj.GetInteractorStyle()
+        renderer = interactor_style.GetCurrentRenderer()
+        self.cameraOldMTime = renderer.GetActiveCamera().GetMTime()
+
+    def onEndInteraction(self, obj, event):
+        interactor_style = obj.GetInteractorStyle()
+        renderer = interactor_style.GetCurrentRenderer()
+        camera = renderer.GetActiveCamera()
+        if self.cameraOldMTime != camera.GetMTime():
+            self.cameraChanged.emit(renderer, camera)

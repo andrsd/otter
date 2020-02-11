@@ -35,10 +35,17 @@ class OtterViewportsTab(OtterObjectsTab):
         { 'name': 'visible', 'value': True, 'hint': 'Is the legend visoble', 'req': False },
     ]
 
+    PARAMS_CAMERA = [
+        { 'name': 'view-up', 'value': (), 'req': False, 'hint': 'Camera view up' },
+        { 'name': 'position', 'value': (), 'req': False, 'hint': 'Camera position' },
+        { 'name': 'focal-point', 'value': (), 'req': False, 'hint': 'Camera\'s focal point' }
+    ]
+
     PARAMS_EXODUS_RESULT = [
         { 'name': 'file', 'value': '', 'hint': 'The file name of the Exodus II file', 'req': True },
         { 'name': 'variable', 'value': '', 'hint': 'The name of the variable', 'req': True },
         { 'name': 'blocks', 'value': [], 'hint': 'The name of the viewport with a result', 'req': False },
+        { 'name': 'camera', 'group': True, 'childs': PARAMS_CAMERA, 'hint': 'The camera settings' },
         { 'name': 'cmap', 'value': 'jet', 'hint': 'The name of the color map', 'req': False },
         { 'name': 'light', 'value': None, 'hint': 'IDK', 'req': False },
         { 'name': 'range', 'value': [0, 100], 'hint': 'The value range of the variable', 'req': False },
@@ -50,6 +57,7 @@ class OtterViewportsTab(OtterObjectsTab):
         { 'name': 'exodus-file', 'value': '', 'hint': 'The file name of the Exodus II file', 'req': True },
         { 'name': 'input-file', 'value': '', 'hint': 'The file name of the RELAP-7 input file', 'req': True },
         { 'name': 'blocks', 'value': [], 'hint': 'The name of the viewport with a result', 'req': False },
+        { 'name': 'camera', 'group': True, 'childs': PARAMS_CAMERA, 'hint': 'The camera settings' },
         { 'name': 'cmap', 'value': 'jet', 'hint': 'The name of the color map', 'req': False },
         { 'name': 'light', 'value': None, 'hint': 'IDK', 'req': False },
         { 'name': 'range', 'value': [0, 100], 'hint': 'The value range of the variable', 'req': False },
@@ -89,6 +97,8 @@ class OtterViewportsTab(OtterObjectsTab):
         self.num_results = 0
         self.exodusResults = {}
 
+        self.WindowResult.cameraChanged.connect(self.onCameraChanged)
+
     def name(self):
         return "VPs"
 
@@ -115,6 +125,14 @@ class OtterViewportsTab(OtterObjectsTab):
         if type == 'ExodusResult':
             item = self.addExodusResult(params['file'])
             self.setObjectParams(item, params)
+
+            (exo_result, map) = item.data()
+            if 'camera' in params:
+                camera = common.buildCamera(params['camera'])
+                exo_result.update(**{'camera': camera})
+            else:
+                camera = exo_result.getVTKRenderer().GetActiveCamera()
+                self.setCameraParams(item, camera)
         elif type == 'RELAP7Result':
             item = self.addRELAP7Result()
             self.setObjectParams(item, params)
@@ -235,3 +253,33 @@ class OtterViewportsTab(OtterObjectsTab):
                 name = item.text()
                 if item.row() in self.exodusResults:
                     self.exodusResults[item.row()]['name'] = name
+
+    """
+    Find the 'camera' parameter and set its parameters
+
+    @param parent_item [QStandardItem] - the item representing the exodus-derived result
+    @param camera [vtkCamera] - VTK camera object
+    """
+    def setCameraParams(self, parent_item, camera):
+        for row in range(parent_item.rowCount()):
+            param_item = parent_item.child(row, 0)
+            if param_item.text() == 'camera':
+                for param_row in range(param_item.rowCount()):
+                    cam_param_name = param_item.child(param_row, 0)
+                    cam_param_value = param_item.child(param_row, 1)
+                    if cam_param_name.text() == 'view-up':
+                        vec = camera.GetViewUp()
+                        cam_param_value.setText("({}, {}, {})".format(vec[0], vec[1], vec[2]))
+                    elif cam_param_name.text() == 'position':
+                        vec = camera.GetPosition()
+                        cam_param_value.setText("({}, {}, {})".format(vec[0], vec[1], vec[2]))
+                    elif cam_param_name.text() == 'focal-point':
+                        vec = camera.GetFocalPoint()
+                        cam_param_value.setText("({}, {}, {})".format(vec[0], vec[1], vec[2]))
+                break
+
+    def onCameraChanged(self, renderer, camera):
+        for k, r in self.exodusResults.items():
+            if r['result'].getVTKRenderer() == renderer:
+                item = self.Model.item(k)
+                self.setCameraParams(item, camera)
