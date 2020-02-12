@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
+from gui.OtterOutput import *
 from otter import common
 import re
 import os
@@ -244,15 +245,15 @@ class OtterMediaTab(QtWidgets.QWidget):
             common.setTimeUnit(time_unit)
             self.timeUnitChanged.emit(time_unit)
         elif name == 'size':
-            param = self.toPython(value)
+            param = toPython(value)
             self.WindowResult.resize(param[0], param[1])
         elif name in ['output', 'location', 'duration', 'file', 'times', 'frame']:
             pass
         else:
             if item.isCheckable():
-                param = self.toPython(item.checkState() == QtCore.Qt.Checked)
+                param = toPython(item.checkState() == QtCore.Qt.Checked)
             else:
-                param = self.toPython(value)
+                param = toPython(value)
             self.WindowResult.setParam(name, param)
         self.modified.emit()
 
@@ -374,46 +375,6 @@ class OtterMediaTab(QtWidgets.QWidget):
                 os.remove(os.path.join(location, f))
             os.removedirs(location)
 
-
-    def toPython(self, value):
-        if isinstance(value, bool):
-            return value
-        elif len(value) == 0:
-            return None
-        elif value[0] == '[' and value[-1] == ']':
-            value = value[1:-1]
-            if len(value) > 0:
-                str_array = [x.strip() for x in value.split(',')]
-                arr = []
-                for val in str_array:
-                    try:
-                        tmp = int(val)
-                        arr.append(tmp)
-                    except ValueError:
-                        arr.append(float(val))
-                return arr
-            else:
-                return []
-        elif value[0] == '(' and value[-1] == ')':
-            value = value[1:-1]
-            if len(value) > 0:
-                str_array = [x.strip() for x in value.split(',')]
-                arr = []
-                for val in str_array:
-                    try:
-                        tmp = int(val)
-                        arr.append(tmp)
-                    except ValueError:
-                        arr.append(float(val))
-                return arr
-            else:
-                return []
-        else:
-            try:
-                return int(value)
-            except ValueError:
-                return value
-
     def args(self):
         """
         Return dict that will be used to build a chigger object
@@ -431,12 +392,11 @@ class OtterMediaTab(QtWidgets.QWidget):
             else:
                 value = item1.text()
                 if value != "":
-                    args[name] = self.toPython(value)
+                    args[name] = toPython(value)
 
         return args
 
     def toText(self):
-        model = self.model()
         idx = self.Type.currentIndex()
         if idx == self.IDX_IMAGE:
             obj_type = 'image'
@@ -446,10 +406,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         s = ""
         s += "{} = {{\n".format(obj_type)
         for name, value in self.args().items():
-            if isinstance(value, str):
-                s += "    '{}': '{}',\n".format(name, value)
-            else:
-                s += "    '{}': {},\n".format(name, value)
+            s += argToText(name, value, 1)
 
         s += "    'viewports': viewports,\n"
         s += "    'colorbars': colorbars,\n"

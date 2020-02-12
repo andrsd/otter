@@ -1,5 +1,49 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+def toPython(value):
+    """
+    Convert 'value' to a python "object"
+    """
+
+    if isinstance(value, bool):
+        return value
+    elif len(value) == 0:
+        return None
+    elif value[0] == '[' and value[-1] == ']':
+        value = value[1:-1]
+        if len(value) > 0:
+            str_array = [x.strip() for x in value.split(',')]
+            arr = []
+            for val in str_array:
+                try:
+                    tmp = int(val)
+                    arr.append(tmp)
+                except ValueError:
+                    arr.append(float(val))
+            return arr
+        else:
+            return []
+    elif value[0] == '(' and value[-1] == ')':
+        value = value[1:-1]
+        if len(value) > 0:
+            str_array = [x.strip() for x in value.split(',')]
+            arr = []
+            for val in str_array:
+                try:
+                    tmp = int(val)
+                    arr.append(tmp)
+                except ValueError:
+                    arr.append(float(val))
+            return arr
+        else:
+            return []
+    else:
+        try:
+            return int(value)
+        except ValueError:
+            return value
+
+
 class OtterParamDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
         super(OtterParamDelegate, self).__init__(parent)

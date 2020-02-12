@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
+from gui.OtterOutput import *
 from otter import common
 
 class OtterObjectsTab(QtWidgets.QWidget):
@@ -132,9 +133,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
             name = parent.child(row, 0).text()
             value = item.text()
             if item.isCheckable():
-                value = self.toPython(item.checkState() == QtCore.Qt.Checked)
+                value = toPython(item.checkState() == QtCore.Qt.Checked)
             else:
-                value = self.toPython(value)
+                value = toPython(value)
             params = { name: value }
 
             if parent.data() != None:
@@ -336,7 +337,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 else:
                     value = child1.text()
                     if len(value) > 0:
-                        args[name] = self.toPython(value)
+                        args[name] = toPython(value)
             else:
                 argsGroup = self.argsGroup(child0)
                 args[name] = argsGroup
@@ -364,41 +365,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
 
         return args
 
-    def argToText(self, name, value, level):
-        """
-        Convert a parameter into a string representation of python dictionary key for outputting
-
-        Inputs:
-            name [string]
-            value [string]
-            level [int]
-        """
-
-        s = ""
-        if isinstance(value, str):
-            s += "    " * level + "'{}': '{}',\n".format(name, value)
-        elif isinstance(value, dict):
-            s += "    " * level + "'{}':\n".format(name)
-            s += self.groupToText(value, level + 1)
-        else:
-            s += "    " * level + "'{}': {},\n".format(name, value)
-        return s
-
-    def groupToText(self, args, level):
-        """
-        Convert a group of parameters into a string representation of python dictionary for outputting
-
-        Inputs:
-            args [dict] - dictionary that will be converted into a string
-            level [int] - indentation level
-        """
-
-        s = "    " * level + "{\n"
-        for key, val in list(args.items()):
-            s += self.argToText(key, val, level + 1)
-        s += "    " * level + "},\n"
-        return s
-
     def toText(self):
         """
         Convert all otter objects into string representation of python code for outputting
@@ -407,45 +373,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
         s = ""
         s += "{} = [\n".format(self.pythonName())
         for value in self.args():
-            s += self.groupToText(value, 1)
+            s += groupToText(value, 1)
         s += "]\n"
         return s
-
-    def toPython(self, value):
-        if isinstance(value, bool):
-            return value
-        elif len(value) == 0:
-            return None
-        elif value[0] == '[' and value[-1] == ']':
-            value = value[1:-1]
-            if len(value) > 0:
-                str_array = [x.strip() for x in value.split(',')]
-                arr = []
-                for val in str_array:
-                    try:
-                        tmp = int(val)
-                        arr.append(tmp)
-                    except ValueError:
-                        arr.append(float(val))
-                return arr
-            else:
-                return []
-        elif value[0] == '(' and value[-1] == ')':
-            value = value[1:-1]
-            if len(value) > 0:
-                str_array = [x.strip() for x in value.split(',')]
-                arr = []
-                for val in str_array:
-                    try:
-                        tmp = int(val)
-                        arr.append(tmp)
-                    except ValueError:
-                        arr.append(float(val))
-                return arr
-            else:
-                return []
-        else:
-            try:
-                return int(value)
-            except ValueError:
-                return value
