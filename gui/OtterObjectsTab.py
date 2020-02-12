@@ -328,9 +328,15 @@ class OtterObjectsTab(QtWidgets.QWidget):
 
             child1 = parent.child(idx, 1)
             if child1 != None:
-                value = child1.text()
-                if len(value) > 0:
-                    args[name] = value
+                if child1.isCheckable():
+                    if child1.checkState() == QtCore.Qt.Checked:
+                        args[name] = True
+                    else:
+                        args[name] = False
+                else:
+                    value = child1.text()
+                    if len(value) > 0:
+                        args[name] = self.toPython(value)
             else:
                 argsGroup = self.argsGroup(child0)
                 args[name] = argsGroup
@@ -414,29 +420,32 @@ class OtterObjectsTab(QtWidgets.QWidget):
             value = value[1:-1]
             if len(value) > 0:
                 str_array = [x.strip() for x in value.split(',')]
-                res = []
+                arr = []
                 for val in str_array:
-                    if val[0] == "'" and val[-1] == "'":
-                        res.append(val[1:-1])
-                    else:
-                        res.append(float(val))
-                return res
+                    try:
+                        tmp = int(val)
+                        arr.append(tmp)
+                    except ValueError:
+                        arr.append(float(val))
+                return arr
             else:
                 return []
         elif value[0] == '(' and value[-1] == ')':
             value = value[1:-1]
             if len(value) > 0:
                 str_array = [x.strip() for x in value.split(',')]
-                res = []
+                arr = []
                 for val in str_array:
-                    if val[0] == "'" and val[-1] == "'":
-                        res.append(val[1:-1])
-                    else:
-                        res.append(float(val))
+                    try:
+                        tmp = int(val)
+                        arr.append(tmp)
+                    except ValueError:
+                        arr.append(float(val))
+                return arr
             else:
                 return []
         else:
             try:
-                return float(value)
+                return int(value)
             except ValueError:
                 return value
