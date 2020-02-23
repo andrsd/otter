@@ -16,3 +16,7 @@ htmlcov/*
 # test generated files
 tests/movie.mov
 tests/image.png
+
+
+# docs
+docs/_build/*
