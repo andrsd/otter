@@ -238,8 +238,6 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             out << "\n"
             out << "import otter\n"
             out << "import numpy\n"
-            if config.HAVE_RELAP7:
-                out << "import relap7\n"
             out << "\n"
             out << self.ViewportsTab.toText()
             out << "\n"

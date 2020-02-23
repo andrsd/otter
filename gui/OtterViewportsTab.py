@@ -112,8 +112,6 @@ class OtterViewportsTab(OtterObjectsTab):
         btn = QtWidgets.QPushButton("   +", self)
         mnu = QtWidgets.QMenu("Add", self)
         mnu.addAction("Exodus result", lambda : self.onAdd(self.EXODUS))
-        if config.HAVE_RELAP7:
-            mnu.addAction("RELAP-7 result", lambda : self.onAdd(self.RELAP7_RESULT))
         mnu.addAction("Plot over time", lambda : self.onAdd(self.PLOT_OVER_TIME))
         mnu.addAction("VPP Plot", lambda : self.onAdd(self.VPP_PLOT))
         btn.setMenu(mnu)

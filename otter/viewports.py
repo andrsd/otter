@@ -1,8 +1,6 @@
 import vtk
 import chigger
 from . import config, filters, common
-if config.HAVE_RELAP7:
-    import relap7
 import mooseutils
 import numpy
 import bisect
@@ -35,88 +33,6 @@ class Viewport(object):
         Update the viewport to reflect time 'time'
         """
         pass
-
-class ViewportRELAP7Model(Viewport):
-    """
-    RELAP-7 model
-    """
-    MAP = {
-        'blocks': 'block',
-        'background-color': 'background'
-    }
-
-    def __init__(self, viewport):
-        super(ViewportRELAP7Model, self).__init__(viewport)
-
-        if 'viewport' not in viewport:
-            viewport['viewport'] = [0, 0, 1, 1]
-        common.checkMandatoryArgs(['name', 'input-file', 'camera'], viewport)
-
-        self.name = viewport.pop('name')
-        self.camera = common.buildCamera(viewport.pop('camera'))
-
-        self.input_file = viewport.pop('input-file')
-        self.input_reader = relap7.InputReader(self.input_file)
-
-        args = common.remap(viewport, self.MAP)
-        args['camera'] = self.camera
-
-        self.model = relap7.Model(self.input_reader, **args)
-        OBJECTS[self.name] = self
-
-    def result(self):
-        return self.model
-
-    def update(self, time):
-        pass
-
-
-class ViewportRELAP7Result(Viewport):
-    """
-    RELAP-7 result
-    """
-    MAP = {
-        'blocks': 'block',
-    }
-
-    def __init__(self, viewport):
-        super(ViewportRELAP7Result, self).__init__(viewport)
-
-        if 'viewport' not in viewport:
-            viewport['viewport'] = [0, 0, 1, 1]
-        common.checkMandatoryArgs(['name', 'variable', 'input-file', 'exodus-file', 'camera'], viewport)
-
-        self.name = viewport.pop('name')
-        self.camera = common.buildCamera(viewport.pop('camera'))
-
-        self.input_file = viewport.pop('input-file')
-        self.input_reader = relap7.InputReader(self.input_file)
-
-        var_name = viewport['variable']
-        vars = [var_name]
-        if var_name == 'T' or var_name == 'p':
-            junction_names = self.input_reader.getJunctionNames()
-            for jname in junction_names:
-                vars.append("{}:{}".format(jname, var_name))
-
-        self.exodus_file = viewport.pop('exodus-file')
-        self.exodus_reader = chigger.exodus.ExodusReader(
-            self.exodus_file,
-            variables = vars,
-            time = common.t,
-            timestep = common.timestep)
-
-        args = common.remap(viewport, self.MAP)
-        args['camera'] = self.camera
-
-        self.relap7_result = relap7.Result(self.input_reader, self.exodus_reader, **args)
-        OBJECTS[self.name] = self
-
-    def result(self):
-        return self.relap7_result
-
-    def update(self, time):
-        self.exodus_reader.setOptions(time = time, timestep = None)
 
 
 class ViewportExodusResult(Viewport):
