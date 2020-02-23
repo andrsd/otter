@@ -100,7 +100,7 @@ def movie(movie):
     args = common.remap(movie, MOVIE_MAP)
     args['chigger'] = True
     args['offscreen'] = True
-    if 'layer' not in image:
+    if 'layer' not in movie:
         args['layer'] = 0
     window = chigger.RenderWindow(*results, **args)
 
