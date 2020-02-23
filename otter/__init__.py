@@ -126,8 +126,9 @@ def movie(movie):
         num_threads = 12,
         overwrite = True)
 
+    filename_re = frame.replace("*", ".*")
     for f in os.listdir(location):
-        if re.search(frame, f):
+        if re.search(filename_re, f):
             os.remove(os.path.join(location, f))
     if cleanup_dir:
         os.removedirs(location)
