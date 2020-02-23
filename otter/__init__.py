@@ -70,7 +70,7 @@ def movie(movie):
 
     MOVIE_MAP = {}
 
-    common.checkMandatoryArgs(['size', 'file', 'duration', 'frame'], movie)
+    common.checkMandatoryArgs(['size', 'file', 'duration'], movie)
 
     if 'time-unit' in movie:
         common.setTimeUnit(movie['time-unit'])
@@ -85,7 +85,10 @@ def movie(movie):
         location = tempfile.mkdtemp()
         cleanup_dir = True
 
-    frame = movie.pop('frame')
+    if 'frame' in movie:
+        frame = movie.pop('frame')
+    else:
+        frame = 'frame_*.png'
 
     if not os.path.isdir(location):
         raise SystemExit("Directory {} does not exists.".format(location))
