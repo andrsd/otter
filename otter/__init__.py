@@ -7,6 +7,7 @@ import os
 import sys
 import re
 import chigger
+import tempfile
 
 from . import config
 from . import common
@@ -69,14 +70,21 @@ def movie(movie):
 
     MOVIE_MAP = {}
 
-    common.checkMandatoryArgs(['size', 'file', 'duration', 'location', 'frame'], movie)
+    common.checkMandatoryArgs(['size', 'file', 'duration', 'frame'], movie)
 
     if 'time-unit' in movie:
         common.setTimeUnit(movie['time-unit'])
     common.times = movie.pop('times')
     common.t = 0
     common.timestep = None
-    location = movie.pop('location')
+
+    if 'location' in movie:
+        location = movie.pop('location')
+        cleanup_dir = False
+    else:
+        location = tempfile.mkdtemp()
+        cleanup_dir = True
+
     frame = movie.pop('frame')
 
     if not os.path.isdir(location):
@@ -121,6 +129,8 @@ def movie(movie):
     for f in os.listdir(location):
         if re.search(frame, f):
             os.remove(os.path.join(location, f))
+    if cleanup_dir:
+        os.removedirs(location)
 
 
 def _buildResults(obj):
