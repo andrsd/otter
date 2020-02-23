@@ -1,0 +1,10 @@
+[run]
+  include =
+    */otter/*.py
+    */gui/*.py
+
+  omit =
+    */tests/*.py
+
+[report]
+  sort = Cover

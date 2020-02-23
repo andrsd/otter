@@ -6,3 +6,13 @@ venv/*
 
 # garbagge created by me
 tmp/*
+
+
+# code coverage
+.coverage
+htmlcov/*
+
+
+# test generated files
+tests/movie.mov
+tests/image.png
