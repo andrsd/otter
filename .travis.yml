@@ -3,3 +3,19 @@ python:
   - "3.7"
 script:
   - python -m unittest -v
+
+cache:
+  pip: true
+  directories:
+    - ${HOME}/moose
+
+env:
+  global:
+    - MOOSE_DIR=${HOME}/moose
+    - PYTHONPATH=${MOOSE_DIR}/python:${PYTHONPATH}
+
+install:
+  - pip install -r requirements.txt
+  # install MOOSE
+  - wget https://github.com/idaholab/moose/archive/v1.0.0.tar.gz -O /tmp/moose.tar.gz
+  - tar -xvf /tmp/moose.tar.gz -C ${HOME}
