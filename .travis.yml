@@ -19,3 +19,5 @@ install:
   # install MOOSE
   - wget https://github.com/idaholab/moose/archive/v1.0.0.tar.gz -O /tmp/moose.tar.gz
   - tar -xvf /tmp/moose.tar.gz -C ${HOME}/moose --strip-components=1
+  - cd ${MOOSE_DIR}/framework/contrib/hit
+  - make hit
