@@ -6,7 +6,8 @@ script:
   - coverage run -m unittest -v
 
 after_success:
-  - codecov
+  - coverage xml
+  - bash <(curl -s https://codecov.io/bash)
 
 cache:
   pip: true
