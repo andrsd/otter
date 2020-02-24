@@ -1,5 +1,7 @@
 # OTTER
 
+[![codecov](https://codecov.io/gh/andrsd/otter/branch/master/graph/badge.svg)](https://codecov.io/gh/andrsd/otter)
+
 GUI front-end for chigger
 
 
