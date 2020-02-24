@@ -6,8 +6,7 @@ script:
   - coverage run -m unittest -v
 
 after_success:
-  - coverage xml
-  - bash < (curl -s https://codecov.io/bash)
+  - codecov
 
 cache:
   pip: true
@@ -26,3 +25,4 @@ install:
   - tar -xvf /tmp/moose.tar.gz -C ${HOME}/moose --strip-components=1
   - cd ${MOOSE_DIR}/framework/contrib/hit
   - make hit
+  - cd -
