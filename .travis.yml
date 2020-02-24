@@ -1,8 +1,13 @@
 language: python
 python:
   - "3.7"
+
 script:
-  - python -m unittest -v
+  - coverage run -m unittest -v
+
+after_success:
+  - coverage xml
+  - bash < (curl -s https://codecov.io/bash)
 
 cache:
   pip: true
