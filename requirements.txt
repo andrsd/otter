@@ -14,4 +14,3 @@ six==1.14.0
 terminaltables==3.1.0
 vtk==8.1.2
 sphinx==1.8.5
-git+https://github.com/idaholab/moose@v1.0.0
