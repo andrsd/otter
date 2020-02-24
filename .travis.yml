@@ -15,6 +15,7 @@ cache:
 
 env:
   global:
+    - TRAVIS_CI=YES
     - MOOSE_DIR=${HOME}/moose
     - PYTHONPATH=${MOOSE_DIR}/python:${PYTHONPATH}
 

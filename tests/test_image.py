@@ -27,4 +27,5 @@ class TestApp(unittest.TestCase):
             'annotations': annotations
         }
 
-        otter.render(image)
+        if 'TRAVIS_CI' not in os.environ:
+            otter.render(image)
