@@ -111,6 +111,34 @@ class TestApp(unittest.TestCase):
 
         opts = result.options()
 
+    def test_vpp_plot(self):
+        T_var = {
+            'name': 'T',
+            'width': 6,
+            'color': [0, 0.5, 1],
+            'label': 'temp'
+        }
+
+        common.t = 2
+        src = {
+            'type': 'VPPPlot',
+            'name': 'a',
+            'variables': [
+                T_var
+            ],
+            'exodus-file': os.path.join(cwd, 'diffusion_1.e'),
+            'csv-file': os.path.join(cwd, 'vpp1*csv'),
+            'title': 'Title',
+            'viewport': [0, 0, 1, 1]
+        }
+        vp = viewports.ViewportVPPPlot(src)
+        result = vp.result()
+        result._setInitialOptions()
+
+        opts = result.options()
+
+        vp.update(0.1)
+
     def test_build_exodus_result(self):
         vp = [
             {

@@ -94,7 +94,7 @@ class ViewportVPPPlot(Viewport):
     def __init__(self, viewport):
         super(ViewportVPPPlot, self).__init__(viewport)
 
-        common.checkMandatoryArgs(['exodus-file', 'csv-file', 'variables'], viewport)
+        common.checkMandatoryArgs(['exodus-file', 'csv-file', 'variables', 'viewport'], viewport)
 
         self.exodus_file = viewport.pop('exodus-file')
         self.exodus_reader = chigger.exodus.ExodusReader(self.exodus_file, time = common.t, timestep = common.timestep)
