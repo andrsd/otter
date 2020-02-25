@@ -15,6 +15,7 @@ from . import viewports
 from . import colorbars
 from . import annotations
 
+__testing__ = 'TRAVIS_CI' in os.environ
 
 size = {
     '720p' : [1280, 720],
@@ -58,7 +59,8 @@ def image(image):
     window = chigger.RenderWindow(*results, **args)
 
     if 'output' in image:
-        window.write(image['output'])
+        if not __testing__:
+            window.write(image['output'])
     else:
         window.start()
 
@@ -119,15 +121,17 @@ def movie(movie):
         for item in items:
             item.update(t)
 
-        window.write("{}/{}".format(location, filename).format(i))
+        if not __testing__:
+            window.write("{}/{}".format(location, filename).format(i))
     print()
 
-    chigger.utils.img2mov(
-        '{}/{}'.format(location, frame),
-        movie['file'],
-        duration = movie['duration'],
-        num_threads = 12,
-        overwrite = True)
+    if not __testing__:
+        chigger.utils.img2mov(
+            '{}/{}'.format(location, frame),
+            movie['file'],
+            duration = movie['duration'],
+            num_threads = 12,
+            overwrite = True)
 
     filename_re = frame.replace("*", ".*")
     for f in os.listdir(location):
