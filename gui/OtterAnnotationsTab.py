@@ -23,6 +23,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
     PARAMS_IMAGE = [
         { 'name': 'file', 'value': '', 'hint': 'The file name of the image', 'req': True },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
+        { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
         { 'name': 'scale', 'value': 1., 'hint': 'The scale of the image', 'req': False },
         { 'name': 'valign', 'value': 'top', 'enum': ['top', 'middle', 'bottom'], 'hint': 'The vertical alignment [top, middle, bottom]', 'req': False },
