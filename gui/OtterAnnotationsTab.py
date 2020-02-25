@@ -45,8 +45,8 @@ class OtterAnnotationsTab(OtterObjectsTab):
         super(OtterAnnotationsTab, self).__init__(parent, chigger_window)
         self._text_to_type = {
             '[text]': 'Text',
-            '[image]': 'Time',
-            '[time]': 'Image',
+            '[image]': 'Image',
+            '[time]': 'Time',
         }
 
     def name(self):
