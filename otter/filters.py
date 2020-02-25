@@ -10,5 +10,7 @@ def buildFilter(filter):
         return chigger.filters.PlaneClipper(**filter)
     elif type == 'box-clip':
         return chigger.filters.BoxClipper(**filter)
+    elif type == 'transform':
+        return chigger.filters.TransformFilter(**filter)
     else:
         return None

@@ -15,6 +15,7 @@ from . import viewports
 from . import colorbars
 from . import annotations
 
+__testing__ = 'TRAVIS_CI' in os.environ
 
 size = {
     '720p' : [1280, 720],
@@ -26,7 +27,7 @@ def render(obj):
     Render an image or a movie
     """
 
-    if 'times' in obj:
+    if 'duration' in obj:
         movie(obj)
     else:
         image(obj)
@@ -58,7 +59,8 @@ def image(image):
     window = chigger.RenderWindow(*results, **args)
 
     if 'output' in image:
-        window.write(image['output'])
+        if not __testing__:
+            window.write(image['output'])
     else:
         window.start()
 
@@ -70,7 +72,7 @@ def movie(movie):
 
     MOVIE_MAP = {}
 
-    common.checkMandatoryArgs(['size', 'file', 'duration'], movie)
+    common.checkMandatoryArgs(['size', 'file', 'duration', 'times'], movie)
 
     if 'time-unit' in movie:
         common.setTimeUnit(movie['time-unit'])
@@ -110,8 +112,8 @@ def movie(movie):
     pb_len = 65
     total = len(common.times)
     for i, t in enumerate(common.times):
-        percent = ("{0:.2f}").format(100 * (i / float(total)))
-        filled_length = int(pb_len * i // total)
+        percent = ("{0:.2f}").format(100 * ((i + 1) / float(total)))
+        filled_length = int(pb_len * i // (total - 1))
         bar = '#' * filled_length + ' ' * (pb_len - filled_length)
         print('\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent), end=' ')
         sys.stdout.flush()
@@ -119,15 +121,17 @@ def movie(movie):
         for item in items:
             item.update(t)
 
-        window.write("{}/{}".format(location, filename).format(i))
+        if not __testing__:
+            window.write("{}/{}".format(location, filename).format(i))
     print()
 
-    chigger.utils.img2mov(
-        '{}/{}'.format(location, frame),
-        movie['file'],
-        duration = movie['duration'],
-        num_threads = 12,
-        overwrite = True)
+    if not __testing__:
+        chigger.utils.img2mov(
+            '{}/{}'.format(location, frame),
+            movie['file'],
+            duration = movie['duration'],
+            num_threads = 12,
+            overwrite = True)
 
     filename_re = frame.replace("*", ".*")
     for f in os.listdir(location):

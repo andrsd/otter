@@ -39,8 +39,7 @@ class TestApp(unittest.TestCase):
             'annotations': annotations
         }
 
-        if 'TRAVIS_CI' not in os.environ:
-            otter.render(movie)
+        otter.render(movie)
 
     def test_missing_star_in_frame_param(self):
         viewports = [

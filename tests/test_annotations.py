@@ -56,6 +56,21 @@ class TestApp(unittest.TestCase):
         opts = ann.result().options()
         self.assertEqual(opts['text'], 'Time: 10.00 seconds')
 
+    def test_time_annotation_w_format(self):
+        common.t = 2
+        src = {
+            'format': '{:1.0f}'
+        }
+        ann = annotations.AnnotationTime(src)
+        ann.result()._setInitialOptions()
+
+        opts = ann.result().options()
+        self.assertEqual(opts['text'], 'Time: 2 seconds')
+
+        ann.update(10.)
+        opts = ann.result().options()
+        self.assertEqual(opts['text'], 'Time: 10 seconds')
+
     def test_image_annotation(self):
         common.t = 2
         src = {
