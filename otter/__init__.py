@@ -72,11 +72,10 @@ def movie(movie):
 
     MOVIE_MAP = {}
 
-    common.checkMandatoryArgs(['size', 'file', 'duration', 'times'], movie)
+    common.checkMandatoryArgs(['size', 'file', 'duration'], movie)
 
     if 'time-unit' in movie:
         common.setTimeUnit(movie['time-unit'])
-    common.times = movie.pop('times')
     common.t = 0
     common.timestep = None
 
@@ -101,6 +100,12 @@ def movie(movie):
         raise SystemExit("The 'frame' parameter needs to contain '*'.")
 
     items, results = _buildResults(movie)
+
+    # if 'times' are explicitly specified in the movie object, use those
+    if 'times' in movie:
+        common.times = movie.pop('times')
+    if common.times == None or len(common.times) == 0:
+        raise SystemExit("No times were specifed for rendering the movie.")
 
     args = common.remap(movie, MOVIE_MAP)
     args['chigger'] = True
