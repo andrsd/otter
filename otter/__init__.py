@@ -110,8 +110,8 @@ def movie(movie):
     pb_len = 65
     total = len(common.times)
     for i, t in enumerate(common.times):
-        percent = ("{0:.2f}").format(100 * (i / float(total)))
-        filled_length = int(pb_len * i // total)
+        percent = ("{0:.2f}").format(100 * ((i + 1) / float(total)))
+        filled_length = int(pb_len * i // (total - 1))
         bar = '#' * filled_length + ' ' * (pb_len - filled_length)
         print('\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent), end=' ')
         sys.stdout.flush()
