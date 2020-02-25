@@ -74,15 +74,15 @@ Movie
 
 :background2: Used if ``gradient_background`` is True.
 
-:viewports: List of ``viewport`` s.
+:viewports: List of :ref:`viewports`.
 
-:colorbars: List of ``colorbar`` s.
+:colorbars: List of :ref:`colorbar` s.
 
-:annotations: List of ``annotation`` s.
+:annotations: List of :ref:`annotations`.
 
-:frame: Optional. File name mask of rendered images.
+:frame: *Optional*. File name mask of rendered images.
 
-:location: Optional. Location where the images are rendered. By default rendering happens in some temp location determined by the operation system.
+:location: *Optional*. Location where the images are rendered. By default rendering happens in some temp location determined by the operation system.
 
 
 .. _viewports:
