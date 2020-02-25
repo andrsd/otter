@@ -77,7 +77,6 @@ class OtterViewportsTab(OtterObjectsTab):
 
     PARAMS_VPP_PLOT = [
         { 'name': 'csv-file', 'value': '', 'hint': 'The file name of the CSV file', 'req': True },
-        { 'name': 'exodus-file', 'value': '', 'hint': 'The file name of the Exodus II file', 'req': True },
         { 'name': 'variables', 'value': [], 'hint': 'The list of the variables', 'req': True },
         { 'name': 'legend', 'group': True, 'childs': PARAMS_LEGEND, 'hint': 'The legend' },
         { 'name': 'viewport', 'value': [0, 0, 1, 1], 'hint': 'The viewport', 'req': False },

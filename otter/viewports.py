@@ -60,6 +60,9 @@ class ViewportExodusResult(Viewport):
             time = common.t,
             timestep = common.timestep)
 
+        if common.times == None:
+            common.times = self.exodus_reader.getTimes()
+
         args = common.remap(viewport, self.MAP)
         args['camera'] = self.camera
 
@@ -94,11 +97,7 @@ class ViewportVPPPlot(Viewport):
     def __init__(self, viewport):
         super(ViewportVPPPlot, self).__init__(viewport)
 
-        common.checkMandatoryArgs(['exodus-file', 'csv-file', 'variables', 'viewport'], viewport)
-
-        self.exodus_file = viewport.pop('exodus-file')
-        self.exodus_reader = chigger.exodus.ExodusReader(self.exodus_file, time = common.t, timestep = common.timestep)
-        self.times = self.exodus_reader.getTimes()
+        common.checkMandatoryArgs(['csv-file', 'variables', 'viewport'], viewport)
 
         self.csv_file = viewport.pop('csv-file')
         self.data = mooseutils.VectorPostprocessorReader(self.csv_file)
@@ -168,8 +167,8 @@ class ViewportVPPPlot(Viewport):
             line.setOptions(x = x, y = y)
 
     def _getTimeIndex(self, time):
-        n = len(self.times)
-        idx = bisect.bisect_right(self.times, time) - 1
+        n = len(common.times)
+        idx = bisect.bisect_right(common.times, time) - 1
         if idx < 0:
             idx = 0
         elif idx > n:
