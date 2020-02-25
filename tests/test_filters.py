@@ -25,6 +25,14 @@ class TestApp(unittest.TestCase):
         obj = filters.buildFilter(filter)
         self.assertEqual(isinstance(obj, chigger.filters.BoxClipper), True)
 
+    def test_build_transform(self):
+        filter = {
+            'type': 'transform'
+        }
+
+        obj = filters.buildFilter(filter)
+        self.assertEqual(isinstance(obj, chigger.filters.TransformFilter), True)
+
     def test_build_unknown(self):
         filter = {
             'type': 'asfd'
