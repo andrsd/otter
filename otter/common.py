@@ -18,7 +18,8 @@ AXIS_MAP = {
     'labels-visible': 'labels_visible',
     'range': 'lim',
     'num-ticks': 'num_ticks',
-    'ticks-visible': 'ticks_visible'
+    'ticks-visible': 'ticks_visible',
+    'scale': 'axis_scale'
 }
 
 LEGEND_MAP = {

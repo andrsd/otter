@@ -139,6 +139,40 @@ class TestApp(unittest.TestCase):
 
         vp.update(0.1)
 
+    def test_vpp_plot_scaled_axis(self):
+        xaxis = {
+            'title': 'Length [cm]',
+            'scale': 1e2
+        }
+
+        yaxis = {
+            'title': 'T',
+            'scale': 1.
+        }
+
+        T_var = {
+            'name': 'T',
+            'label': 'temp'
+        }
+
+        common.t = 2
+        src = {
+            'type': 'VPPPlot',
+            'name': 'a',
+            'variables': [
+                T_var
+            ],
+            'exodus-file': os.path.join(cwd, 'diffusion_1.e'),
+            'csv-file': os.path.join(cwd, 'vpp1*csv'),
+            'title': 'Title',
+            'viewport': [0, 0, 1, 1],
+            'x-axis': xaxis,
+            'y-axis': yaxis
+        }
+        vp = viewports.ViewportVPPPlot(src)
+        result = vp.result()
+        result._setInitialOptions()
+
     def test_build_exodus_result(self):
         vp = [
             {

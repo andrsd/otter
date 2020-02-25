@@ -103,6 +103,24 @@ class ViewportVPPPlot(Viewport):
         self.csv_file = viewport.pop('csv-file')
         self.data = mooseutils.VectorPostprocessorReader(self.csv_file)
 
+        if 'x-axis' in viewport:
+            xaxis = viewport['x-axis']
+            if 'scale' in xaxis:
+                self.xscale = xaxis.pop('scale')
+            else:
+                self.xscale = 1.
+        else:
+            self.xscale = 1.
+
+        if 'y-axis' in viewport:
+            yaxis = viewport['y-axis']
+            if 'scale' in yaxis:
+                self.yscale = yaxis.pop('scale')
+            else:
+                self.yscale = 1.
+        else:
+            self.yscale = 1.
+
         self.variables = viewport.pop('variables')
         self.lines = []
         idx = self._getTimeIndex(common.t)
@@ -113,8 +131,8 @@ class ViewportVPPPlot(Viewport):
             line = chigger.graphs.Line(**args)
 
             self.data.update(time = idx)
-            x = list(self.data['arc_length'])
-            y = list(self.data[var_name])
+            x = self.data['arc_length'].multiply(self.xscale).tolist()
+            y = self.data[var_name].multiply(self.yscale).tolist()
 
             line.setOptions(x = x, y = y)
             self.lines.append(line)
@@ -145,8 +163,8 @@ class ViewportVPPPlot(Viewport):
         for v, line in zip(self.variables, self.lines):
             var_name = v['name']
             self.data.update(time = idx)
-            x = list(self.data['arc_length'])
-            y = list(self.data[var_name])
+            x = self.data['arc_length'].multiply(self.xscale).tolist()
+            y = self.data[var_name].multiply(self.yscale).tolist()
             line.setOptions(x = x, y = y)
 
     def _getTimeIndex(self, time):
