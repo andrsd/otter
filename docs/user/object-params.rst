@@ -128,9 +128,24 @@ Colorbar
 .. code-block:: python
 
   colorbar = {
-
+    'location': { 'left' | 'top' | 'right' | 'bottom' },
+    'origin': [float, float],
+    'viewport': [float, float, float, float],
+    'layer': int,
+    'width': float,
+    'length': float,
+    'primary': axis,
+    'secondary': axis,
   }
 
+:location: Location of the numbers relative to the color bar.
+:origin: Position of the color bar in the viewport.
+:viewport: *left*, *bottom*, *right* and *top* of the viewport where this color bar is displayed.
+:layer: Layer number.
+:width: Width of the color bar relative to viewport.
+:length: Length of the color bar relative to viewport.
+:primary: Primary axis of the color bar.
+:secondary: *Optional*. Secondary axis of the color bar.
 
 
 .. _annotations:
@@ -309,7 +324,8 @@ Axis
     'notation': { 'standard' | 'scientific' | 'fixed' | 'printf'},
     'ticks-visible': bool,
     'axis-visible': bool,
-    'labels-visible': bool
+    'labels-visible': bool,
+    'scale': float
   }
 
 :num-ticks: The number of tick marks to place on the axis.
@@ -333,7 +349,7 @@ Axis
 .. :axis_opacity: The axis opacity.
 .. :zero_tol: Tolerance for considering limits to be the same.
 :labels-visible: Control visibility of the numeric labels.
-
+:scale: Scale factor for the axis. Useful for changing units. For example, to go from *meters* to *centimeters* set this to *1e2*.
 
 .. _camera:
 
