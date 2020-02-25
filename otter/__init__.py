@@ -26,7 +26,7 @@ def render(obj):
     Render an image or a movie
     """
 
-    if 'times' in obj:
+    if 'duration' in obj:
         movie(obj)
     else:
         image(obj)
@@ -70,7 +70,7 @@ def movie(movie):
 
     MOVIE_MAP = {}
 
-    common.checkMandatoryArgs(['size', 'file', 'duration'], movie)
+    common.checkMandatoryArgs(['size', 'file', 'duration', 'times'], movie)
 
     if 'time-unit' in movie:
         common.setTimeUnit(movie['time-unit'])
