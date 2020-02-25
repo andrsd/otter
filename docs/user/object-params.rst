@@ -242,6 +242,18 @@ Time
 Filters
 -------
 
+Transform
+^^^^^^^^^
+
+.. code-block:: python
+
+  transform = {
+    'scale': [float, float, float]
+  }
+
+:scale: Scaling factor for x, y and z direction.
+
+
 Plane Clip
 ^^^^^^^^^^
 
