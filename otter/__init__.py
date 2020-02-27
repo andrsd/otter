@@ -61,6 +61,7 @@ def image(image):
     if 'file' in image:
         if not __testing__:
             window.write(image['file'])
+            print("Wrote image into '{}'".format(image['file']))
     else:
         window.start()
 
