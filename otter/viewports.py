@@ -63,6 +63,9 @@ class ViewportExodusResult(Viewport):
         if common.times == None:
             common.times = self.exodus_reader.getTimes()
 
+        if 'cmap' not in viewport:
+            viewport['cmap'] = 'rainbow'
+
         args = common.remap(viewport, self.MAP)
         args['camera'] = self.camera
 
