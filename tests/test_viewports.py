@@ -206,7 +206,7 @@ class TestApp(unittest.TestCase):
                 'type': 'ExodusResult',
                 'name': 'a',
                 'variable': 'var',
-                'file': os.path.join(cwd, 'mug.e'),
+                'file': os.path.join(cwd, 'diffusion_1.e'),
                 'title': 'Title',
                 'camera': {
                     'view-up': [0, 0, 0],

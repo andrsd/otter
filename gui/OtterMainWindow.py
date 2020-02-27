@@ -237,7 +237,6 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             out << "#!/usr/bin/env python\n"
             out << "\n"
             out << "import otter\n"
-            out << "import numpy\n"
             out << "\n"
             out << self.ViewportsTab.toText()
             out << "\n"

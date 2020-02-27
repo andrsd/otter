@@ -2,7 +2,6 @@ import vtk
 import chigger
 from . import config, filters, common
 import mooseutils
-import numpy
 import bisect
 
 
@@ -232,8 +231,9 @@ class ViewportPlotOverTime(Viewport):
                 vals = data_y
             else:
                 vals = []
+                linipol = common.LinearInterpolation(data_x, data_y)
                 for t in common.times:
-                    v = numpy.interp(t, data_x, data_y)
+                    v = linipol(t)
                     vals.append(v)
             self.values.append(vals)
 
