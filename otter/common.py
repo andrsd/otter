@@ -33,6 +33,15 @@ LEGEND_MAP = {
     'border-width': 'border_width'
 }
 
+COLORS = [
+    [0, 0.55, 0.87],
+    [0.47, 0.78, 0.17],
+    [1, 0.57, 0],
+    [0.36, 0.24, 0.83],
+    [0.75, 0.24, 0.15]
+]
+
+
 def remapPlotAxis(args):
     return remap(args, AXIS_MAP)
 

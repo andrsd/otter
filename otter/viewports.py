@@ -104,6 +104,8 @@ class ViewportVPPPlot(Viewport):
     def __init__(self, viewport):
         super(ViewportVPPPlot, self).__init__(viewport)
 
+        self._clr_idx = 0
+
         common.checkMandatoryArgs(['csv-file', 'variables', 'viewport'], viewport)
 
         self.csv_file = viewport.pop('csv-file')
@@ -131,6 +133,9 @@ class ViewportVPPPlot(Viewport):
         self.lines = []
         idx = self._getTimeIndex(common.t)
         for v in self.variables:
+            if 'color' not in v:
+                v['color'] = common.COLORS[self._clr_idx % len(common.COLORS)]
+                self._clr_idx = self._clr_idx + 1
             args = common.remap(v, self.LINE_MAP)
             var_name = args.pop('name')
             args['append'] = False
@@ -196,6 +201,8 @@ class ViewportPlotOverTime(Viewport):
     def __init__(self, viewport):
         super(ViewportPlotOverTime, self).__init__(viewport)
 
+        self._clr_idx = 0
+
         if 'viewport' not in viewport:
             viewport['viewport'] = [0, 0, 1, 1]
         common.checkMandatoryArgs(['variables'], viewport)
@@ -219,6 +226,10 @@ class ViewportPlotOverTime(Viewport):
         self.lines = []
         self.values = []
         for var in viewport['variables']:
+            if 'color' not in var:
+                var['color'] = common.COLORS[self._clr_idx % len(common.COLORS)]
+                self._clr_idx = self._clr_idx + 1
+
             if 'scale' in var:
                 scale = var.pop('scale')
             else:

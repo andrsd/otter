@@ -44,7 +44,6 @@ class TestApp(unittest.TestCase):
     def test_plot_over_time(self):
         T_var = {
             'name': 'T',
-            'color': [0.1, 0.2, 0.3],
             'width': 1
         }
 
