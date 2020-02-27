@@ -10,7 +10,7 @@ Image
     'size': [ float, float],
     't', float,
     'time-unit': {'sec', 'min', 'hour', 'day'},
-    'output': str,
+    'file': str,
     'background': [float, float, float],
     'gradient_background': bool,
     'background2': [float, float, float],
@@ -25,7 +25,7 @@ Image
 
 :time-unit: Time unit -- used globally. For example, time annotation will pick this value.
 
-:output: If specified, render into a file, otherwise render on screen in an interactive window.
+:file: If specified, render into a file, otherwise render on screen in an interactive window.
 
 :background: An array of three numbers between ``0`` and ``1`` where each entry represents red, green and blue component.
 

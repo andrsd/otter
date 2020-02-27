@@ -21,7 +21,7 @@ class TestApp(unittest.TestCase):
             'background': [0.0, 0.0, 0.0],
             't': '0.0',
             'time-unit': 'sec',
-            'output': os.path.join(cwd, 'image.png'),
+            'file': os.path.join(cwd, 'image.png'),
             'viewports': viewports,
             'colorbars': colorbars,
             'annotations': annotations

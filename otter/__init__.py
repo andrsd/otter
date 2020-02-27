@@ -54,13 +54,13 @@ def image(image):
     args['chigger'] = True
     if 'layer' not in image:
         args['layer'] = 0
-    if 'output' in image:
+    if 'file' in image:
         args['offscreen'] = True
     window = chigger.RenderWindow(*results, **args)
 
-    if 'output' in image:
+    if 'file' in image:
         if not __testing__:
-            window.write(image['output'])
+            window.write(image['file'])
     else:
         window.start()
 

@@ -91,7 +91,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
             idx = self.MediaTab.Type.currentIndex()
             if idx == OtterMediaTab.IDX_IMAGE:
                 args = self.MediaTab.args()
-                self._render_action.setEnabled('output' in args)
+                self._render_action.setEnabled('file' in args)
             elif idx == OtterMediaTab.IDX_MOVIE:
                 args = self.MediaTab.args()
                 self._render_action.setEnabled('file' in args)
