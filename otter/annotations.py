@@ -12,7 +12,8 @@ class AnnotationText(object):
         'valign': 'vertical_justification',
         'color': 'text_color',
         'opacity': 'text_opacity',
-        'shadow': 'text_shadow'
+        'shadow': 'text_shadow',
+        'font-family': 'font_family'
     }
 
     def __init__(self, annotation):

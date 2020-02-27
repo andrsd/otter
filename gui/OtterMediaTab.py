@@ -56,7 +56,7 @@ class OtterMediaTab(QtWidgets.QWidget):
             'req': False
         },
         {
-            'name': 'output',
+            'name': 'file',
             'file': 'save',
             'value': '',
             'hint': 'The file name where image will be saved. If empty, image will be rendered on the screen',
@@ -247,7 +247,7 @@ class OtterMediaTab(QtWidgets.QWidget):
         elif name == 'size':
             param = toPython(value)
             self.WindowResult.resize(param[0], param[1])
-        elif name in ['output', 'location', 'duration', 'file', 'times', 'frame']:
+        elif name in ['location', 'duration', 'file', 'times', 'frame']:
             pass
         else:
             if item.isCheckable():
@@ -311,7 +311,7 @@ class OtterMediaTab(QtWidgets.QWidget):
             self.renderMovie()
 
     def renderImage(self):
-        output_file = self.args()['output']
+        output_file = self.args()['file']
         self.WindowResult.write(output_file)
         mb = QtWidgets.QMessageBox.information(
             self,

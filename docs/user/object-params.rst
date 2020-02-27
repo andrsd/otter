@@ -10,7 +10,7 @@ Image
     'size': [ float, float],
     't', float,
     'time-unit': {'sec', 'min', 'hour', 'day'},
-    'output': str,
+    'file': str,
     'background': [float, float, float],
     'gradient_background': bool,
     'background2': [float, float, float],
@@ -25,7 +25,7 @@ Image
 
 :time-unit: Time unit -- used globally. For example, time annotation will pick this value.
 
-:output: If specified, render into a file, otherwise render on screen in an interactive window.
+:file: If specified, render into a file, otherwise render on screen in an interactive window.
 
 :background: An array of three numbers between ``0`` and ``1`` where each entry represents red, green and blue component.
 
@@ -166,7 +166,10 @@ Text
     'halign': {'left' | 'center' | 'right'},
     'valign': {'bottom' | 'middle' | 'top'},
     'text': str,
-    'font-size': float
+    'font-size': float,
+    'font-family': str,
+    'bold': bool,
+    'italic': bool
   }
 
 :position: The text position within the viewport, in relative coordinates.
@@ -185,6 +188,11 @@ Text
 
 :font-size: The text font size.
 
+:font-family: The font family.
+
+:bold: Font bolding.
+
+:italic: Italic type.
 
 Image
 ^^^^^
@@ -230,6 +238,9 @@ Time
     'valign': {'bottom' | 'middle' | 'top'},
     'text': str,
     'font-size': float,
+    'font-family': str,
+    'bold': bool,
+    'italic': bool,
     'format': str
   }
 
@@ -248,6 +259,12 @@ Time
 :text: The text to display.
 
 :font-size: The text font size.
+
+:font-family: The font family.
+
+:bold: Font bolding.
+
+:italic: Italic type.
 
 :format: Formatting string for the time
 
