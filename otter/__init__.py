@@ -8,6 +8,8 @@ import sys
 import re
 import chigger
 import tempfile
+import time
+import datetime
 
 from . import config
 from . import common
@@ -115,13 +117,15 @@ def movie(movie):
         args['layer'] = 0
     window = chigger.RenderWindow(*results, **args)
 
+    t0 = time.time()
+    time_remaining = 'unknown'
     pb_len = 65
     total = len(common.times)
     for i, t in enumerate(common.times):
         percent = ("{0:.2f}").format(100 * ((i + 1) / float(total)))
         filled_length = int(pb_len * i // (total - 1))
         bar = '#' * filled_length + ' ' * (pb_len - filled_length)
-        print('\x1b[2K\r{}/{}: |{}| {}% complete'.format(i + 1, total, bar, percent), end=' ')
+        print('\x1b[2K\r{}/{}: |{}| {}% complete, time remaining {}'.format(i + 1, total, bar, percent, time_remaining), end=' ')
         sys.stdout.flush()
 
         for item in items:
@@ -129,6 +133,9 @@ def movie(movie):
 
         if not __testing__:
             window.write("{}/{}".format(location, filename).format(i))
+        t1 = time.time()
+        avg_time_per_frame = (t1 - t0) / (i + 1)
+        time_remaining = str(datetime.timedelta(seconds = round((total - i - 1) * avg_time_per_frame)))
     print()
 
     if not __testing__:
