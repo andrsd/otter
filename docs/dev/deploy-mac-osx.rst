@@ -10,7 +10,7 @@ Setup environment
 
   $ virtualenv venv
   $ . venv/bin/activate
-  $ pip install -r requirements.txt
+  $ pip install -r venv-requirements.txt
 
 
 Mac OS X: Build icns
@@ -48,7 +48,7 @@ NOTES
 
   .. code-block:: bash
 
-    $ pip freeze > requirements.txt
+    $ pip freeze > venv-requirements.txt
 
 Resources
 ---------
