@@ -166,7 +166,10 @@ Text
     'halign': {'left' | 'center' | 'right'},
     'valign': {'bottom' | 'middle' | 'top'},
     'text': str,
-    'font-size': float
+    'font-size': float,
+    'font-family': str,
+    'bold': bool,
+    'italic': bool
   }
 
 :position: The text position within the viewport, in relative coordinates.
@@ -185,6 +188,11 @@ Text
 
 :font-size: The text font size.
 
+:font-family: The font family.
+
+:bold: Font bolding.
+
+:italic: Italic type.
 
 Image
 ^^^^^
@@ -230,6 +238,9 @@ Time
     'valign': {'bottom' | 'middle' | 'top'},
     'text': str,
     'font-size': float,
+    'font-family': str,
+    'bold': bool,
+    'italic': bool,
     'format': str
   }
 
@@ -248,6 +259,12 @@ Time
 :text: The text to display.
 
 :font-size: The text font size.
+
+:font-family: The font family.
+
+:bold: Font bolding.
+
+:italic: Italic type.
 
 :format: Formatting string for the time
 
