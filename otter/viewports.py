@@ -2,7 +2,6 @@ import vtk
 import chigger
 from . import config, filters, common
 import mooseutils
-import numpy
 import bisect
 
 
@@ -34,6 +33,12 @@ class Viewport(object):
         """
         pass
 
+    def times(self):
+        """
+        Return times of the simulation time steps. None if times are not supported.
+        """
+        return None
+
 
 class ViewportExodusResult(Viewport):
     """
@@ -60,8 +65,8 @@ class ViewportExodusResult(Viewport):
             time = common.t,
             timestep = common.timestep)
 
-        if common.times == None:
-            common.times = self.exodus_reader.getTimes()
+        if 'cmap' not in viewport:
+            viewport['cmap'] = 'rainbow'
 
         args = common.remap(viewport, self.MAP)
         args['camera'] = self.camera
@@ -84,6 +89,8 @@ class ViewportExodusResult(Viewport):
     def update(self, time):
         self.exodus_reader.setOptions(time = time, timestep = None)
 
+    def times(self):
+        return self.exodus_reader.getTimes()
 
 class ViewportVPPPlot(Viewport):
     """
@@ -224,8 +231,9 @@ class ViewportPlotOverTime(Viewport):
                 vals = data_y
             else:
                 vals = []
+                linipol = common.LinearInterpolation(data_x, data_y)
                 for t in common.times:
-                    v = numpy.interp(t, data_x, data_y)
+                    v = linipol(t)
                     vals.append(v)
             self.values.append(vals)
 
@@ -284,6 +292,10 @@ def process(viewports):
             obj = _buildViewport(viewport)
             if obj != None:
                 objs.append(obj)
+
+                times = obj.times()
+                if times != None and common.times == None:
+                    common.times = times
         else:
             print("No 'type' defined in viewport. Skipping...")
     return objs

@@ -97,3 +97,22 @@ def checkMandatoryArgs(args, data):
     for arg in args:
         if arg not in data:
             raise SystemExit("No '{}' defined in '{}' viewport.".format(arg, __name__))
+
+
+class LinearInterpolation:
+    """
+    Fairly simple (and also stupid) linear interpolation class that behaves like a callable funtion
+    """
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __call__(self, x):
+        if x <= self.x[0]:
+            return self.y[0]
+        if x >= self.x[len(self.x) - 1]:
+            return self.y[len(self.y) - 1]
+
+        for i in range(len(self.x) - 1):
+            if (x >= self.x[i]) and (x < self.x[i + 1]):
+                return self.y[i] + (self.y[i + 1] - self.y[i]) * (x - self.x[i]) / (self.x[i + 1] - self.x[i]);
