@@ -34,6 +34,12 @@ class Viewport(object):
         """
         pass
 
+    def times(self):
+        """
+        Return times of the simulation time steps. None if times are not supported.
+        """
+        return None
+
 
 class ViewportExodusResult(Viewport):
     """
@@ -60,9 +66,6 @@ class ViewportExodusResult(Viewport):
             time = common.t,
             timestep = common.timestep)
 
-        if common.times == None:
-            common.times = self.exodus_reader.getTimes()
-
         if 'cmap' not in viewport:
             viewport['cmap'] = 'rainbow'
 
@@ -87,6 +90,8 @@ class ViewportExodusResult(Viewport):
     def update(self, time):
         self.exodus_reader.setOptions(time = time, timestep = None)
 
+    def times(self):
+        return self.exodus_reader.getTimes()
 
 class ViewportVPPPlot(Viewport):
     """
@@ -287,6 +292,10 @@ def process(viewports):
             obj = _buildViewport(viewport)
             if obj != None:
                 objs.append(obj)
+
+                times = obj.times()
+                if times != None and common.times == None:
+                    common.times = times
         else:
             print("No 'type' defined in viewport. Skipping...")
     return objs
