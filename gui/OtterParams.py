@@ -183,6 +183,9 @@ class OtterParamFilePicker(OtterParamBase):
         self.type = load_save
         self.editor = None
 
+    def load_save(self):
+        return self.type
+
     def createEditor(self, parent, tree_view):
         btn = QtWidgets.QPushButton("...")
         btn.setMaximumWidth(20)

@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
 from gui.OtterOutput import *
+from gui.OtterParameterView import OtterParameterView, OtterParameterModel
 from otter import common
 
 class OtterObjectsTab(QtWidgets.QWidget):
@@ -55,11 +56,11 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ButtonLayout.addWidget(self.RemoveButton)
         self.ButtonLayout.addStretch()
 
-        self.Model = QtGui.QStandardItemModel(0, 2, self)
+        self.Model = OtterParameterModel(0, 2, self)
         self.Model.setHorizontalHeaderLabels(["Parameter", "Value"])
         self.Model.itemChanged.connect(self.onItemChanged)
 
-        self.Objects = QtWidgets.QTreeView(self)
+        self.Objects = OtterParameterView(self)
         self.Objects.setModel(self.Model)
         self.Objects.header().resizeSection(0, 140)
         self.Objects.setRootIsDecorated(False)
