@@ -40,6 +40,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
         btn.setMaximumWidth(62)
         self.ButtonLayout.addWidget(btn)
 
+        self.AddShortcut = QtWidgets.QShortcut("Ctrl+Shift+N", self)
+        self.AddShortcut.activated.connect(btn.animateClick)
+
         self.ButtonLayout.addSpacing(2)
 
         self.RemoveButton = QtWidgets.QPushButton("\u2212")
