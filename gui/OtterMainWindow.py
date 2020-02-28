@@ -38,6 +38,12 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         fileMenu.addSeparator()
         self._about_box_action = fileMenu.addAction("About", self.onAboutApplication)
 
+        self._next_tab = QtWidgets.QShortcut("Ctrl+Shift+]", self)
+        self._next_tab.activated.connect(self.onNextTab)
+        self._prev_tab = QtWidgets.QShortcut("Ctrl+Shift+[", self)
+        self._prev_tab.activated.connect(self.onPrevTab)
+
+
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
         viewMenu = menubar.addMenu("View" + '\u200C')
         self._media_tab_action = viewMenu.addAction("Media", lambda: self.onActivateTab(0), "Ctrl+1")
@@ -319,3 +325,15 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
     def onRender(self):
         self.MediaTab.render()
+
+    def onNextTab(self):
+        idx = self.ObjectType.currentIndex()
+        if idx < self.ObjectType.count():
+            idx = idx + 1
+            self.ObjectType.setCurrentIndex(idx)
+
+    def onPrevTab(self):
+        idx = self.ObjectType.currentIndex()
+        if idx > 0:
+            idx = idx - 1
+            self.ObjectType.setCurrentIndex(idx)
