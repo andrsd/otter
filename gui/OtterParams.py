@@ -44,15 +44,34 @@ def toPython(value):
             return value
 
 
+class OtterLineEdit(QtWidgets.QLineEdit):
+
+    def __init__(self, parent, tree_view):
+        super(OtterLineEdit, self).__init__(parent)
+        self._tree_view = tree_view
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Up:
+            self._tree_view.commitData(self)
+            self._tree_view.closeEditor(self, QtWidgets.QAbstractItemDelegate.EditPreviousItem)
+
+        if e.key() == QtCore.Qt.Key_Down:
+            self._tree_view.commitData(self)
+            self._tree_view.closeEditor(self, QtWidgets.QAbstractItemDelegate.EditNextItem)
+
+        super(OtterLineEdit, self).keyPressEvent(e)
+
+
 class OtterParamDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
         super(OtterParamDelegate, self).__init__(parent)
+        self._tree_view = parent
 
     def createEditor(self, parent, option, index):
         model = index.model()
         data = model.itemFromIndex(index).data()
         if isinstance(data, OtterParamBase):
-            return data.createEditor(parent)
+            return data.createEditor(parent, self._tree_view)
         else:
             return super(OtterParamDelegate, self).createEditor(parent, option, index)
 
@@ -99,7 +118,7 @@ class OtterParamOptions(OtterParamBase):
         super(OtterParamOptions, self).__init__()
         self.options = options
 
-    def createEditor(self, parent):
+    def createEditor(self, parent, tree_view):
         editor = QtWidgets.QComboBox(parent)
         for opt in self.options:
             editor.addItem(opt)
@@ -123,8 +142,8 @@ class OtterParamLineEdit(OtterParamBase):
         self.type = type
         self.limits = limits
 
-    def createEditor(self, parent):
-        editor = QtWidgets.QLineEdit(parent)
+    def createEditor(self, parent, tree_view):
+        editor = OtterLineEdit(parent, tree_view)
         if self.limits != None:
             if self.type == 'int':
                 validator = QtGui.QIntValidator()
@@ -164,12 +183,12 @@ class OtterParamFilePicker(OtterParamBase):
         self.type = load_save
         self.editor = None
 
-    def createEditor(self, parent):
+    def createEditor(self, parent, tree_view):
         btn = QtWidgets.QPushButton("...")
         btn.setMaximumWidth(20)
         btn.clicked.connect(self.onFileSelect)
 
-        editor = QtWidgets.QLineEdit(parent)
+        editor = OtterLineEdit(parent, tree_view)
 
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch()
