@@ -204,7 +204,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
 
-                self.Objects.setFirstColumnSpanned(i, si.index(), True)
+                gr2 = QtGui.QStandardItem()
+                gr2.setEditable(False)
+                si.setChild(i, 1, gr2)
             else:
                 self.buildChildParam(i, si, item)
 
