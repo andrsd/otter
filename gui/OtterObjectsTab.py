@@ -63,7 +63,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.Objects = OtterParameterView(self)
         self.Objects.setModel(self.Model)
         self.Objects.header().resizeSection(0, 140)
-        self.Objects.setRootIsDecorated(False)
+        self.Objects.setRootIsDecorated(True)
         self.Objects.setItemDelegate(OtterParamDelegate(self.Objects))
         self.Objects.setIndentation(OtterObjectsTab.INDENT)
         self.Objects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
@@ -180,9 +180,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
         idx = self.Model.rowCount()
         si = QtGui.QStandardItem()
         si.setEditable(False)
-        # FIXME: use color from the GUI color scheme
-        brush = QtGui.QBrush(QtGui.QColor(192, 192, 192))
-        si.setBackground(brush)
         self.Model.setItem(idx, si)
         if spanned:
             self.Objects.setFirstColumnSpanned(idx, QtCore.QModelIndex(), spanned)
@@ -190,7 +187,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
             si.setText("name")
             si2 = QtGui.QStandardItem(name)
             si2.setEditable(True)
-            si2.setBackground(brush)
             self.Model.setItem(idx, 1, si2)
 
         for i, item in enumerate(params):
