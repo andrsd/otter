@@ -54,12 +54,15 @@ class OtterLineEdit(QtWidgets.QLineEdit):
         if e.key() == QtCore.Qt.Key_Up:
             self._tree_view.commitData(self)
             self._tree_view.closeEditor(self, QtWidgets.QAbstractItemDelegate.EditPreviousItem)
-
-        if e.key() == QtCore.Qt.Key_Down:
+            e.accept()
+        elif e.key() == QtCore.Qt.Key_Down:
             self._tree_view.commitData(self)
             self._tree_view.closeEditor(self, QtWidgets.QAbstractItemDelegate.EditNextItem)
-
-        super(OtterLineEdit, self).keyPressEvent(e)
+            e.accept()
+        elif e.key() == QtCore.Qt.Key_Return:
+            e.accept()
+        else:
+            super(OtterLineEdit, self).keyPressEvent(e)
 
 
 class OtterParamDelegate(QtWidgets.QStyledItemDelegate):

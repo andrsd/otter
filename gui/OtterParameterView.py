@@ -58,3 +58,15 @@ class OtterParameterView(QtWidgets.QTreeView):
             item.setText(s)
         else:
             event.ignore()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            index = self.currentIndex()
+            if index.column() != 1:
+                sibling = index.sibling(index.row(), 1)
+                self.setCurrentIndex(sibling)
+            else:
+                self.edit(index)
+            event.accept()
+        else:
+            super(OtterParameterView, self).keyPressEvent(event)

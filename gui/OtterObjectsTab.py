@@ -67,7 +67,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.Objects.setItemDelegate(OtterParamDelegate(self.Objects))
         self.Objects.setIndentation(OtterObjectsTab.INDENT)
         self.Objects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
-        self.Objects.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
+        self.Objects.setEditTriggers(QtWidgets.QAbstractItemView.CurrentChanged)
         layout.addWidget(self.Objects)
 
         layout.addLayout(self.ButtonLayout)
@@ -240,6 +240,7 @@ class OtterObjectsTab(QtWidgets.QWidget):
         elif val == None:
             child = QtGui.QStandardItem()
             child.setEditable(True)
+            child.setData(QtCore.QVariant(OtterParamLineEdit('str')))
         elif type(val) == bool:
             child = QtGui.QStandardItem()
             child.setEditable(False)
