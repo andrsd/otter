@@ -15,19 +15,19 @@ class OtterViewportsTab(OtterObjectsTab):
 
     PARAMS_PLOT_VARIABLE = [
         { 'name': 'name', 'value': '', 'hint': 'The name of the variable to plot', 'req': True },
-        { 'name': 'color', 'value': [1, 1, 1], 'hint': 'The color of the line', 'req': False },
+        { 'name': 'color', 'color': True, 'value': [1, 1, 1], 'hint': 'The color of the line', 'req': False },
         { 'name': 'label', 'value': '', 'hint': 'The name used in the legend of this plot', 'req': False },
         { 'name': 'width', 'value': 2, 'hint': 'The width of the line', 'req': False },
     ]
 
     PARAMS_LEGEND = [
-        { 'name': 'background', 'value': [0, 0, 0], 'hint': 'The background colot of the legend', 'req': False },
+        { 'name': 'background', 'color': True, 'value': [0, 0, 0], 'hint': 'The background colot of the legend', 'req': False },
         { 'name': 'border', 'value': False, 'hint': 'Draw border around the legend', 'req': False },
-        { 'name': 'border-color', 'value': [0, 0, 0], 'hint': 'The color of the border around the legend', 'req': False },
+        { 'name': 'border-color', 'color': True, 'value': [0, 0, 0], 'hint': 'The color of the border around the legend', 'req': False },
         { 'name': 'border-opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacoty of the legend border', 'req': False },
         { 'name': 'border-width', 'value': 0., 'hint': 'The width of the border around the legend', 'req': False },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
-        { 'name': 'label-color', 'value': [1, 1, 1], 'hint': 'The color of the labels', 'req': False },
+        { 'name': 'label-color', 'color': True, 'value': [1, 1, 1], 'hint': 'The color of the labels', 'req': False },
         { 'name': 'label-font-size', 'value': None, 'valid': '\d+', 'hint': 'The size of the font used for the label', 'req': False },
         { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The posititon of the viewport with a result', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the legend', 'req': False },

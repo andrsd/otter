@@ -26,12 +26,14 @@ class OtterMediaTab(QtWidgets.QWidget):
         {
             'name': 'background',
             'value': [0., 0., 0.],
+            'color': True,
             'hint': 'The background color',
             'req': False
         },
         {
             'name': 'background2',
             'value': [0., 0., 0.],
+            'color': True,
             'hint': 'The second background color, when supplied this creates a gradient background',
             'req': False
         },

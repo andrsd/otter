@@ -223,3 +223,21 @@ class OtterParamFilePicker(OtterParamBase):
                 self.editor.setText(file_names[0])
         else:
             print("Unknow type in OtterParamFilePicker.")
+
+
+class OtterParamColorPicker(OtterParamBase):
+    def __init__(self):
+        super(OtterParamColorPicker, self).__init__()
+
+    def createEditor(self, parent, tree_view):
+        editor = OtterLineEdit(parent, tree_view)
+        return editor
+
+    def setEditorData(self, editor, value):
+        editor.setText(value)
+
+    def value(self, editor):
+        return editor.text()
+
+    def setGeometry(self, editor, rect):
+        editor.setGeometry(rect)

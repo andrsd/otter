@@ -233,6 +233,10 @@ class OtterObjectsTab(QtWidgets.QWidget):
             child = QtGui.QStandardItem(val)
             child.setEditable(True)
             child.setData(QtCore.QVariant(OtterParamFilePicker(item['file'])))
+        elif 'color' in item:
+            child = QtGui.QStandardItem(str(val))
+            child.setEditable(True)
+            child.setData(QtCore.QVariant(OtterParamColorPicker()))
         elif val == None:
             child = QtGui.QStandardItem()
             child.setEditable(True)

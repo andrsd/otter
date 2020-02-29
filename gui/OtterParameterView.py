@@ -7,7 +7,7 @@ class OtterParameterModel(QtGui.QStandardItemModel):
         super(OtterParameterModel, self).__init__(rows, cols, parent)
 
     def canDropMimeData(self, data, action, row, column, parent):
-        if not data.hasFormat('text/uri-list'):
+        if not data.hasFormat('text/uri-list') and not data.hasFormat('application/x-color'):
             return False
 
         index = self.index(row, column, parent)
@@ -17,6 +17,9 @@ class OtterParameterModel(QtGui.QStandardItemModel):
                 otter_param = item.data()
                 if otter_param.load_save() == 'open':
                     return True
+            elif isinstance(item.data(), OtterParamColorPicker):
+                return True
+
         return False
 
 
@@ -29,18 +32,29 @@ class OtterParameterView(QtWidgets.QTreeView):
 
     def dragEnterEvent(self, event):
         md = event.mimeData()
-        if event.mimeData().hasUrls():
+        if md.hasUrls() or md.hasColor():
             event.accept()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        if event.mimeData().hasUrls():
+        mime_data = event.mimeData()
+        if mime_data.hasUrls():
             event.setDropAction(QtCore.Qt.CopyAction)
             event.accept()
-            file_name = event.mimeData().urls()[0].toLocalFile()
+            file_name = mime_data.urls()[0].toLocalFile()
             index = self.indexAt(event.pos())
             item = self.model().itemFromIndex(index)
             item.setText(file_name)
+        elif mime_data.hasColor():
+            event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+
+            index = self.indexAt(event.pos())
+            item = self.model().itemFromIndex(index)
+
+            qclr = mime_data.colorData()
+            s = "[{:.2}, {:.2}, {:.2}]".format(qclr.redF(), qclr.greenF(), qclr.blueF())
+            item.setText(s)
         else:
             event.ignore()
