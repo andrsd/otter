@@ -11,8 +11,11 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
     PARAMS_TEXT = [
         { 'name': 'text', 'value': 'Text', 'hint': 'The text to render', 'req': True },
-        { 'name': 'color', 'value': [1, 1, 1], 'hint': 'The color of the text', 'req': False },
+        { 'name': 'color', 'color': True, 'value': [1, 1, 1], 'hint': 'The color of the text', 'req': False },
         { 'name': 'font-size', 'value': 20, 'valid': '\d+', 'hint': 'The size of the font used for the numbers', 'req': False },
+        { 'name': 'font-family', 'value': None, 'hint': 'The font family of the font', 'req': False },
+        { 'name': 'bold', 'value': False, 'hint': 'The font bolding', 'req': False },
+        { 'name': 'italic', 'value': False, 'hint': 'The font italic', 'req': False },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
         { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
@@ -21,7 +24,7 @@ class OtterAnnotationsTab(OtterObjectsTab):
     ]
 
     PARAMS_IMAGE = [
-        { 'name': 'file', 'value': '', 'hint': 'The file name of the image', 'req': True },
+        { 'name': 'file', 'file': 'open', 'value': '', 'hint': 'The file name of the image', 'req': True },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
         { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },
@@ -32,8 +35,11 @@ class OtterAnnotationsTab(OtterObjectsTab):
 
     PARAMS_TIME = [
         { 'name': 'font-size', 'value': 20, 'valid': '\d+', 'hint': 'The size of the font used for the numbers', 'req': False },
-        { 'name': 'color', 'value': [1, 1, 1], 'hint': 'The color of the text', 'req': False },
+        { 'name': 'color', 'color': True, 'value': [1, 1, 1], 'hint': 'The color of the text', 'req': False },
         { 'name': 'format', 'value': annotations.AnnotationTime.FORMAT_STRING, 'hint': 'The format pattern for the time', 'req': False },
+        { 'name': 'font-family', 'value': None, 'hint': 'The font family of the font', 'req': False },
+        { 'name': 'bold', 'value': False, 'hint': 'The font bolding', 'req': False },
+        { 'name': 'italic', 'value': False, 'hint': 'The font italic', 'req': False },
         { 'name': 'halign', 'value': 'left', 'enum': ['left', 'center', 'right'], 'hint': 'The horizontal alignment [left, center, right]', 'req': False },
         { 'name': 'opacity', 'value': None, 'limits': [0., 1.], 'hint': 'The opacity of object', 'req': False },
         { 'name': 'position', 'value': [0.5, 0.5], 'hint': 'The posititon of the viewport with a result', 'req': False },

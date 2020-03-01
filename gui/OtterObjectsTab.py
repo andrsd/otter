@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from gui.OtterParams import *
 from gui.OtterOutput import *
+from gui.OtterParameterView import OtterParameterView, OtterParameterModel
 from otter import common
 
 class OtterObjectsTab(QtWidgets.QWidget):
@@ -40,6 +41,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
         btn.setMaximumWidth(62)
         self.ButtonLayout.addWidget(btn)
 
+        self.AddShortcut = QtWidgets.QShortcut("Ctrl+Shift+N", self)
+        self.AddShortcut.activated.connect(btn.animateClick)
+
         self.ButtonLayout.addSpacing(2)
 
         self.RemoveButton = QtWidgets.QPushButton("\u2212")
@@ -52,18 +56,18 @@ class OtterObjectsTab(QtWidgets.QWidget):
         self.ButtonLayout.addWidget(self.RemoveButton)
         self.ButtonLayout.addStretch()
 
-        self.Model = QtGui.QStandardItemModel(0, 2, self)
+        self.Model = OtterParameterModel(0, 2, self)
         self.Model.setHorizontalHeaderLabels(["Parameter", "Value"])
         self.Model.itemChanged.connect(self.onItemChanged)
 
-        self.Objects = QtWidgets.QTreeView(self)
+        self.Objects = OtterParameterView(self)
         self.Objects.setModel(self.Model)
         self.Objects.header().resizeSection(0, 140)
-        self.Objects.setRootIsDecorated(False)
+        self.Objects.setRootIsDecorated(True)
         self.Objects.setItemDelegate(OtterParamDelegate(self.Objects))
         self.Objects.setIndentation(OtterObjectsTab.INDENT)
         self.Objects.selectionModel().selectionChanged.connect(self.onObjectSelectionChanged)
-        self.Objects.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
+        self.Objects.setEditTriggers(QtWidgets.QAbstractItemView.CurrentChanged)
         layout.addWidget(self.Objects)
 
         layout.addLayout(self.ButtonLayout)
@@ -176,9 +180,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
         idx = self.Model.rowCount()
         si = QtGui.QStandardItem()
         si.setEditable(False)
-        # FIXME: use color from the GUI color scheme
-        brush = QtGui.QBrush(QtGui.QColor(192, 192, 192))
-        si.setBackground(brush)
         self.Model.setItem(idx, si)
         if spanned:
             self.Objects.setFirstColumnSpanned(idx, QtCore.QModelIndex(), spanned)
@@ -186,7 +187,6 @@ class OtterObjectsTab(QtWidgets.QWidget):
             si.setText("name")
             si2 = QtGui.QStandardItem(name)
             si2.setEditable(True)
-            si2.setBackground(brush)
             self.Model.setItem(idx, 1, si2)
 
         for i, item in enumerate(params):
@@ -200,7 +200,9 @@ class OtterObjectsTab(QtWidgets.QWidget):
                 for j, subitem in enumerate(item['childs']):
                     self.buildChildParam(j, group, subitem)
 
-                self.Objects.setFirstColumnSpanned(i, si.index(), True)
+                gr2 = QtGui.QStandardItem()
+                gr2.setEditable(False)
+                si.setChild(i, 1, gr2)
             else:
                 self.buildChildParam(i, si, item)
 
@@ -229,9 +231,14 @@ class OtterObjectsTab(QtWidgets.QWidget):
             child = QtGui.QStandardItem(val)
             child.setEditable(True)
             child.setData(QtCore.QVariant(OtterParamFilePicker(item['file'])))
+        elif 'color' in item:
+            child = QtGui.QStandardItem(str(val))
+            child.setEditable(True)
+            child.setData(QtCore.QVariant(OtterParamColorPicker()))
         elif val == None:
             child = QtGui.QStandardItem()
             child.setEditable(True)
+            child.setData(QtCore.QVariant(OtterParamLineEdit('str')))
         elif type(val) == bool:
             child = QtGui.QStandardItem()
             child.setEditable(False)

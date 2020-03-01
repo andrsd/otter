@@ -19,6 +19,7 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self.WindowResult = None
         self.ObjectType = None
         self._about_dlg = None
+        self.ColorPicker = None
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -37,6 +38,12 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self._render_action = fileMenu.addAction("Render", self.onRender, "Ctrl+Shift+R")
         fileMenu.addSeparator()
         self._about_box_action = fileMenu.addAction("About", self.onAboutApplication)
+
+        self._next_tab = QtWidgets.QShortcut("Ctrl+Shift+]", self)
+        self._next_tab.activated.connect(self.onNextTab)
+        self._prev_tab = QtWidgets.QShortcut("Ctrl+Shift+[", self)
+        self._prev_tab.activated.connect(self.onPrevTab)
+
 
         # Adding '\u200C' so that Mac OS X does not add items I do not want in View menu
         viewMenu = menubar.addMenu("View" + '\u200C')
@@ -59,6 +66,8 @@ class OtterMainWindow(QtWidgets.QMainWindow):
         self._minimize = windowMenu.addAction("Minimize", self.onMinimize, "Ctrl+M")
         windowMenu.addSeparator()
         self._bring_all_to_front = windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
+        windowMenu.addSeparator()
+        self._color_dialog = windowMenu.addAction("Color picker", self.onColorPicker, "Ctrl+Shift+C")
         windowMenu.addSeparator()
         self._main_window = windowMenu.addAction("Main window - " + self.title(), self.onShowMainWindow)
         self._main_window.setCheckable(True)
@@ -319,3 +328,21 @@ class OtterMainWindow(QtWidgets.QMainWindow):
 
     def onRender(self):
         self.MediaTab.render()
+
+    def onNextTab(self):
+        idx = self.ObjectType.currentIndex()
+        if idx < self.ObjectType.count():
+            idx = idx + 1
+            self.ObjectType.setCurrentIndex(idx)
+
+    def onPrevTab(self):
+        idx = self.ObjectType.currentIndex()
+        if idx > 0:
+            idx = idx - 1
+            self.ObjectType.setCurrentIndex(idx)
+
+    def onColorPicker(self):
+        if self.ColorPicker == None:
+            self.ColorPicker = QtWidgets.QColorDialog(self)
+            self.ColorPicker.setOptions(QtWidgets.QColorDialog.DontUseNativeDialog)
+        self.ColorPicker.show()
