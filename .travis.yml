@@ -28,3 +28,7 @@ install:
   - cd ${MOOSE_DIR}/framework/contrib/hit
   - make hit
   - cd -
+
+branches:
+  only:
+  - master
