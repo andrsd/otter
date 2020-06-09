@@ -1,6 +1,8 @@
 import os
 from PyQt5 import QtWidgets, QtCore
 from AboutDialog import AboutDialog
+from RecentFilesTab import RecentFilesTab
+from TemplatesTab import TemplatesTab
 
 """
 Main window
@@ -50,10 +52,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.RightPane = QtWidgets.QTabWidget(self)
 
-        self.RecentTab = QtWidgets.QWidget(self)
+        self.RecentTab = RecentFilesTab(self)
         self.RightPane.addTab(self.RecentTab, "Recent")
 
-        self.TemplateTab = QtWidgets.QWidget(self)
+        self.TemplateTab = TemplatesTab(self)
         self.RightPane.addTab(self.TemplateTab, "Templates")
 
         layout.addWidget(self.RightPane)
