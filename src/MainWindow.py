@@ -3,6 +3,8 @@ from PyQt5 import QtWidgets, QtCore
 from AboutDialog import AboutDialog
 from RecentFilesTab import RecentFilesTab
 from TemplatesTab import TemplatesTab
+from ResultWindow import ResultWindow
+from ParamsWindow import ParamsWindow
 
 """
 Main window
@@ -12,6 +14,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.AboutDlg = None
+        self.result_window = None
+        self.params_window = None
+        self.file = None
 
         self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.CustomizeWindowHint)
 
@@ -20,6 +25,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setFixedHeight(475)
         self.setFixedWidth(750)
+
+        self.updateMenuBar()
 
     def setupWidgets(self):
         w = QtWidgets.QWidget(self)
@@ -81,14 +88,39 @@ class MainWindow(QtWidgets.QMainWindow):
         windowMenu.addSeparator()
         self._bring_all_to_front = windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
 
+    def updateMenuBar(self):
+        have_file = self.file != None
+        self._save_action.setEnabled(have_file)
+        self._close_action.setEnabled(have_file)
+        self._render_action.setEnabled(have_file)
+
     def onNewFile(self):
-        pass
+        if self.params_window == None:
+            self.params_window = ParamsWindow(self)
+        if self.result_window == None:
+            self.result_window = ResultWindow(self)
+
+        self.hide()
+        self.result_window.show()
+        self.params_window.show()
+
+        self.file = QtCore.QFile()
+        self.updateMenuBar()
 
     def onOpenFile(self):
         pass
 
     def onCloseFile(self):
-        pass
+        if self.file != None:
+            self.result_window.close()
+            self.params_window.close()
+
+            self.result_window = None
+            self.params_window = None
+            self.file = None
+            self.show()
+
+        self.updateMenuBar()
 
     def onSaveFile(self):
         pass
@@ -102,8 +134,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AboutDlg.show()
 
     def onMinimize(self):
-        qapp = QtWidgets.QApplication.instance()
-        qapp.activeWindow().showMinimized()
+        if self.file != None:
+            self.result_window.showMinimized()
+            self.params_window.showMinimized()
+        else:
+            self.showMinimized()
 
     def onBringAllToFront(self):
-        pass
+        if self.file != None:
+            self.result_window.showNormal()
+            self.params_window.showNormal()
+        else:
+            self.showNormal()

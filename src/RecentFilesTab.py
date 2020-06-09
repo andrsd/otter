@@ -9,6 +9,8 @@ class RecentFilesTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super(RecentFilesTab, self).__init__(parent)
 
+        self.main_window = parent
+
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
 
@@ -48,7 +50,7 @@ class RecentFilesTab(QtWidgets.QWidget):
             self.OpenButton.setEnabled(False)
 
     def onNew(self):
-        pass
+        self.main_window.onNewFile()
 
     def onBrowseDocuments(self):
         pass
