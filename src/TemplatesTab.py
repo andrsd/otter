@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
+from OListView import OListView
 
 """
 List of recent file that show on the MainWindow
@@ -11,7 +12,8 @@ class TemplatesTab(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
 
-        self.TemplateList = QtWidgets.QListView(self)
+        self.TemplateList = OListView(self)
+        self.TemplateList.setEmptyMessage("No templates")
         self.TemplateList.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         main_layout.addWidget(self.TemplateList)
 

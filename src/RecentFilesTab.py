@@ -1,4 +1,5 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
+from OListView import OListView
 
 """
 List of recent file that show on the MainWindow
@@ -11,7 +12,8 @@ class RecentFilesTab(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
 
-        self.FileList = QtWidgets.QListView(self)
+        self.FileList = OListView(self)
+        self.FileList.setEmptyMessage("No recent files")
         main_layout.addWidget(self.FileList)
 
         button_layout = QtWidgets.QHBoxLayout()
