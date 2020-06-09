@@ -12,23 +12,23 @@ class AboutDialog(QtWidgets.QDialog):
         self.setWindowFlag(QtCore.Qt.CustomizeWindowHint, True)
         self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, False)
 
-        self.Layout = QtWidgets.QVBoxLayout()
-        self.Layout.addSpacing(8)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addSpacing(8)
 
         icon = QtWidgets.QApplication.windowIcon()
-        self.Icon = QtWidgets.QLabel()
-        self.Icon.setPixmap(icon.pixmap(64, 64))
-        self.Layout.addWidget(self.Icon, 0, QtCore.Qt.AlignHCenter)
+        self.icon = QtWidgets.QLabel()
+        self.icon.setPixmap(icon.pixmap(64, 64))
+        self.layout.addWidget(self.icon, 0, QtCore.Qt.AlignHCenter)
 
-        self.Title = QtWidgets.QLabel("Otter")
-        font = self.Title.font()
+        self.title = QtWidgets.QLabel("Otter")
+        font = self.title.font()
         font.setBold(True)
         font.setPointSize(int(1.2 * font.pointSize()))
-        self.Title.setFont(font)
-        self.Title.setAlignment(QtCore.Qt.AlignHCenter)
-        self.Layout.addWidget(self.Title)
+        self.title.setFont(font)
+        self.title.setAlignment(QtCore.Qt.AlignHCenter)
+        self.layout.addWidget(self.title)
 
-        self.Text = QtWidgets.QLabel(
+        self.text = QtWidgets.QLabel(
             "Version {}\n"
             "\n"
             "Powered by chigger\n"
@@ -37,10 +37,10 @@ class AboutDialog(QtWidgets.QDialog):
             "\n"
             "{}".format(globs.VERSION, globs.COPYRIGHT)
         )
-        font = self.Text.font()
+        font = self.text.font()
         font.setPointSize(int(0.9 * font.pointSize()))
-        self.Text.setFont(font)
-        self.Text.setAlignment(QtCore.Qt.AlignHCenter)
-        self.Layout.addWidget(self.Text)
+        self.text.setFont(font)
+        self.text.setAlignment(QtCore.Qt.AlignHCenter)
+        self.layout.addWidget(self.text)
 
-        self.setLayout(self.Layout)
+        self.setLayout(self.layout)

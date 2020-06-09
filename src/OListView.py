@@ -4,10 +4,10 @@ class OListView(QtWidgets.QListView):
 
     def __init__(self, parent):
         super(OListView, self).__init__(parent)
-        self.EmptyMessage = "No items"
+        self.empty_message = "No items"
 
     def setEmptyMessage(self, msg):
-        self.EmptyMessage = msg
+        self.empty_message = msg
 
     def paintEvent(self, e):
         super(OListView, self).paintEvent(e)
@@ -19,4 +19,4 @@ class OListView(QtWidgets.QListView):
         p = QtGui.QPainter(self.viewport())
         rect = self.rect()
         rect.adjust(0, 10, 0, 0)
-        p.drawText(rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop, self.EmptyMessage)
+        p.drawText(rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop, self.empty_message)

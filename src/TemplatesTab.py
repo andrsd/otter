@@ -12,37 +12,37 @@ class TemplatesTab(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
 
-        self.TemplateList = OListView(self)
-        self.TemplateList.setEmptyMessage("No templates")
-        self.TemplateList.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        main_layout.addWidget(self.TemplateList)
+        self.template_list = OListView(self)
+        self.template_list.setEmptyMessage("No templates")
+        self.template_list.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        main_layout.addWidget(self.template_list)
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.NewButton = QtWidgets.QPushButton("New", self)
-        self.NewButton.setContentsMargins(0, 0, 10, 0)
-        button_layout.addWidget(self.NewButton)
+        self.new_button = QtWidgets.QPushButton("New", self)
+        self.new_button.setContentsMargins(0, 0, 10, 0)
+        button_layout.addWidget(self.new_button)
 
         button_layout.addStretch()
 
-        self.OpenButton = QtWidgets.QPushButton("Open", self)
-        button_layout.addWidget(self.OpenButton)
+        self.open_button = QtWidgets.QPushButton("Open", self)
+        button_layout.addWidget(self.open_button)
 
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
 
-        self.NewButton.clicked.connect(self.onNew)
-        self.OpenButton.clicked.connect(self.onOpen)
+        self.new_button.clicked.connect(self.onNew)
+        self.open_button.clicked.connect(self.onOpen)
 
         self.updateWidgets()
 
     def updateWidgets(self):
-        if len(self.TemplateList.selectedIndexes()) == 1:
-            self.OpenButton.setEnabled()
+        if len(self.template_list.selectedIndexes()) == 1:
+            self.open_button.setEnabled()
         else:
-            self.OpenButton.setEnabled(False)
+            self.open_button.setEnabled(False)
 
     def onNew(self):
         pass

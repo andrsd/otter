@@ -14,40 +14,40 @@ class RecentFilesTab(QtWidgets.QWidget):
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
 
-        self.FileList = OListView(self)
-        self.FileList.setEmptyMessage("No recent files")
-        main_layout.addWidget(self.FileList)
+        self.file_list = OListView(self)
+        self.file_list.setEmptyMessage("No recent files")
+        main_layout.addWidget(self.file_list)
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.NewButton = QtWidgets.QPushButton("New", self)
-        self.NewButton.setContentsMargins(0, 0, 10, 0)
-        button_layout.addWidget(self.NewButton)
+        self.new_button = QtWidgets.QPushButton("New", self)
+        self.new_button.setContentsMargins(0, 0, 10, 0)
+        button_layout.addWidget(self.new_button)
 
         button_layout.addStretch()
 
-        self.BrowseButton = QtWidgets.QPushButton("Browse Documents", self)
-        button_layout.addWidget(self.BrowseButton)
+        self.browse_button = QtWidgets.QPushButton("Browse Documents", self)
+        button_layout.addWidget(self.browse_button)
 
-        self.OpenButton = QtWidgets.QPushButton("Open", self)
-        button_layout.addWidget(self.OpenButton)
+        self.open_button = QtWidgets.QPushButton("Open", self)
+        button_layout.addWidget(self.open_button)
 
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
 
-        self.NewButton.clicked.connect(self.onNew)
-        self.BrowseButton.clicked.connect(self.onBrowseDocuments)
-        self.OpenButton.clicked.connect(self.onOpen)
+        self.new_button.clicked.connect(self.onNew)
+        self.browse_button.clicked.connect(self.onBrowseDocuments)
+        self.open_button.clicked.connect(self.onOpen)
 
         self.updateWidgets()
 
     def updateWidgets(self):
-        if len(self.FileList.selectedIndexes()) == 1:
-            self.OpenButton.setEnabled()
+        if len(self.file_list.selectedIndexes()) == 1:
+            self.open_button.setEnabled()
         else:
-            self.OpenButton.setEnabled(False)
+            self.open_button.setEnabled(False)
 
     def onNew(self):
         self.main_window.onNewFile()

@@ -13,7 +13,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.AboutDlg = None
+        self.about_dlg = None
         self.result_window = None
         self.params_window = None
         self.file = None
@@ -33,39 +33,39 @@ class MainWindow(QtWidgets.QMainWindow):
         w.setContentsMargins(0, 0, 0 ,0)
         layout = QtWidgets.QHBoxLayout()
 
-        self.LeftPane = QtWidgets.QWidget(self)
-        self.LeftPane.setFixedWidth(220)
+        self.left_pane = QtWidgets.QWidget(self)
+        self.left_pane.setFixedWidth(220)
 
         left_layout = QtWidgets.QVBoxLayout()
 
         icon = QtWidgets.QApplication.windowIcon()
-        self.Icon = QtWidgets.QLabel()
-        self.Icon.setPixmap(icon.pixmap(96, 96))
-        left_layout.addWidget(self.Icon, 0, QtCore.Qt.AlignHCenter)
+        self.icon = QtWidgets.QLabel()
+        self.icon.setPixmap(icon.pixmap(96, 96))
+        left_layout.addWidget(self.icon, 0, QtCore.Qt.AlignHCenter)
 
-        self.Title = QtWidgets.QLabel("Otter")
-        font = self.Title.font()
+        self.title = QtWidgets.QLabel("Otter")
+        font = self.title.font()
         font.setBold(True)
         font.setPointSize(int(1.2 * font.pointSize()))
-        self.Title.setFont(font)
-        self.Title.setAlignment(QtCore.Qt.AlignHCenter)
-        left_layout.addWidget(self.Title)
+        self.title.setFont(font)
+        self.title.setAlignment(QtCore.Qt.AlignHCenter)
+        left_layout.addWidget(self.title)
 
         left_layout.addStretch()
 
-        self.LeftPane.setLayout(left_layout)
+        self.left_pane.setLayout(left_layout)
 
-        layout.addWidget(self.LeftPane)
+        layout.addWidget(self.left_pane)
 
-        self.RightPane = QtWidgets.QTabWidget(self)
+        self.right_pane = QtWidgets.QTabWidget(self)
 
-        self.RecentTab = RecentFilesTab(self)
-        self.RightPane.addTab(self.RecentTab, "Recent")
+        self.recent_tab = RecentFilesTab(self)
+        self.right_pane.addTab(self.recent_tab, "Recent")
 
-        self.TemplateTab = TemplatesTab(self)
-        self.RightPane.addTab(self.TemplateTab, "Templates")
+        self.template_tab = TemplatesTab(self)
+        self.right_pane.addTab(self.template_tab, "Templates")
 
-        layout.addWidget(self.RightPane)
+        layout.addWidget(self.right_pane)
 
         w.setLayout(layout)
         self.setCentralWidget(w)
@@ -129,9 +129,9 @@ class MainWindow(QtWidgets.QMainWindow):
         pass
 
     def onAbout(self):
-        if self.AboutDlg == None:
-            self.AboutDlg = AboutDialog(self)
-        self.AboutDlg.show()
+        if self.about_dlg == None:
+            self.about_dlg = AboutDialog(self)
+        self.about_dlg.show()
 
     def onMinimize(self):
         if self.file != None:
