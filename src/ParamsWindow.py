@@ -7,3 +7,8 @@ class ParamsWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Untitled")
         self.show()
+
+    def event(self, e):
+        if (e.type() == QtCore.QEvent.WindowActivate):
+            self.parentWidget().updateMenuBar()
+        return super(ParamsWindow, self).event(e);

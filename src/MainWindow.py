@@ -98,11 +98,45 @@ class MainWindow(QtWidgets.QMainWindow):
         windowMenu.addSeparator()
         self._bring_all_to_front = windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
 
+        windowMenu.addSeparator()
+        self._show_main_window = windowMenu.addAction("Otter", self.onShowMainWindow)
+        self._show_main_window.setCheckable(True)
+        self._show_params_window = windowMenu.addAction("Parameters", self.onShowParamsWindow)
+        self._show_params_window.setCheckable(True)
+        self._show_result_window = windowMenu.addAction("Result", self.onShowResultWindow)
+        self._show_result_window.setCheckable(True)
+
+        self._action_group_windows = QtWidgets.QActionGroup(self)
+        self._action_group_windows.addAction(self._show_main_window)
+        self._action_group_windows.addAction(self._show_params_window)
+        self._action_group_windows.addAction(self._show_result_window)
+
     def updateMenuBar(self):
         have_file = self.file != None
         self._save_action.setEnabled(have_file)
         self._close_action.setEnabled(have_file)
         self._render_action.setEnabled(have_file)
+
+        self.updateMenuBarWindowList()
+
+    def updateMenuBarWindowList(self):
+        qapp = QtWidgets.QApplication.instance()
+        active_window = qapp.activeWindow()
+        if active_window == self:
+            self._show_main_window.setChecked(True)
+        elif active_window == self.params_window:
+            self._show_params_window.setChecked(True)
+        elif active_window == self.result_window:
+            self._show_result_window.setChecked(True)
+
+        if self.file == None:
+            self._show_main_window.setVisible(True)
+            self._show_params_window.setVisible(False)
+            self._show_result_window.setVisible(False)
+        else:
+            self._show_main_window.setVisible(False)
+            self._show_params_window.setVisible(True)
+            self._show_result_window.setVisible(True)
 
     def onNewFile(self):
         if self.params_window == None:
@@ -156,3 +190,26 @@ class MainWindow(QtWidgets.QMainWindow):
             self.params_window.showNormal()
         else:
             self.showNormal()
+
+    def onShowMainWindow(self):
+        self.showNormal()
+        self.activateWindow()
+        self.raise_()
+        self.updateMenuBar()
+
+    def onShowParamsWindow(self):
+        self.params_window.showNormal()
+        self.params_window.activateWindow()
+        self.params_window.raise_()
+        self.updateMenuBar()
+
+    def onShowResultWindow(self):
+        self.result_window.showNormal()
+        self.result_window.activateWindow()
+        self.result_window.raise_()
+        self.updateMenuBar()
+
+    def event(self, e):
+        if (e.type() == QtCore.QEvent.WindowActivate):
+            self.updateMenuBar()
+        return super(MainWindow, self).event(e);

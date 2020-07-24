@@ -13,3 +13,8 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.frame)
         self.setWindowTitle("Result")
         self.show()
+
+    def event(self, e):
+        if (e.type() == QtCore.QEvent.WindowActivate):
+            self.parentWidget().updateMenuBar()
+        return super(ResultWindow, self).event(e);
