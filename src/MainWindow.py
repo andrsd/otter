@@ -1,4 +1,5 @@
 import os
+import globs
 from PyQt5 import QtWidgets, QtCore
 from AboutDialog import AboutDialog
 from RecentFilesTab import RecentFilesTab
@@ -50,6 +51,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.title.setFont(font)
         self.title.setAlignment(QtCore.Qt.AlignHCenter)
         left_layout.addWidget(self.title)
+
+        self.version = QtWidgets.QLabel("Version " + str(globs.VERSION))
+        font = self.version.font()
+        font.setBold(True)
+        font.setPointSize(int(0.9 * font.pointSize()))
+        self.version.setFont(font)
+        self.version.setStyleSheet("QLabel { color: #888; }")
+        self.version.setAlignment(QtCore.Qt.AlignHCenter)
+        left_layout.addWidget(self.version)
 
         left_layout.addStretch()
 
