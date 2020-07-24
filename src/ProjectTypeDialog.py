@@ -1,18 +1,20 @@
-import os
+import os, sys
+import importlib.util
+import inspect
 from PyQt5 import QtCore, QtWidgets, QtGui
+from plugins import Plugin
 
 """
 Project type dialog
 """
 class ProjectTypeDialog(QtWidgets.QDialog):
 
-    IMAGE = 0
-    MOVIE = 1
-    CSV_PLOTTER = 2
-
     def __init__(self, parent):
         super(ProjectTypeDialog, self).__init__(parent)
         self.idx = None
+        self.plugin = None
+
+        self.findPlugins()
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(10)
@@ -58,31 +60,31 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
         self.list_view.selectionModel().selectionChanged.connect(self.onProjectTypeChanged)
 
+    def findPlugins(self):
+        self.plugins = []
+        plugins_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")
+        sys.path.append(plugins_dir)
+        for subdir in os.listdir(plugins_dir):
+            dir = os.path.join(plugins_dir, subdir)
+            if os.path.isdir(dir):
+                self.loadPlugin(dir)
+
+    def loadPlugin(self, dir):
+        for file in os.listdir(dir):
+            if file.endswith("Plugin.py"):
+                module_name = os.path.splitext(os.path.basename(file))[0]
+                sys.path.append(dir)
+                temp = importlib.import_module(module_name)
+                sys.path.remove(dir)
+
+                is_class_member = lambda member: inspect.isclass(member) and member.__module__ == module_name
+                for name, cls in inspect.getmembers(temp, is_class_member):
+                    self.plugins.append(cls())
+
     def addProjectTypes(self):
-        icon_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "icons")
-
-        self.projects = [
-            {
-                "name": "Image",
-                "icon": "picture.svg",
-                "idx": self.IMAGE
-            },
-            {
-                "name": "Movie",
-                "icon": "movie.svg",
-                "idx": self.MOVIE
-            },
-            {
-                "name": "CSV plot",
-                "icon": "graph.svg",
-                "idx": self.CSV_PLOTTER
-            }
-        ]
-
-        for p in self.projects:
-            icon_file_name = os.path.join(icon_dir, p['icon'])
-            icon = QtGui.QIcon(icon_file_name)
-            ri = QtGui.QStandardItem(icon, p['name'])
+        for plugin in self.plugins:
+            ri = QtGui.QStandardItem(plugin.icon(), plugin.name())
+            ri.setData(plugin)
             self.model.appendRow(ri)
 
     def updateControls(self):
@@ -93,6 +95,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.updateControls()
 
     def onCreate(self):
-        sel_idx = self.list_view.selectedIndexes()[0].row()
-        self.idx = self.projects[sel_idx]['idx']
+        sel_idx = self.list_view.selectedIndexes()[0]
+        si = self.model.itemFromIndex(sel_idx)
+        self.plugin = si.data()
         self.accept()
