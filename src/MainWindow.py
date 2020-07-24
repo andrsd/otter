@@ -2,6 +2,7 @@ import os
 import globs
 from PyQt5 import QtWidgets, QtCore
 from AboutDialog import AboutDialog
+from ProjectTypeDialog import ProjectTypeDialog
 from RecentFilesTab import RecentFilesTab
 from TemplatesTab import TemplatesTab
 from ResultWindow import ResultWindow
@@ -19,6 +20,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.params_window = None
         self.file = None
 
+        self.project_type_dlg = ProjectTypeDialog(self)
+
         self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.CustomizeWindowHint)
 
         self.setupWidgets()
@@ -28,6 +31,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setFixedWidth(750)
 
         self.updateMenuBar()
+
+        self.project_type_dlg.finished.connect(self.onCreateProject)
 
     def setupWidgets(self):
         w = QtWidgets.QWidget(self)
@@ -139,17 +144,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self._show_result_window.setVisible(True)
 
     def onNewFile(self):
-        if self.params_window == None:
-            self.params_window = ParamsWindow(self)
-        if self.result_window == None:
-            self.result_window = ResultWindow(self)
+        self.project_type_dlg.open()
 
-        self.hide()
-        self.result_window.show()
-        self.params_window.show()
+    def onCreateProject(self):
+        if self.project_type_dlg.result() == QtWidgets.QDialog.Rejected:
+            return
 
-        self.file = QtCore.QFile()
-        self.updateMenuBar()
+        if self.project_type_dlg.idx in [ProjectTypeDialog.IMAGE, ProjectTypeDialog.MOVIE]:
+            if self.params_window == None:
+                self.params_window = ParamsWindow(self)
+            if self.result_window == None:
+                self.result_window = ResultWindow(self)
+
+            self.hide()
+            self.result_window.show()
+            self.params_window.show()
+
+            self.file = QtCore.QFile()
+            self.updateMenuBar()
+        elif self.project_type_dlg.idx in [ProjectTypeDialog.CSV_PLOTTER]:
+            print("create CVS plotter")
+        else:
+            print("Unknown project type")
 
     def onOpenFile(self):
         pass
