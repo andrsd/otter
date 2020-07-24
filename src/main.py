@@ -86,6 +86,7 @@ def run():
     qapp = QtWidgets.QApplication(sys.argv)
     icon_path = os.path.join(otter_dir, "otter.png")
     qapp.setWindowIcon(QtGui.QIcon(icon_path))
+    qapp.setQuitOnLastWindowClosed(False)
 
     window = MainWindow()
     window.show()
