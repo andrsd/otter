@@ -3,6 +3,7 @@
 # py2app
 .eggs/*
 venv/*
+icon.icns
 
 # garbagge created by me
 tmp/*

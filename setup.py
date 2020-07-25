@@ -10,22 +10,22 @@ Notes:
 
 from setuptools import setup
 import otter
-from os import getcwd
-from pathlib import Path
+from glob import glob
 
-# pth = str(Path(getcwd()).parent)
 pth = '/Users/andrsd/tmp/otter'
 
 APP = ['main.py']
 APP_NAME = 'Otter'
-DATA_FILES = ['otter.png']
+DATA_FILES = [
+    ('icons', glob('icons/*.svg'))
+]
 OPTIONS = {
     'argv_emulation': True,
     'plist': {
         'CFBundleName': APP_NAME,
         'CFBundleDisplayName': APP_NAME,
         'CFBundleGetInfoString': "GUI frontend for chigger",
-        'CFBundleIdentifier': "name.andrs.david.osx.otter",
+        'CFBundleIdentifier': "name.andrs.osx.otter",
         'CFBundleVersion': str(otter.VERSION),
         'CFBundleShortVersionString': str(otter.VERSION),
         'NSHumanReadableCopyright': otter.COPYRIGHT

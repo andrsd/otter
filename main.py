@@ -46,9 +46,12 @@ def main(argv):
 
     checkRequirements()
     # these might not work until the path is set
-    from PyQt5 import QtWidgets, QtGui
+    from PyQt5 import QtWidgets, QtGui, QtCore
     import otter
     from gui.OtterMainWindow import OtterMainWindow
+
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     parser = argparse.ArgumentParser(
         description = 'GUI for MOOSE\'s chigger.'
@@ -66,7 +69,7 @@ def main(argv):
     args = parser.parse_args()
 
     qapp = QtWidgets.QApplication(argv)
-    icon_path = os.path.join(otter_dir, "otter.png")
+    icon_path = os.path.join(otter_dir, "icons", "otter.svg")
     qapp.setWindowIcon(QtGui.QIcon(icon_path))
 
     main_win = OtterMainWindow()
