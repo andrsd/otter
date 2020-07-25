@@ -2,7 +2,7 @@ import sys, os
 import argparse
 import signal
 import importlib.util
-import globs
+import globals
 
 """
 Check that all packages we are using are present. If not, let users know.
@@ -43,7 +43,7 @@ Set paths required for running
 def set_paths():
     global otter_dir
 
-    otter_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    otter_dir = os.path.dirname(os.path.realpath(__file__))
     moose_dir = os.environ.get("MOOSE_DIR", None)
     if moose_dir == None:
         app_dir = os.path.dirname(otter_dir)
@@ -73,7 +73,7 @@ def run():
     parser.add_argument(
         '--version',
         action = 'version',
-        version = 'otter {}'.format(globs.VERSION))
+        version = 'otter {}'.format(globals.VERSION))
     args = parser.parse_args()
 
     # ----
@@ -92,6 +92,8 @@ def run():
     qapp.setQuitOnLastWindowClosed(False)
 
     window = MainWindow()
+    window.setPluginsDir(os.path.join(otter_dir, "plugins"))
+    window.loadPlugins()
     window.show()
 
     sys.exit(qapp.exec_())

@@ -13,8 +13,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         super(ProjectTypeDialog, self).__init__(parent)
         self.idx = None
         self.plugin = None
-
-        self.findPlugins()
+        self.plugins_dir = None
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(10)
@@ -23,7 +22,6 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.layout.addWidget(self.type_label)
 
         self.model = QtGui.QStandardItemModel()
-        self.addProjectTypes()
 
         self.list_view = QtWidgets.QListView(self)
         self.list_view.setMinimumWidth(400)
@@ -56,16 +54,13 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
         self.setLayout(self.layout)
 
-        self.updateControls()
-
         self.list_view.selectionModel().selectionChanged.connect(self.onProjectTypeChanged)
 
     def findPlugins(self):
         self.plugins = []
-        plugins_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")
-        sys.path.append(plugins_dir)
-        for subdir in os.listdir(plugins_dir):
-            dir = os.path.join(plugins_dir, subdir)
+        sys.path.append(self.plugins_dir)
+        for subdir in os.listdir(self.plugins_dir):
+            dir = os.path.join(self.plugins_dir, subdir)
             if os.path.isdir(dir):
                 self.loadPlugin(dir)
 

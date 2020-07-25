@@ -1,5 +1,5 @@
 import os
-import globs
+from globals import *
 from PyQt5 import QtWidgets, QtCore
 from AboutDialog import AboutDialog
 from ProjectTypeDialog import ProjectTypeDialog
@@ -17,6 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.result_window = None
         self.params_window = None
         self.plugin = None
+        self.plugin_dir = None
 
         self.project_type_dlg = ProjectTypeDialog(self)
 
@@ -31,6 +32,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateMenuBar()
 
         self.project_type_dlg.finished.connect(self.onCreateProject)
+
+    def setPluginsDir(self, dir):
+        self.project_type_dlg.plugins_dir = dir
+
+    def loadPlugins(self):
+        self.project_type_dlg.findPlugins()
+        self.project_type_dlg.addProjectTypes()
+        self.project_type_dlg.updateControls()
 
     def setupWidgets(self):
         w = QtWidgets.QWidget(self)
@@ -55,7 +64,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.title.setAlignment(QtCore.Qt.AlignHCenter)
         left_layout.addWidget(self.title)
 
-        self.version = QtWidgets.QLabel("Version " + str(globs.VERSION))
+        self.version = QtWidgets.QLabel("Version " + str(VERSION))
         font = self.version.font()
         font.setBold(True)
         font.setPointSize(int(0.9 * font.pointSize()))
