@@ -10,9 +10,10 @@ Notes:
 
 from setuptools import setup
 import otter
+import os
 from glob import glob
 
-pth = '/Users/andrsd/tmp/otter'
+pth = os.environ.get("OUTDIR", "/tmp")
 
 APP = ['main.py']
 APP_NAME = 'Otter'
