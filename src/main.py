@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-
 import sys, os
 import argparse
 import signal
 import importlib.util
+import globs
 
 """
 Check that all packages we are using are present. If not, let users know.
@@ -39,19 +38,28 @@ def checkRequirements():
         exit(1)
 
 """
-Run the main application
+Set paths required for running
 """
-def main(argv):
+def set_paths():
     global otter_dir
 
-    checkRequirements()
-    # these might not work until the path is set
-    from PyQt5 import QtWidgets, QtGui, QtCore
-    import otter
-    from gui.OtterMainWindow import OtterMainWindow
+    otter_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    moose_dir = os.environ.get("MOOSE_DIR", None)
+    if moose_dir == None:
+        app_dir = os.path.dirname(otter_dir)
+        moose_dir = os.path.join(app_dir, "moose")
+    chigger_dir = os.path.join(moose_dir, "python", "chigger")
 
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+    sys.path.append(os.path.join(moose_dir, "python"))
+    sys.path.append(chigger_dir)
+    sys.path.append(otter_dir)
+
+
+"""
+Run the application
+"""
+def run():
+    global otter_dir
 
     parser = argparse.ArgumentParser(
         description = 'GUI for MOOSE\'s chigger.'
@@ -65,40 +73,29 @@ def main(argv):
     parser.add_argument(
         '--version',
         action = 'version',
-        version = 'otter {}'.format(otter.VERSION))
+        version = 'otter {}'.format(globs.VERSION))
     args = parser.parse_args()
 
-    qapp = QtWidgets.QApplication(argv)
+    # ----
+
+    checkRequirements()
+
+    from PyQt5 import QtWidgets, QtGui, QtCore
+    from MainWindow import MainWindow
+
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
+    qapp = QtWidgets.QApplication(sys.argv)
     icon_path = os.path.join(otter_dir, "icons", "otter.svg")
     qapp.setWindowIcon(QtGui.QIcon(icon_path))
+    qapp.setQuitOnLastWindowClosed(False)
 
-    main_win = OtterMainWindow()
-    main_win.show()
-    if args.file != None:
-        main_win.loadFromFile(args.file)
+    window = MainWindow()
+    window.show()
 
-    return qapp.exec_()
-
-
-"""
-Run otter GUI
-"""
-def run_otter():
-    global otter_dir
-
-    otter_dir = os.path.dirname(os.path.realpath(__file__))
-    moose_dir = os.environ.get("MOOSE_DIR", None)
-    if moose_dir == None:
-        # we assume that THM is always a submodule of an application
-        app_dir = os.path.dirname(otter_dir)
-        moose_dir = os.path.join(app_dir, "moose")
-    chigger_dir = os.path.join(moose_dir, "python", "chigger")
-
-    sys.path.append(os.path.join(moose_dir, "python"))
-    sys.path.append(chigger_dir)
-    sys.path.append(otter_dir)
-
-    sys.exit(main(sys.argv))
+    sys.exit(qapp.exec_())
 
 if __name__ == '__main__':
-    run_otter()
+    set_paths()
+    run()
