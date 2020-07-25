@@ -133,8 +133,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onCreateProject(self):
         if self.project_type_dlg.result() == QtWidgets.QDialog.Accepted:
-            self.plugin = self.project_type_dlg.plugin
-            self.plugin.create(self)
+            self.plugin = self.project_type_dlg.plugin(self)
+            self.plugin.create()
             self.hide()
             self.plugin.showWindow()
             self.updateMenuBar()

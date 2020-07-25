@@ -2,8 +2,9 @@ from PyQt5 import QtCore, QtWidgets
 
 class ResultWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, parent = None):
-        super(ResultWindow, self).__init__(parent)
+    def __init__(self, plugin):
+        super(ResultWindow, self).__init__()
+        self.plugin = plugin
 
         self.frame = QtWidgets.QFrame()
         self.layout = QtWidgets.QVBoxLayout()
@@ -16,5 +17,5 @@ class ResultWindow(QtWidgets.QMainWindow):
 
     def event(self, e):
         if (e.type() == QtCore.QEvent.WindowActivate):
-            self.parentWidget().updateMenuBar()
+            self.plugin.updateMenuBar()
         return super(ResultWindow, self).event(e);

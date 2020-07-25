@@ -103,3 +103,8 @@ class CSVPlotterWindow(QtWidgets.QWidget):
             self.files_widget.updateFileList(file_names)
         else:
             event.ignore()
+
+    def event(self, e):
+        if (e.type() == QtCore.QEvent.WindowActivate):
+            self.plugin.updateMenuBar()
+        return super(CSVPlotterWindow, self).event(e);
