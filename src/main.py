@@ -97,5 +97,6 @@ def run():
     sys.exit(qapp.exec_())
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     set_paths()
     run()
