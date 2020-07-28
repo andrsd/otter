@@ -8,6 +8,8 @@ class ChartWidget(QtChart.QChartView):
         self.pri_var = ""
         self.series = {}
         self.pen = {}
+        self.xmin = None
+        self.xmax = None
         self.yaxis = {}
         self.ymin = {}
         self.ymax = {}
@@ -62,10 +64,15 @@ class ChartWidget(QtChart.QChartView):
         series.hovered.connect(self.onHovered)
 
         self.series[name] = series
+        self.xmin = min(xdata)
+        self.xmax = max(xdata)
         self.yaxis[name] = 'left'
         self.ymin[name] = min(ydata)
         self.ymax[name] = max(ydata)
         self.pen[name] = series.pen()
+
+        self.rescaleXAxis()
+        self.rescaleYAxes(True)
 
     def onChartSeriesReset(self, name):
         series = self.series[name].clear()
@@ -85,16 +92,18 @@ class ChartWidget(QtChart.QChartView):
         else:
             self.ymax[name] = max(self.ymax[name], max(ydata))
         self.rescaleYAxes()
-        self.axes['x'].setMax(list(xdata)[-1])
 
-    def rescaleYAxes(self):
+    def rescaleXAxis(self):
+        self.axes['x'].setRange(self.xmin, self.xmax)
+
+    def rescaleYAxes(self, force = False):
         ymin = []
         ymax = []
         y2min = []
         y2max = []
 
         for name, s in self.series.items():
-            if s.isVisible():
+            if force or s.isVisible():
                 if self.yaxis[name] == 'left':
                     ymin.append(self.ymin[name])
                     ymax.append(self.ymax[name])
