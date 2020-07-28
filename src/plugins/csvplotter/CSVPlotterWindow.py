@@ -72,6 +72,8 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         self.chart_setup_widget.axisMajorTicksChanged.connect(self.chart_widget.onAxisMajorTicksChanged)
         self.chart_setup_widget.axisGridLineVisiblityChanged.connect(self.chart_widget.onAxisGridLineVisiblityChanged)
         self.chart_setup_widget.axisLogScaleChanged.connect(self.chart_widget.onAxisLogScaleChanged)
+        self.chart_setup_widget.axisMaximumChanged.connect(self.chart_widget.onAxisMaximumChanged)
+        self.chart_setup_widget.axisMinimumChanged.connect(self.chart_widget.onAxisMinimumChanged)
 
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.onUpdateTimer)

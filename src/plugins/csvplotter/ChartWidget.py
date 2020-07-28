@@ -231,6 +231,14 @@ class ChartWidget(QtChart.QChartView):
                     series.attachAxis(new_axis)
             self.chart().removeAxis(old_axis)
 
+    def onAxisMaximumChanged(self, axis_name, value):
+        if axis_name in self.axes:
+            self.axes[axis_name].setMax(value)
+
+    def onAxisMinimumChanged(self, axis_name, value):
+        if axis_name in self.axes:
+            self.axes[axis_name].setMin(value)
+
     def onHovered(self, point, state):
         series = self.sender()
         if state:
