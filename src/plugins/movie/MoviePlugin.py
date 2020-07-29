@@ -8,8 +8,9 @@ class MoviePlugin(Plugin):
 
     def __init__(self, parent):
         super(MoviePlugin, self).__init__(parent)
-        self.params_window = None
-        self.result_window = None
+        fileMenu = self.menubar.menus["File"]
+        self.addMenuSeparator(fileMenu)
+        self.addMenuAction(fileMenu, "Render", self.onRender, "Ctrl+Shift+R")
 
     @staticmethod
     def name():
@@ -22,10 +23,11 @@ class MoviePlugin(Plugin):
         icon_file_name = os.path.join(icon_dir, "movie.svg")
         return QtGui.QIcon(icon_file_name)
 
-    def create(self):
-        if self.params_window == None:
-            self.params_window = ParamsWindow(self)
-            self.registerWindow(self.params_window)
-        if self.result_window == None:
-            self.result_window = ResultWindow(self)
-            self.registerWindow(self.result_window)
+    def onCreate(self):
+        params_window = ParamsWindow(self)
+        self.registerWindow(params_window)
+        result_window = ResultWindow(self)
+        self.registerWindow(result_window)
+
+    def onRender(self):
+        pass

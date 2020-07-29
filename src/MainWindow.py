@@ -1,6 +1,7 @@
 import os
 from globals import *
 from PyQt5 import QtWidgets, QtCore
+from MenuBar import MenuBar
 from AboutDialog import AboutDialog
 from ProjectTypeDialog import ProjectTypeDialog
 from RecentFilesTab import RecentFilesTab
@@ -93,19 +94,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(w)
 
     def setupMenuBar(self):
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu("File")
+        self.menubar = MenuBar(self)
+
+        fileMenu = self.menubar.addMenu("File")
         self._new_action = fileMenu.addAction("New", self.onNewFile, "Ctrl+N")
         self._open_action = fileMenu.addAction("Open", self.onOpenFile, "Ctrl+O")
         fileMenu.addSeparator()
         self._close_action = fileMenu.addAction("Close", self.onCloseFile, "Ctrl+W")
         self._save_action = fileMenu.addAction("Save", self.onSaveFile, "Ctrl+S")
-        fileMenu.addSeparator()
-        self._render_action = fileMenu.addAction("Render", self.onRender, "Ctrl+Shift+R")
+
+        # The "About" item is fine here, since we assume Mac and that will place the itme into different submenu
+        # but this will need to be fixed for linux and windows
         fileMenu.addSeparator()
         self._about_box_action = fileMenu.addAction("About", self.onAbout)
 
-        self._windowMenu = menubar.addMenu("Window")
+        self._windowMenu = self.menubar.addMenu("Window")
         self._minimize = self._windowMenu.addAction("Minimize", self.onMinimize, "Ctrl+M")
         self._windowMenu.addSeparator()
         self._bring_all_to_front = self._windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
@@ -116,6 +119,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._action_group_windows = QtWidgets.QActionGroup(self)
         self._action_group_windows.addAction(self._show_main_window)
+
+        self.setMenuBar(self.menubar)
 
     def updateMenuBar(self):
         qapp = QtWidgets.QApplication.instance()
@@ -135,17 +140,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._save_action.setEnabled(have_file)
         self._close_action.setEnabled(have_file)
-        self._render_action.setEnabled(have_file)
 
     def onNewFile(self):
         self.project_type_dlg.open()
 
     def onCreateProject(self):
         if self.project_type_dlg.result() == QtWidgets.QDialog.Accepted:
-            self.plugin = self.project_type_dlg.plugin(self)
+            self.plugin = self.project_type_dlg.plugin
             self.plugin.create()
             self.hide()
-            self.plugin.showWindow()
             self.updateMenuBar()
 
     def onOpenFile(self):
@@ -153,15 +156,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onCloseFile(self):
         if self.plugin != None:
-            self.plugin.onCloseFile()
+            self.plugin.closeFile()
+            self.plugin.showMenu(False)
             self.show()
 
         self.updateMenuBar()
 
     def onSaveFile(self):
-        pass
-
-    def onRender(self):
         pass
 
     def onAbout(self):
@@ -171,13 +172,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onMinimize(self):
         if self.plugin.file != None:
-            self.plugin.onMinimize()
+            self.plugin.minimize()
         else:
             self.showMinimized()
 
     def onBringAllToFront(self):
         if self.plugin.file != None:
-            self.plugin.onBringAllToFront()
+            self.plugin.bringAllToFront()
         else:
             self.showNormal()
 

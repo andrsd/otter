@@ -7,7 +7,9 @@ class CSVPlotterPlugin(Plugin):
 
     def __init__(self, parent):
         super(CSVPlotterPlugin, self).__init__(parent)
-        self.window = None
+        fileMenu = self.menubar.menus["File"]
+        self.addMenuSeparator(fileMenu)
+        self.addMenuAction(fileMenu, "Export", self.onExport)
 
     @staticmethod
     def name():
@@ -20,7 +22,9 @@ class CSVPlotterPlugin(Plugin):
         icon_file_name = os.path.join(icon_dir, "graph.svg")
         return QtGui.QIcon(icon_file_name)
 
-    def create(self):
-        if self.window == None:
-            self.window = CSVPlotterWindow(self)
-            self.registerWindow(self.window)
+    def onCreate(self):
+        window = CSVPlotterWindow(self)
+        self.registerWindow(window)
+
+    def onExport(self):
+        pass

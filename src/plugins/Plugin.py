@@ -6,8 +6,9 @@ class Plugin:
         self.file = None
         self.parent = parent
         self.windows = []
+        self.actions = []
         self._show_window = {}
-        self.file = QtCore.QFile()
+        self.menubar = parent.menubar
 
     """
     Return the name of the plugin (used in the GUI)
@@ -32,9 +33,16 @@ class Plugin:
         self._show_window[window] = action
 
     def create(self):
-        pass
+        self.file = QtCore.QFile()
+        self.showMenu(True)
+        self.onCreate()
+        self.showWindow()
 
-    def onCloseFile(self):
+    def showMenu(self, state):
+        for act in self.actions:
+            act.setVisible(state)
+
+    def closeFile(self):
         self.file = None
         for (window, action) in self._show_window.items():
             window.close()
@@ -42,11 +50,11 @@ class Plugin:
         self.windows = []
         self._show_window = {}
 
-    def onMinimize(self):
+    def minimize(self):
         for window in self.windows:
             window.showMinimized()
 
-    def onBringAllToFront(self):
+    def bringAllToFront(self):
         for window in self.windows:
             window.showNormal()
 
@@ -63,6 +71,16 @@ class Plugin:
         window.activateWindow()
         window.raise_()
         self.updateMenuBar()
+
+    def addMenuSeparator(self, menu):
+        action = menu.addSeparator()
+        action.setVisible(False)
+        self.actions.append(action)
+
+    def addMenuAction(self, menu, string, method, keysequece = 0):
+        action = menu.addAction(string, method, keysequece)
+        action.setVisible(False)
+        self.actions.append(action)
 
     def updateMenuBar(self):
         qapp = QtWidgets.QApplication.instance()

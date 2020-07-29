@@ -14,6 +14,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.idx = None
         self.plugin = None
         self.plugins_dir = None
+        self.parent = parent
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(10)
@@ -74,7 +75,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
                 is_class_member = lambda member: inspect.isclass(member) and member.__module__ == module_name
                 for name, cls in inspect.getmembers(temp, is_class_member):
-                    self.plugins.append(cls)
+                    self.plugins.append(cls(self.parent))
 
     def addProjectTypes(self):
         for plugin in self.plugins:
