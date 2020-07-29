@@ -20,6 +20,7 @@ APP_NAME = 'Otter'
 DATA_FILES = [
     ('icons', glob('src/icons/*.svg')),
     ('plugins', glob('src/plugins/*.py')),
+    ('plugins/common', glob('src/plugins/common/*.py')),
     ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
     ('plugins/image', glob('src/plugins/image/*.py')),
     ('plugins/movie', glob('src/plugins/movie/*.py')),
