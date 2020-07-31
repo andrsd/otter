@@ -23,6 +23,16 @@ class ChartWidget(QtChart.QChartView):
             'y': QtCore.Qt.AlignLeft,
             'y2': QtCore.Qt.AlignRight
         }
+        self.min = {
+            'x': None,
+            'y': None,
+            'y2': None
+        }
+        self.max = {
+            'x': None,
+            'y': None,
+            'y2': None
+        }
 
         self.setAcceptDrops(True)
         self.setMinimumSize(600, 500)
@@ -95,6 +105,8 @@ class ChartWidget(QtChart.QChartView):
 
     def rescaleXAxis(self):
         self.axes['x'].setRange(self.xmin, self.xmax)
+        self.min['x'] = self.xmin
+        self.max['x'] = self.xmax
 
     def rescaleYAxes(self, force = False):
         ymin = []
@@ -113,8 +125,12 @@ class ChartWidget(QtChart.QChartView):
 
         if len(ymin) > 0 and len(ymax) > 0:
             self.axes['y'].setRange(min(ymin), max(ymax))
+            self.min['y'] = ymin
+            self.max['y'] = ymax
         if len(y2min) > 0 and len(y2max) > 0:
             self.axes['y2'].setRange(min(y2min), max(y2max))
+            self.min['y2'] = y2min
+            self.max['y2'] = y2max
 
     def setAxesVisibility(self):
         yvisible = False
@@ -233,11 +249,17 @@ class ChartWidget(QtChart.QChartView):
 
     def onAxisMaximumChanged(self, axis_name, value):
         if axis_name in self.axes:
-            self.axes[axis_name].setMax(value)
+            if value == None:
+                self.axes[axis_name].setMax(self.max[axis_name])
+            else:
+                self.axes[axis_name].setMax(value)
 
     def onAxisMinimumChanged(self, axis_name, value):
         if axis_name in self.axes:
-            self.axes[axis_name].setMin(value)
+            if value == None:
+                self.axes[axis_name].setMin(self.min[axis_name])
+            else:
+                self.axes[axis_name].setMin(value)
 
     def onHovered(self, point, state):
         series = self.sender()

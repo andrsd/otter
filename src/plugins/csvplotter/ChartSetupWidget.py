@@ -143,22 +143,34 @@ class AxisTab(QtWidgets.QWidget):
     def onMaximumChanged(self, text):
         self.update_maximum_timer.start(1000)
 
+    def emitMaximumChanged(self, text):
+        if len(text) > 0:
+            self.parent.axisMaximumChanged.emit(self.axis_name, float(text))
+        else:
+            self.parent.axisMaximumChanged.emit(self.axis_name, None)
+
     def onMaximumEditingFinished(self):
         self.update_maximum_timer.stop()
-        self.parent.axisMaximumChanged.emit(self.axis_name, float(self.maximum.text()))
+        self.emitMaximumChanged(self.maximum.text())
 
     def onUpdateMaximumTimer(self):
-        self.parent.axisMaximumChanged.emit(self.axis_name, float(self.maximum.text()))
+        self.emitMaximumChanged(self.maximum.text())
 
     def onMinimumChanged(self, text):
         self.update_minimum_timer.start(1000)
 
+    def emitMinimumChanged(self, text):
+        if len(text) > 0:
+            self.parent.axisMinimumChanged.emit(self.axis_name, float(text))
+        else:
+            self.parent.axisMinimumChanged.emit(self.axis_name, None)
+
     def onUpdateMinimumTimer(self):
-        self.parent.axisMinimumChanged.emit(self.axis_name, float(self.minimum.text()))
+        self.emitMinimumChanged(self.minimum.text())
 
     def onMinimumEditingFinished(self):
         self.update_minimum_timer.stop()
-        self.parent.axisMinimumChanged.emit(self.axis_name, float(self.minimum.text()))
+        self.emitMinimumChanged(self.minimum.text())
 
 
 class ChartSetupWidget(QtWidgets.QWidget):
@@ -187,8 +199,8 @@ class ChartSetupWidget(QtWidgets.QWidget):
     axisMajorTicksChanged = QtCore.pyqtSignal(str, int)
     axisGridLineVisiblityChanged = QtCore.pyqtSignal(str, bool)
     axisLogScaleChanged = QtCore.pyqtSignal(str, bool)
-    axisMaximumChanged = QtCore.pyqtSignal(str, float)
-    axisMinimumChanged = QtCore.pyqtSignal(str, float)
+    axisMaximumChanged = QtCore.pyqtSignal(str, object)
+    axisMinimumChanged = QtCore.pyqtSignal(str, object)
 
     def __init__(self, parent):
         super(ChartSetupWidget, self).__init__(parent)
