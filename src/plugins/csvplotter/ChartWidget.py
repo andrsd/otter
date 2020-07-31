@@ -232,8 +232,7 @@ class ChartWidget(QtChart.QChartView):
                 new_axis = QtChart.QValueAxis()
 
             # copy the values from old_axis into new_axis
-            if axis_name in self.ymin and axis_name in self.ymax:
-                new_axis.setRange(self.ymin[axis_name], self.ymax[axis_name])
+            new_axis.setRange(old_axis.min(), old_axis.max())
             new_axis.setVisible(old_axis.isVisible())
             new_axis.setGridLineVisible(old_axis.isGridLineVisible())
             new_axis.setTitleText(old_axis.titleText())
