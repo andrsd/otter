@@ -1,4 +1,6 @@
 import os
+import io
+import yaml
 from globals import *
 from PyQt5 import QtWidgets, QtCore
 from MenuBar import MenuBar
@@ -17,7 +19,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_dlg = None
         self.result_window = None
         self.params_window = None
-        self.file = None
         self.plugin = None
         self.plugin_dir = None
 
@@ -130,16 +131,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if active_window == self:
             self._show_main_window.setChecked(True)
 
-        if self.plugin != None:
-            have_file = self.file != None
-            if have_file:
-                self.plugin.updateMenuBar()
-                self.plugin.setWindowVisible(have_file)
-            self._show_main_window.setVisible(not have_file)
-        else:
-            have_file = False
-            self._show_main_window.setVisible(True)
+        have_file = self.plugin != None
+        if have_file:
+            self.plugin.updateMenuBar()
+            self.plugin.setWindowVisible(True)
 
+        self._show_main_window.setVisible(not have_file)
         self._save_action.setEnabled(have_file)
         self._save_as_action.setEnabled(have_file)
         self._close_action.setEnabled(have_file)
@@ -149,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onCreateProject(self):
         if self.project_type_dlg.result() == QtWidgets.QDialog.Accepted:
-            self.file = QtCore.QFile()
             self.plugin = self.project_type_dlg.plugin
             self.plugin.create()
             self.hide()
@@ -158,13 +154,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def onOpenFile(self):
         file_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File')
         if file_name[0]:
-            file = QtCore.QFile(file_name[0])
-            if file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
-                file.close()
-                self.file = file
-                # FIXME: determine which plugin should open this file
-                self.plugin = self.project_type_dlg.getPluginByType("CSVPlotterPlugin")
+            yml = self.readYml(file_name[0])
+            if "type" in yml:
+                self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
                 self.plugin.create()
+                self.plugin.setupFromYml(yml)
                 self.updateMenuBar()
             else:
                 mb = QtWidgets.QMessageBox.information(
@@ -179,22 +173,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.show()
             self.plugin = None
 
-        self.file = None
         self.updateMenuBar()
 
     def onSaveFile(self):
         if self.plugin == None:
             return
 
-        if self.file.fileName() == "":
+        if self.plugin.getFileName() == None:
             file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
-                self.file.setFileName(file_name[0])
-                self.writeFile()
+                self.writeYml(file_name[0])
             else:
                 return
         else:
-            self.writeFile()
+            self.writeYml(file_name[0])
 
     def onSaveFileAs(self):
         if self.plugin == None:
@@ -202,8 +194,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
         if file_name[0]:
-            self.file.setFileName(file_name[0])
-            self.writeFile()
+            self.writeYml(file_name[0])
 
     def onAbout(self):
         if self.about_dlg == None:
@@ -211,13 +202,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_dlg.show()
 
     def onMinimize(self):
-        if self.file != None:
+        if self.plugin != None:
             self.plugin.minimize()
         else:
             self.showMinimized()
 
     def onBringAllToFront(self):
-        if self.file != None:
+        if self.plugin != None:
             self.plugin.bringAllToFront()
         else:
             self.showNormal()
@@ -233,14 +224,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
         return super(MainWindow, self).event(e);
 
-    def writeFile(self):
-        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            out = QtCore.QTextStream(self.file)
-            self.plugin.writeFileContent(out)
-            self.file.flush()
-            self.file.close()
-        else:
-            mb = QtWidgets.QMessageBox.information(
-                self,
-                "Information",
-                "Failed to save '{}'.".format(self.file.fileName()))
+    def readYml(self, file_name):
+        with open(file_name, 'r') as stream:
+            try:
+                return yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                return None
+
+    def writeYml(self, file_name):
+        data = {
+            "type": self.plugin.__class__.__name__,
+            "params": self.plugin.params()
+        }
+        with io.open(file_name, 'w', encoding = 'utf8') as outfile:
+            yaml.dump(data, outfile, default_flow_style = False, allow_unicode = True)
+            self.plugin.setFileName(file_name)

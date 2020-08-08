@@ -11,7 +11,7 @@ def checkRequirements():
     stop = False
 
     # check system packages
-    modules = [ 'PyQt5', 'vtk', 'numpy', 'bisect']
+    modules = [ 'PyQt5', 'vtk', 'numpy', 'bisect', "yaml"]
     not_found_modules = []
     for m in modules:
         if importlib.util.find_spec(m) == None:

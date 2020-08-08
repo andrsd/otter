@@ -4,6 +4,7 @@ class Plugin:
 
     def __init__(self, parent):
         self.parent = parent
+        self.file_name = None
         self.windows = []
         self.actions = []
         self._show_window = {}
@@ -22,6 +23,15 @@ class Plugin:
     @staticmethod
     def icon():
         return None
+
+    def getFileName(self):
+        return self.file_name
+
+    def setFileName(self, file_name):
+        self.file_name = file_name
+
+    def params(self):
+        return []
 
     def registerWindow(self, window):
         self.windows.append(window)
@@ -85,5 +95,5 @@ class Plugin:
         if active_window in self._show_window:
             self._show_window[active_window].setChecked(True)
 
-    def writeFileContent(self, out):
+    def setupFromYml(self, yml):
         pass
