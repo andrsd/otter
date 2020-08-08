@@ -56,6 +56,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.setLayout(self.layout)
 
         self.list_view.selectionModel().selectionChanged.connect(self.onProjectTypeChanged)
+        self.list_view.doubleClicked.connect(self.onCreate)
 
     def findPlugins(self):
         self.plugins = []
