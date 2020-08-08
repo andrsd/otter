@@ -102,6 +102,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addSeparator()
         self._close_action = fileMenu.addAction("Close", self.onCloseFile, "Ctrl+W")
         self._save_action = fileMenu.addAction("Save", self.onSaveFile, "Ctrl+S")
+        self._save_as_action = fileMenu.addAction("Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
 
         # The "About" item is fine here, since we assume Mac and that will place the itme into different submenu
         # but this will need to be fixed for linux and windows
@@ -139,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._show_main_window.setVisible(True)
 
         self._save_action.setEnabled(have_file)
+        self._save_as_action.setEnabled(have_file)
         self._close_action.setEnabled(have_file)
 
     def onNewFile(self):
@@ -163,7 +165,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateMenuBar()
 
     def onSaveFile(self):
-        pass
+        if self.plugin != None:
+            self.plugin.onSaveFile()
+
+    def onSaveFileAs(self):
+        if self.plugin != None:
+            self.plugin.onSaveFileAs()
 
     def onAbout(self):
         if self.about_dlg == None:

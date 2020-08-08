@@ -50,6 +50,23 @@ class Plugin:
         self.windows = []
         self._show_window = {}
 
+    def onSaveFile(self):
+        if self.file.fileName() == "":
+            file_name = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save File')
+            if file_name[0]:
+                self.file.setFileName(file_name[0])
+                self.writeFile()
+            else:
+                return
+        else:
+            self.writeFile()
+
+    def onSaveFileAs(self):
+        file_name = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save File As')
+        if file_name[0]:
+            self.file.setFileName(file_name[0])
+            self.writeFile()
+
     def minimize(self):
         for window in self.windows:
             window.showMinimized()
@@ -87,3 +104,18 @@ class Plugin:
         active_window = qapp.activeWindow()
         if active_window in self._show_window:
             self._show_window[active_window].setChecked(True)
+
+    def writeFileContent(self, out):
+        pass
+
+    def writeFile(self):
+        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
+            out = QtCore.QTextStream(self.file)
+            self.writeFileContent(out)
+            self.file.flush()
+            self.file.close()
+        else:
+            mb = QtWidgets.QMessageBox.information(
+                self,
+                "Information",
+                "Failed to save '{}'.".format(self.file.fileName()))
