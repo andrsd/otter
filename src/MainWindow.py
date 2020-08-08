@@ -17,6 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_dlg = None
         self.result_window = None
         self.params_window = None
+        self.file = None
         self.plugin = None
         self.plugin_dir = None
 
@@ -130,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._show_main_window.setChecked(True)
 
         if self.plugin != None:
-            have_file = self.plugin.file != None
+            have_file = self.file != None
             if have_file:
                 self.plugin.updateMenuBar()
                 self.plugin.setWindowVisible(have_file)
@@ -148,6 +149,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onCreateProject(self):
         if self.project_type_dlg.result() == QtWidgets.QDialog.Accepted:
+            self.file = QtCore.QFile()
             self.plugin = self.project_type_dlg.plugin
             self.plugin.create()
             self.hide()
@@ -159,10 +161,11 @@ class MainWindow(QtWidgets.QMainWindow):
             file = QtCore.QFile(file_name[0])
             if file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
                 file.close()
+                self.file = file
                 # FIXME: determine which plugin should open this file
                 self.plugin = self.project_type_dlg.getPluginByType("CSVPlotterPlugin")
                 self.plugin.create()
-                self.plugin.setFileName(file_name[0])
+                self.updateMenuBar()
             else:
                 mb = QtWidgets.QMessageBox.information(
                     self,
@@ -171,19 +174,36 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onCloseFile(self):
         if self.plugin != None:
-            self.plugin.closeFile()
+            self.plugin.close()
             self.plugin.showMenu(False)
             self.show()
+            self.plugin = None
 
+        self.file = None
         self.updateMenuBar()
 
     def onSaveFile(self):
-        if self.plugin != None:
-            self.plugin.onSaveFile()
+        if self.plugin == None:
+            return
+
+        if self.file.fileName() == "":
+            file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
+            if file_name[0]:
+                self.file.setFileName(file_name[0])
+                self.writeFile()
+            else:
+                return
+        else:
+            self.writeFile()
 
     def onSaveFileAs(self):
-        if self.plugin != None:
-            self.plugin.onSaveFileAs()
+        if self.plugin == None:
+            return
+
+        file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
+        if file_name[0]:
+            self.file.setFileName(file_name[0])
+            self.writeFile()
 
     def onAbout(self):
         if self.about_dlg == None:
@@ -191,13 +211,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_dlg.show()
 
     def onMinimize(self):
-        if self.plugin.file != None:
+        if self.file != None:
             self.plugin.minimize()
         else:
             self.showMinimized()
 
     def onBringAllToFront(self):
-        if self.plugin.file != None:
+        if self.file != None:
             self.plugin.bringAllToFront()
         else:
             self.showNormal()
@@ -212,3 +232,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if (e.type() == QtCore.QEvent.WindowActivate):
             self.updateMenuBar()
         return super(MainWindow, self).event(e);
+
+    def writeFile(self):
+        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
+            out = QtCore.QTextStream(self.file)
+            self.plugin.writeFileContent(out)
+            self.file.flush()
+            self.file.close()
+        else:
+            mb = QtWidgets.QMessageBox.information(
+                self,
+                "Information",
+                "Failed to save '{}'.".format(self.file.fileName()))

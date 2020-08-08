@@ -3,7 +3,6 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 class Plugin:
 
     def __init__(self, parent):
-        self.file = None
         self.parent = parent
         self.windows = []
         self.actions = []
@@ -33,7 +32,6 @@ class Plugin:
         self._show_window[window] = action
 
     def create(self):
-        self.file = QtCore.QFile()
         self.showMenu(True)
         self.onCreate()
         self.showWindow()
@@ -42,33 +40,12 @@ class Plugin:
         for act in self.actions:
             act.setVisible(state)
 
-    def setFileName(self, file_name):
-        self.file.setFileName(file_name)
-
-    def closeFile(self):
-        self.file = None
+    def close(self):
         for (window, action) in self._show_window.items():
             window.close()
             self.parent._action_group_windows.removeAction(action)
         self.windows = []
         self._show_window = {}
-
-    def onSaveFile(self):
-        if self.file.fileName() == "":
-            file_name = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save File')
-            if file_name[0]:
-                self.file.setFileName(file_name[0])
-                self.writeFile()
-            else:
-                return
-        else:
-            self.writeFile()
-
-    def onSaveFileAs(self):
-        file_name = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save File As')
-        if file_name[0]:
-            self.file.setFileName(file_name[0])
-            self.writeFile()
 
     def minimize(self):
         for window in self.windows:
@@ -110,15 +87,3 @@ class Plugin:
 
     def writeFileContent(self, out):
         pass
-
-    def writeFile(self):
-        if self.file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            out = QtCore.QTextStream(self.file)
-            self.writeFileContent(out)
-            self.file.flush()
-            self.file.close()
-        else:
-            mb = QtWidgets.QMessageBox.information(
-                self,
-                "Information",
-                "Failed to save '{}'.".format(self.file.fileName()))
