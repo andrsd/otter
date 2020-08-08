@@ -280,12 +280,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self._clear_recent_file = self._recent_menu.addAction("Clear Menu", self.onClearRecentFiles)
 
     def addToRecentFiles(self, file_name):
+        # TODO: join the two loops into one
+        exist = False
+        for f in self.recent_files:
+             if f == file_name:
+                 exist = True
         self.recent_files = [f for f in self.recent_files if f != file_name]
         self.recent_files.append(file_name)
         if len(self.recent_files) > self.MAX_RECENT_FILES:
             del self.recent_files[0]
         self.buildRecentFilesMenu()
-        self.recent_tab.addFileItem(file_name)
+        if not exist:
+            self.recent_tab.addFileItem(file_name)
 
     def onOpenRecentFile(self):
         action = self.sender()
