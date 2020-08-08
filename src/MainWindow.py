@@ -153,6 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
             self.plugin.create()
             self.plugin.setupFromYml(yml)
+            self.hide()
             self.updateMenuBar()
             self.addToRecentFiles(file_name)
         else:
