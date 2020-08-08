@@ -13,8 +13,8 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         super(ProjectTypeDialog, self).__init__(parent)
         self.idx = None
         self.plugin = None
-
-        self.findPlugins()
+        self.plugins_dir = None
+        self.parent = parent
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(10)
@@ -23,7 +23,6 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.layout.addWidget(self.type_label)
 
         self.model = QtGui.QStandardItemModel()
-        self.addProjectTypes()
 
         self.list_view = QtWidgets.QListView(self)
         self.list_view.setMinimumWidth(400)
@@ -56,16 +55,15 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
         self.setLayout(self.layout)
 
-        self.updateControls()
-
         self.list_view.selectionModel().selectionChanged.connect(self.onProjectTypeChanged)
+        self.list_view.doubleClicked.connect(self.onCreate)
 
     def findPlugins(self):
         self.plugins = []
-        plugins_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")
-        sys.path.append(plugins_dir)
-        for subdir in os.listdir(plugins_dir):
-            dir = os.path.join(plugins_dir, subdir)
+        self.plugin_map = {}
+        sys.path.append(self.plugins_dir)
+        for subdir in os.listdir(self.plugins_dir):
+            dir = os.path.join(self.plugins_dir, subdir)
             if os.path.isdir(dir):
                 self.loadPlugin(dir)
 
@@ -79,7 +77,15 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
                 is_class_member = lambda member: inspect.isclass(member) and member.__module__ == module_name
                 for name, cls in inspect.getmembers(temp, is_class_member):
-                    self.plugins.append(cls)
+                    plugin = cls(self.parent)
+                    self.plugins.append(plugin)
+                    self.plugin_map[name] = plugin
+
+    def getPluginByType(self, type):
+        if type in self.plugin_map:
+            return self.plugin_map[type]
+        else:
+            return None
 
     def addProjectTypes(self):
         for plugin in self.plugins:

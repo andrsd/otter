@@ -1,5 +1,5 @@
-import globs
-from PyQt5 import QtCore, QtWidgets, uic
+import globals
+from PyQt5 import QtCore, QtWidgets
 
 """
 About dialog
@@ -35,7 +35,7 @@ class AboutDialog(QtWidgets.QDialog):
             "\n"
             "Application icon by partimonio design\n"
             "\n"
-            "{}".format(globs.VERSION, globs.COPYRIGHT)
+            "{}".format(globals.VERSION, globals.COPYRIGHT)
         )
         font = self.text.font()
         font.setPointSize(int(0.9 * font.pointSize()))

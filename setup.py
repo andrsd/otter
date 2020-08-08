@@ -9,16 +9,21 @@ Notes:
 """
 
 from setuptools import setup
-import otter
 import os
+from src.globals import *
 from glob import glob
 
 pth = os.environ.get("OUTDIR", "/tmp")
 
-APP = ['main.py']
+APP = ['src/main.py']
 APP_NAME = 'Otter'
 DATA_FILES = [
-    ('icons', glob('icons/*.svg'))
+    ('icons', glob('src/icons/*.svg')),
+    ('plugins', glob('src/plugins/*.py')),
+    ('plugins/common', glob('src/plugins/common/*.py')),
+    ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
+    ('plugins/image', glob('src/plugins/image/*.py')),
+    ('plugins/movie', glob('src/plugins/movie/*.py')),
 ]
 OPTIONS = {
     'argv_emulation': True,
@@ -27,14 +32,14 @@ OPTIONS = {
         'CFBundleDisplayName': APP_NAME,
         'CFBundleGetInfoString': "GUI frontend for chigger",
         'CFBundleIdentifier': "name.andrs.osx.otter",
-        'CFBundleVersion': str(otter.VERSION),
-        'CFBundleShortVersionString': str(otter.VERSION),
-        'NSHumanReadableCopyright': otter.COPYRIGHT
+        'CFBundleVersion': str(VERSION),
+        'CFBundleShortVersionString': str(VERSION),
+        'NSHumanReadableCopyright': COPYRIGHT
     },
     'bdist_base': pth + '/build',
     'dist_dir': pth + '/dist',
     'packages': [
-        'vtk'
+        'vtk', 'mooseutils', 'chigger'
     ],
     'iconfile': 'icon.icns'
 }

@@ -79,6 +79,11 @@ class AxisTab(QtWidgets.QWidget):
         self.parent = parent
         self.axis_name = axis_name
 
+        self.update_maximum_timer = QtCore.QTimer()
+        self.update_maximum_timer.setSingleShot(True)
+        self.update_minimum_timer = QtCore.QTimer()
+        self.update_minimum_timer.setSingleShot(True)
+
         self.layout_main = QtWidgets.QFormLayout()
         self.layout_main.setContentsMargins(10, 10, 10, 5)
         self.layout_main.setLabelAlignment(QtCore.Qt.AlignLeft)
@@ -116,6 +121,12 @@ class AxisTab(QtWidgets.QWidget):
         self.majorTicks.valueChanged.connect(self.onMajorTicksValueChanged)
         self.grid.stateChanged.connect(self.onGridChanged)
         self.log_scale.stateChanged.connect(self.onLogScaleChanged)
+        self.maximum.textChanged.connect(self.onMaximumChanged)
+        self.maximum.editingFinished.connect(self.onMaximumEditingFinished)
+        self.update_maximum_timer.timeout.connect(self.onUpdateMaximumTimer)
+        self.minimum.textChanged.connect(self.onMinimumChanged)
+        self.minimum.editingFinished.connect(self.onMinimumEditingFinished)
+        self.update_minimum_timer.timeout.connect(self.onUpdateMinimumTimer)
 
     def onLabelChanged(self, text):
         self.parent.axisLabelChanged.emit(self.axis_name, text)
@@ -128,6 +139,38 @@ class AxisTab(QtWidgets.QWidget):
 
     def onLogScaleChanged(self, state):
         self.parent.axisLogScaleChanged.emit(self.axis_name, state == QtCore.Qt.Checked)
+
+    def onMaximumChanged(self, text):
+        self.update_maximum_timer.start(1000)
+
+    def emitMaximumChanged(self, text):
+        if len(text) > 0:
+            self.parent.axisMaximumChanged.emit(self.axis_name, float(text))
+        else:
+            self.parent.axisMaximumChanged.emit(self.axis_name, None)
+
+    def onMaximumEditingFinished(self):
+        self.update_maximum_timer.stop()
+        self.emitMaximumChanged(self.maximum.text())
+
+    def onUpdateMaximumTimer(self):
+        self.emitMaximumChanged(self.maximum.text())
+
+    def onMinimumChanged(self, text):
+        self.update_minimum_timer.start(1000)
+
+    def emitMinimumChanged(self, text):
+        if len(text) > 0:
+            self.parent.axisMinimumChanged.emit(self.axis_name, float(text))
+        else:
+            self.parent.axisMinimumChanged.emit(self.axis_name, None)
+
+    def onUpdateMinimumTimer(self):
+        self.emitMinimumChanged(self.minimum.text())
+
+    def onMinimumEditingFinished(self):
+        self.update_minimum_timer.stop()
+        self.emitMinimumChanged(self.minimum.text())
 
 
 class ChartSetupWidget(QtWidgets.QWidget):
@@ -156,6 +199,8 @@ class ChartSetupWidget(QtWidgets.QWidget):
     axisMajorTicksChanged = QtCore.pyqtSignal(str, int)
     axisGridLineVisiblityChanged = QtCore.pyqtSignal(str, bool)
     axisLogScaleChanged = QtCore.pyqtSignal(str, bool)
+    axisMaximumChanged = QtCore.pyqtSignal(str, object)
+    axisMinimumChanged = QtCore.pyqtSignal(str, object)
 
     def __init__(self, parent):
         super(ChartSetupWidget, self).__init__(parent)

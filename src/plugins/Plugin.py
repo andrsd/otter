@@ -3,11 +3,12 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 class Plugin:
 
     def __init__(self, parent):
-        self.file = None
         self.parent = parent
+        self.file_name = None
         self.windows = []
+        self.actions = []
         self._show_window = {}
-        self.file = QtCore.QFile()
+        self.menubar = parent.menubar
 
     """
     Return the name of the plugin (used in the GUI)
@@ -23,6 +24,15 @@ class Plugin:
     def icon():
         return None
 
+    def getFileName(self):
+        return self.file_name
+
+    def setFileName(self, file_name):
+        self.file_name = file_name
+
+    def params(self):
+        return []
+
     def registerWindow(self, window):
         self.windows.append(window)
 
@@ -32,21 +42,26 @@ class Plugin:
         self._show_window[window] = action
 
     def create(self):
-        pass
+        self.showMenu(True)
+        self.onCreate()
+        self.showWindow()
 
-    def onCloseFile(self):
-        self.file = None
+    def showMenu(self, state):
+        for act in self.actions:
+            act.setVisible(state)
+
+    def close(self):
         for (window, action) in self._show_window.items():
             window.close()
             self.parent._action_group_windows.removeAction(action)
         self.windows = []
         self._show_window = {}
 
-    def onMinimize(self):
+    def minimize(self):
         for window in self.windows:
             window.showMinimized()
 
-    def onBringAllToFront(self):
+    def bringAllToFront(self):
         for window in self.windows:
             window.showNormal()
 
@@ -64,8 +79,21 @@ class Plugin:
         window.raise_()
         self.updateMenuBar()
 
+    def addMenuSeparator(self, menu):
+        action = menu.addSeparator()
+        action.setVisible(False)
+        self.actions.append(action)
+
+    def addMenuAction(self, menu, string, method, keysequece = 0):
+        action = menu.addAction(string, method, keysequece)
+        action.setVisible(False)
+        self.actions.append(action)
+
     def updateMenuBar(self):
         qapp = QtWidgets.QApplication.instance()
         active_window = qapp.activeWindow()
         if active_window in self._show_window:
             self._show_window[active_window].setChecked(True)
+
+    def setupFromYml(self, yml):
+        pass
