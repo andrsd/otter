@@ -42,6 +42,9 @@ class Plugin:
         for act in self.actions:
             act.setVisible(state)
 
+    def setFileName(self, file_name):
+        self.file.setFileName(file_name)
+
     def closeFile(self):
         self.file = None
         for (window, action) in self._show_window.items():

@@ -154,7 +154,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
 
     def onOpenFile(self):
-        pass
+        file_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File')
+        if file_name[0]:
+            file = QtCore.QFile(file_name[0])
+            if file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
+                file.close()
+                # FIXME: determine which plugin should open this file
+                self.plugin = self.project_type_dlg.getPluginByType("CSVPlotterPlugin")
+                self.plugin.create()
+                self.plugin.setFileName(file_name[0])
+            else:
+                mb = QtWidgets.QMessageBox.information(
+                    self,
+                    "Information",
+                    "Failed to open '{}'.".format(file_name[0]))
 
     def onCloseFile(self):
         if self.plugin != None:

@@ -60,6 +60,7 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
     def findPlugins(self):
         self.plugins = []
+        self.plugin_map = {}
         sys.path.append(self.plugins_dir)
         for subdir in os.listdir(self.plugins_dir):
             dir = os.path.join(self.plugins_dir, subdir)
@@ -76,7 +77,15 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
                 is_class_member = lambda member: inspect.isclass(member) and member.__module__ == module_name
                 for name, cls in inspect.getmembers(temp, is_class_member):
-                    self.plugins.append(cls(self.parent))
+                    plugin = cls(self.parent)
+                    self.plugins.append(plugin)
+                    self.plugin_map[name] = plugin
+
+    def getPluginByType(self, type):
+        if type in self.plugin_map:
+            return self.plugin_map[type]
+        else:
+            return None
 
     def addProjectTypes(self):
         for plugin in self.plugins:
