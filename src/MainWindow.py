@@ -13,6 +13,7 @@ from TemplatesTab import TemplatesTab
 Main window
 """
 class MainWindow(QtWidgets.QMainWindow):
+    MAX_RECENT_FILES = 10
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -21,10 +22,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.params_window = None
         self.plugin = None
         self.plugin_dir = None
+        self.recent_files = []
 
         self.project_type_dlg = ProjectTypeDialog(self)
 
         self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.CustomizeWindowHint)
+
+        self.readSettings()
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -101,6 +105,8 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu = self.menubar.addMenu("File")
         self._new_action = fileMenu.addAction("New", self.onNewFile, "Ctrl+N")
         self._open_action = fileMenu.addAction("Open", self.onOpenFile, "Ctrl+O")
+        self._recent_menu = fileMenu.addMenu("Open Recent")
+        self.buildRecentFilesMenu()
         fileMenu.addSeparator()
         self._close_action = fileMenu.addAction("Close", self.onCloseFile, "Ctrl+W")
         self._save_action = fileMenu.addAction("Save", self.onSaveFile, "Ctrl+S")
@@ -141,6 +147,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self._save_as_action.setEnabled(have_file)
         self._close_action.setEnabled(have_file)
 
+    def openFile(self, file_name):
+        yml = self.readYml(file_name)
+        if "type" in yml:
+            self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
+            self.plugin.create()
+            self.plugin.setupFromYml(yml)
+            self.updateMenuBar()
+            self.addToRecentFiles(file_name)
+        else:
+            mb = QtWidgets.QMessageBox.information(
+                self,
+                "Information",
+                "Failed to open '{}'.".format(file_name))
+
     def onNewFile(self):
         self.project_type_dlg.open()
 
@@ -154,17 +174,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def onOpenFile(self):
         file_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File')
         if file_name[0]:
-            yml = self.readYml(file_name[0])
-            if "type" in yml:
-                self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
-                self.plugin.create()
-                self.plugin.setupFromYml(yml)
-                self.updateMenuBar()
-            else:
-                mb = QtWidgets.QMessageBox.information(
-                    self,
-                    "Information",
-                    "Failed to open '{}'.".format(file_name[0]))
+            self.openFile(file_name[0])
 
     def onCloseFile(self):
         if self.plugin != None:
@@ -224,6 +234,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
         return super(MainWindow, self).event(e);
 
+    def closeEvent(self, event):
+        self.writeSettings()
+        event.accept()
+
     def readYml(self, file_name):
         with open(file_name, 'r') as stream:
             try:
@@ -239,3 +253,45 @@ class MainWindow(QtWidgets.QMainWindow):
         with io.open(file_name, 'w', encoding = 'utf8') as outfile:
             yaml.dump(data, outfile, default_flow_style = False, allow_unicode = True)
             self.plugin.setFileName(file_name)
+
+    def writeSettings(self):
+        settings = QtCore.QSettings()
+
+        settings.beginGroup("MainWindow")
+        settings.setValue("recentFiles", self.recent_files)
+        settings.endGroup()
+
+    def readSettings(self):
+        settings = QtCore.QSettings()
+
+        settings.beginGroup("MainWindow")
+        self.recent_files = settings.value("recentFiles", [])
+        settings.endGroup()
+
+    def buildRecentFilesMenu(self):
+        self._recent_menu.clear()
+        if len(self.recent_files) > 0:
+            for f in reversed(self.recent_files):
+                path, file_name = os.path.split(f)
+                action = self._recent_menu.addAction(file_name, self.onOpenRecentFile)
+                action.setData(f)
+            self._recent_menu.addSeparator()
+        self._clear_recent_file = self._recent_menu.addAction("Clear Menu", self.onClearRecentFiles)
+
+    def addToRecentFiles(self, file_name):
+        self.recent_files = [f for f in self.recent_files if f != file_name]
+        self.recent_files.append(file_name)
+        if len(self.recent_files) > self.MAX_RECENT_FILES:
+            del self.recent_files[0]
+        self.buildRecentFilesMenu()
+        self.recent_tab.addFileItem(file_name)
+
+    def onOpenRecentFile(self):
+        action = self.sender()
+        file_name = action.data()
+        self.openFile(file_name)
+
+    def onClearRecentFiles(self):
+        self.recent_files = []
+        self.buildRecentFilesMenu()
+        self.recent_tab.clear()

@@ -83,6 +83,10 @@ def run():
     from PyQt5 import QtWidgets, QtGui, QtCore
     from MainWindow import MainWindow
 
+    QtCore.QCoreApplication.setOrganizationName("David Andrs")
+    QtCore.QCoreApplication.setOrganizationDomain("name.andrs")
+    QtCore.QCoreApplication.setApplicationName("Otter")
+
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
