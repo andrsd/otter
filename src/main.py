@@ -95,6 +95,9 @@ def run():
     qapp.setWindowIcon(QtGui.QIcon(icon_path))
     qapp.setQuitOnLastWindowClosed(False)
 
+    home_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.HomeLocation)
+    os.chdir(home_dir)
+
     window = MainWindow()
     window.setPluginsDir(os.path.join(otter_dir, "plugins"))
     window.loadPlugins()
