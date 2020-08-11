@@ -6,6 +6,7 @@ class Plugin:
         self.parent = parent
         self.file_name = None
         self.windows = []
+        self.menus = []
         self.actions = []
         self._show_window = {}
         self.menubar = parent.menubar
@@ -47,6 +48,8 @@ class Plugin:
         self.showWindow()
 
     def showMenu(self, state):
+        for mnu in self.menus:
+            mnu.menuAction().setVisible(state)
         for act in self.actions:
             act.setVisible(state)
 
@@ -72,6 +75,8 @@ class Plugin:
     def setWindowVisible(self, visible):
         for (window, action) in self._show_window.items():
             action.setVisible(visible)
+        for mnu in self.menus:
+            mnu.menuAction().setVisible(visible)
 
     def onShowWindow(self, window):
         window.showNormal()
@@ -79,15 +84,23 @@ class Plugin:
         window.raise_()
         self.updateMenuBar()
 
+    def addMenu(self, menu, text):
+        new_menu = menu.addMenu(text)
+        new_menu.menuAction().setVisible(False)
+        self.menus.append(new_menu)
+        return new_menu
+
     def addMenuSeparator(self, menu):
         action = menu.addSeparator()
         action.setVisible(False)
         self.actions.append(action)
+        return action
 
     def addMenuAction(self, menu, string, method, keysequece = 0):
         action = menu.addAction(string, method, keysequece)
         action.setVisible(False)
         self.actions.append(action)
+        return action
 
     def updateMenuBar(self):
         qapp = QtWidgets.QApplication.instance()

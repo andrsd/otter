@@ -88,6 +88,33 @@ class CSVPlotterWindow(QtWidgets.QWidget):
             self.last_updated = last_updated
             self.chart_setup_widget.updateFile()
 
+    def onExport(self, file_format):
+        if file_format == 'pdf':
+            file_name = self.exportFileDialog('Export to PDF', 'PDF files (*.pdf)', 'pdf')
+            if file_name:
+                self.chart_widget.exportPdf(file_name)
+
+        elif file_format == 'png':
+            file_name = self.exportFileDialog('Export to PNG', 'PNG files (*.png)', 'png')
+            if file_name:
+                self.chart_widget.exportPng(file_name)
+
+        else:
+            return
+
+    def exportFileDialog(self, window_title, name_filter, default_suffix):
+        dialog = QtWidgets.QFileDialog()
+        dialog.setWindowTitle(window_title)
+        dialog.setNameFilter(name_filter)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+        dialog.setDefaultSuffix(default_suffix)
+
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            return str(dialog.selectedFiles()[0])
+        else:
+            return None
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
