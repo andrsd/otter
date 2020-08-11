@@ -7,9 +7,12 @@ class CSVPlotterPlugin(Plugin):
 
     def __init__(self, parent):
         super(CSVPlotterPlugin, self).__init__(parent)
+        self.window = None
         fileMenu = self.menubar.menus["File"]
         self.addMenuSeparator(fileMenu)
-        self.addMenuAction(fileMenu, "Export", self.onExport)
+        self._export_menu = self.addMenu(fileMenu, "Export")
+        self._export_png = self.addMenuAction(self._export_menu, "PNG...", self.onExportPng)
+        self._export_pdf = self.addMenuAction(self._export_menu, "PDF...", self.onExportPdf)
 
     @staticmethod
     def name():
@@ -23,8 +26,11 @@ class CSVPlotterPlugin(Plugin):
         return QtGui.QIcon(icon_file_name)
 
     def onCreate(self):
-        window = CSVPlotterWindow(self)
-        self.registerWindow(window)
+        self.window = CSVPlotterWindow(self)
+        self.registerWindow(self.window)
 
-    def onExport(self):
-        pass
+    def onExportPdf(self):
+        self.window.onExport("pdf")
+
+    def onExportPng(self):
+        self.window.onExport("png")

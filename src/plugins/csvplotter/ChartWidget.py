@@ -5,6 +5,7 @@ class ChartWidget(QtChart.QChartView):
     def __init__(self, parent):
         super(ChartWidget, self).__init__(parent)
 
+        self.chart_corner_roundness = 4
         self.pri_var = ""
         self.series = {}
         self.pen = {}
@@ -38,6 +39,7 @@ class ChartWidget(QtChart.QChartView):
         self.setMinimumSize(600, 500)
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.chart().layout().setContentsMargins(0, 0, 0, 0)
+        self.chart().setBackgroundRoundness(self.chart_corner_roundness)
 
         for n, alignment in self.axis_alignment.items():
             self.chart().addAxis(self.axes[n], alignment)
@@ -268,3 +270,31 @@ class ChartWidget(QtChart.QChartView):
             QtWidgets.QToolTip.showText(pos, text)
         else:
             QtWidgets.QToolTip.hideText()
+
+    def exportPdf(self, file_name):
+        # temporarily disable the roundness, so that plots are rectangular
+        self.chart().setBackgroundRoundness(0)
+
+        contents_rect = self.chart().layout().contentsRect()
+        screen = QtWidgets.QApplication.screens()[0]
+        dpi = screen.logicalDotsPerInch()
+        # 25.4 milimeters in 1 inch
+        scale = 25.4 / dpi
+
+        writer = QtGui.QPdfWriter(file_name)
+        writer.setResolution(600)
+        writer.setPageSizeMM(QtCore.QSizeF(scale * contents_rect.width(), scale * contents_rect.height()))
+        painter = QtGui.QPainter(writer)
+        self.render(painter)
+        painter.end()
+
+        self.chart().setBackgroundRoundness(self.chart_corner_roundness)
+
+    def exportPng(self, file_name):
+        # temporarily disable the roundness, so that plots are rectangular
+        self.chart().setBackgroundRoundness(0)
+
+        p = self.grab(self.chart().layout().contentsRect().toRect())
+        p.save(file_name, "PNG")
+
+        self.chart().setBackgroundRoundness(self.chart_corner_roundness)
