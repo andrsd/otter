@@ -86,7 +86,10 @@ class RecentFilesTab(QtWidgets.QWidget):
         self.main_window.onNewFile()
 
     def onBrowseDocuments(self):
-        pass
+        docs_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.DocumentsLocation)
+        file_name = QtWidgets.QFileDialog.getOpenFileName(self.main_window, "Browse Documents", docs_dir, "All files (*.yml)")
+        if file_name[0]:
+            self.main_window.openFile(file_name[0])
 
     def onFileChanged(self, si):
         self.updateControls()
