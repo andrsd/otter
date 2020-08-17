@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui, QtChart
+import os
 
 class ChartWidget(QtChart.QChartView):
 
@@ -298,3 +299,77 @@ class ChartWidget(QtChart.QChartView):
         p.save(file_name, "PNG")
 
         self.chart().setBackgroundRoundness(self.chart_corner_roundness)
+
+    def exportGnuplot(self, file_name, csv_file_name):
+        # build a map from variable name to its index
+        hdrs = {}
+        line = ""
+        with open(csv_file_name, "r") as f:
+            line = f.readline()
+        vars = line.split(",")
+        for i, v in enumerate(vars):
+            n = v.strip().strip('"').strip("'")
+            hdrs[n] = i + 1
+
+        with open(file_name, "w") as f:
+            f.write("set terminal svg\n")
+            f.write("set output \"{}.svg\"\n".format(os.path.basename(file_name)))
+            f.write("\n")
+            if len(self.chart().title()) > 0:
+                f.write("set title '{}'\n".format(self.chart().title()))
+
+            for a in ['x', 'y', 'y2']:
+                if a in self.axes and self.axes[a].isVisible():
+                    axis = self.axes[a]
+                    f.write("set {}label '{}'\n".format(a, axis.titleText()))
+                    f.write("set {}range [{}:{}]\n".format(a, axis.min(), axis.max()))
+                    incr = (axis.max() - axis.min()) / (axis.tickCount() - 1)
+                    f.write("set {}tics {},{},{}\n".format(a, axis.min(), incr, axis.max()))
+                    if axis.isGridLineVisible():
+                        f.write("set grid {}tics\n".format(a))
+                    else:
+                        f.write("set grid no{}tics\n".format(a))
+                    f.write("\n")
+
+            f.write("set datafile separator ','\n")
+            f.write("\n")
+
+            if self.chart().legend().isVisible():
+                f.write("set key on\n")
+            else:
+                f.write("set key off\n")
+            f.write("\n")
+
+            if len(self.series.keys()) > 0:
+                f.write("plot\\\n")
+                lines = []
+                pri_var_idx = hdrs[self.pri_var]
+                for (name, series) in self.series.items():
+                    if series.isVisible():
+                        var_idx = hdrs[name]
+
+                        pen = self.pen[name]
+                        rgb = pen.color().name(QtGui.QColor.HexRgb)
+                        if pen.style() == QtCore.Qt.SolidLine:
+                            dashtype = '1'
+                        elif pen.style() == QtCore.Qt.DashLine:
+                            dashtype = '2'
+                        elif pen.style() == QtCore.Qt.DotLine:
+                            dashtype = '3'
+                        elif pen.style() == QtCore.Qt.DashDotLine:
+                            dashtype = '4'
+                        else:
+                            dashtype = '1'
+
+                        ln = ""
+                        ln += " '{}'".format(os.path.basename(csv_file_name))
+                        ln += " using {}:{}".format(pri_var_idx, var_idx)
+                        ln += " title '{}'".format(name)
+                        ln += " with lines".format(name)
+                        ln += " dt {}".format(dashtype)
+                        ln += " lc rgb \"{}\"".format(rgb)
+                        ln += " lw {}".format(pen.width())
+
+                        lines.append(ln)
+
+                f.write(',\\\n'.join(lines))

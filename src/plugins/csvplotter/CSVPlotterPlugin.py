@@ -13,6 +13,7 @@ class CSVPlotterPlugin(Plugin):
         self._export_menu = self.addMenu(fileMenu, "Export")
         self._export_png = self.addMenuAction(self._export_menu, "PNG...", self.onExportPng)
         self._export_pdf = self.addMenuAction(self._export_menu, "PDF...", self.onExportPdf)
+        self._export_gnuplot = self.addMenuAction(self._export_menu, "gnuplot...", self.onExportGnuplot)
 
     @staticmethod
     def name():
@@ -34,3 +35,6 @@ class CSVPlotterPlugin(Plugin):
 
     def onExportPng(self):
         self.window.onExport("png")
+
+    def onExportGnuplot(self):
+        self.window.onExport("gnuplot")
