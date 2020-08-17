@@ -99,6 +99,12 @@ class CSVPlotterWindow(QtWidgets.QWidget):
             if file_name:
                 self.chart_widget.exportPng(file_name)
 
+        elif file_format == 'gnuplot':
+            file_name = self.exportFileDialog('Export to gnuplot', 'gnuplot files (*.plt, *.gnu, *.gpi, *.gih)', 'plt')
+            if file_name:
+                csv_file_name = self.files_widget.currentFileName()
+                self.chart_widget.exportGnuplot(file_name, csv_file_name)
+
         else:
             return
 
