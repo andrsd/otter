@@ -19,4 +19,4 @@ jobs:
         pip install pylint
     - name: Test with pytest
       run: |
-        pylint `ls -R src|grep .py$|xargs`
+        pylint `find src -type f -name '*.py' | xargs`
