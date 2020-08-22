@@ -1,14 +1,18 @@
+"""
+RecentFilesTab.py
+"""
+
 import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from OListView import OListView
 
-"""
-List of recent file that show on the MainWindow
-"""
 class RecentFilesTab(QtWidgets.QWidget):
+    """
+    List of recent file that show on the MainWindow
+    """
 
     def __init__(self, parent):
-        super(RecentFilesTab, self).__init__(parent)
+        super().__init__(parent)
 
         self.main_window = parent
 
@@ -52,10 +56,14 @@ class RecentFilesTab(QtWidgets.QWidget):
         self.updateControls()
 
     def addFileItem(self, file_name):
+        """
+        Add item into file list
+        @param file_name Full path file name
+        """
         qapp = QtWidgets.QApplication.instance()
         icon = qapp.windowIcon()
 
-        path, base_name = os.path.split(file_name)
+        unused_path, base_name = os.path.split(file_name)
         file = QtCore.QFile(file_name)
         file_time = file.fileTime(QtCore.QFileDevice.FileModificationTime)
 
@@ -66,6 +74,9 @@ class RecentFilesTab(QtWidgets.QWidget):
         self.model.appendRow(si)
 
     def fillFileList(self):
+        """
+        Add file the the list
+        """
         settings = QtCore.QSettings()
 
         settings.beginGroup("MainWindow")
@@ -77,28 +88,50 @@ class RecentFilesTab(QtWidgets.QWidget):
             self.addFileItem(file_name)
 
     def updateControls(self):
+        """
+        Update controls
+        """
         if len(self.file_list.selectedIndexes()) == 1:
             self.open_button.setEnabled(True)
         else:
             self.open_button.setEnabled(False)
 
     def onNew(self):
+        """
+        Called when clikced on 'New' button
+        """
         self.main_window.onNewFile()
 
     def onBrowseDocuments(self):
+        """
+        Called when clicked on 'Browse Documents' button
+        """
         docs_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.DocumentsLocation)
-        file_name = QtWidgets.QFileDialog.getOpenFileName(self.main_window, "Browse Documents", docs_dir, "All files (*.yml)")
+        file_name = QtWidgets.QFileDialog.getOpenFileName(
+            self.main_window,
+            "Browse Documents",
+            docs_dir,
+            "All files (*.yml)")
         if file_name[0]:
             self.main_window.openFile(file_name[0])
 
-    def onFileChanged(self, si):
+    def onFileChanged(self, unused_si):
+        """
+        Called when file selection changed
+        """
         self.updateControls()
 
     def onOpen(self):
+        """
+        Called when clicked on 'Open' button
+        """
         sel_idx = self.file_list.selectedIndexes()[0]
         si = self.model.itemFromIndex(sel_idx)
         file_name = si.data()
         self.main_window.openFile(file_name)
 
     def clear(self):
+        """
+        Empty the recent file list
+        """
         self.model.clear()

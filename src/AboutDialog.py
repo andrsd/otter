@@ -1,13 +1,15 @@
-import globals
-from PyQt5 import QtCore, QtWidgets
+"""
+AboutDialog.py
+"""
 
-"""
-About dialog
-"""
+from PyQt5 import QtCore, QtWidgets
+import consts
+
 class AboutDialog(QtWidgets.QDialog):
+    """ About dialog """
 
     def __init__(self, parent):
-        super(AboutDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowFlag(QtCore.Qt.CustomizeWindowHint, True)
         self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, False)
@@ -35,7 +37,7 @@ class AboutDialog(QtWidgets.QDialog):
             "\n"
             "Application icon by partimonio design\n"
             "\n"
-            "{}".format(globals.VERSION, globals.COPYRIGHT)
+            "{}".format(consts.VERSION, consts.COPYRIGHT)
         )
         font = self.text.font()
         font.setPointSize(int(0.9 * font.pointSize()))

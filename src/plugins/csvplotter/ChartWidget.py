@@ -1,10 +1,17 @@
-from PyQt5 import QtWidgets, QtCore, QtGui, QtChart
+"""
+ChartWidget.py
+"""
+
 import os
+from PyQt5 import QtWidgets, QtCore, QtGui, QtChart
 
 class ChartWidget(QtChart.QChartView):
+    """
+    Widget for ploting charts
+    """
 
     def __init__(self, parent):
-        super(ChartWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.chart_corner_roundness = 4
         self.pri_var = ""
@@ -51,12 +58,19 @@ class ChartWidget(QtChart.QChartView):
         self.chart().legend().setVisible(False)
 
     def dragEnterEvent(self, event):
-        pass
+        """
+        Eneter drag event handler
+        """
 
     def dropEvent(self, event):
-        pass
+        """
+        Drop event handler
+        """
 
     def onChartRemoveSeries(self):
+        """
+        Remove series from a chart
+        """
         self.chart().removeAllSeries()
         self.series = {}
         self.yaxis = {}
@@ -65,6 +79,9 @@ class ChartWidget(QtChart.QChartView):
         self.ymax = {}
 
     def onChartSeriesAdded(self, pri_var, name, xdata, ydata):
+        """
+        Add a series to a chart
+        """
         self.pri_var = pri_var
         series = QtChart.QLineSeries()
         series.setName(name)
@@ -88,30 +105,42 @@ class ChartWidget(QtChart.QChartView):
         self.rescaleYAxes(True)
 
     def onChartSeriesReset(self, name):
-        series = self.series[name].clear()
+        """
+        Series reset
+        """
+        self.series[name].clear()
         self.ymin[name] = None
         self.ymax[name] = None
 
     def onChartSeriesUpdate(self, name, xdata, ydata):
+        """
+        Update series
+        """
         series = self.series[name]
         for x, y in zip(xdata, ydata):
             series.append(x, y)
-        if self.ymin[name] == None:
+        if self.ymin[name] is None:
             self.ymin[name] = min(ydata)
         else:
             self.ymin[name] = min(self.ymin[name], min(ydata))
-        if self.ymax[name] == None:
+        if self.ymax[name] is None:
             self.ymax[name] = max(ydata)
         else:
             self.ymax[name] = max(self.ymax[name], max(ydata))
         self.rescaleYAxes()
 
     def rescaleXAxis(self):
+        """
+        rescale X-axis
+        """
         self.axes['x'].setRange(self.xmin, self.xmax)
         self.min['x'] = self.xmin
         self.max['x'] = self.xmax
 
     def rescaleYAxes(self, force = False):
+        """
+        Rescale Y-axes
+        """
         ymin = []
         ymax = []
         y2min = []
@@ -136,6 +165,9 @@ class ChartWidget(QtChart.QChartView):
             self.max['y2'] = y2max
 
     def setAxesVisibility(self):
+        """
+        Set axes visibility
+        """
         yvisible = False
         y2visible = False
         for name, s in self.series.items():
@@ -148,21 +180,33 @@ class ChartWidget(QtChart.QChartView):
         self.axes['y2'].setVisible(y2visible)
 
     def onChartSeriesVisibilityChanged(self, name, visible):
+        """
+        Series visibility changed
+        """
         series = self.series[name]
         series.setVisible(visible)
         self.rescaleYAxes()
         self.setAxesVisibility()
 
     def onChartSeriesNameChanged(self, name, series_name):
+        """
+        Series name changed
+        """
         series = self.series[name]
         series.setName(series_name)
 
     def onChartSeriesColorChanged(self, name, color):
+        """
+        Series color changed
+        """
         series = self.series[name]
         self.pen[name].setColor(color)
         series.setPen(self.pen[name])
 
     def onChartSeriesAxisChanged(self, name, axis):
+        """
+        Series axis changed
+        """
         series = self.series[name]
         if axis == 'left':
             series.detachAxis(self.axes['y2'])
@@ -175,6 +219,9 @@ class ChartWidget(QtChart.QChartView):
         self.setAxesVisibility()
 
     def onChartSeriesLineStyleChanged(self, name, style):
+        """
+        Series line style changed
+        """
         series = self.series[name]
         pen_style = None
         if style == 'solid':
@@ -188,22 +235,34 @@ class ChartWidget(QtChart.QChartView):
         elif style == 'none':
             pen_style = QtCore.Qt.NoPen
 
-        if pen_style != None:
+        if pen_style is not None:
             self.pen[name].setStyle(pen_style)
             series.setPen(self.pen[name])
 
     def onChartSeriesLineWidthChanged(self, name, width):
+        """
+        Series line width changed
+        """
         series = self.series[name]
         self.pen[name].setWidth(width)
         series.setPen(self.pen[name])
 
     def onChartTitleChanged(self, title):
+        """
+        Title changed
+        """
         self.chart().setTitle(title)
 
     def onChartLegendVisibilityChanged(self, visible):
+        """
+        Legend visibility changed
+        """
         self.chart().legend().setVisible(visible)
 
     def onChartLegendAlignmentChanged(self, alignment):
+        """
+        Legend alignment changed
+        """
         if alignment == 'left':
             self.chart().legend().setAlignment(QtCore.Qt.AlignLeft)
         elif alignment == 'right':
@@ -214,18 +273,30 @@ class ChartWidget(QtChart.QChartView):
             self.chart().legend().setAlignment(QtCore.Qt.AlignBottom)
 
     def onAxisLabelChanged(self, axis_name, label):
+        """
+        Axis label changed
+        """
         if axis_name in self.axes:
             self.axes[axis_name].setTitleText(label)
 
     def onAxisMajorTicksChanged(self, axis_name, value):
+        """
+        Axis major ticks changed
+        """
         if axis_name in self.axes:
             self.axes[axis_name].setTickCount(value)
 
     def onAxisGridLineVisiblityChanged(self, axis_name, visible):
+        """
+        Axis grid line visibility changed
+        """
         if axis_name in self.axes:
             self.axes[axis_name].setGridLineVisible(visible)
 
     def onAxisLogScaleChanged(self, axis_name, on):
+        """
+        Axis log slace changed
+        """
         if axis_name in self.axes:
             # take the old axis and replace it with the new one
             old_axis = self.axes[axis_name]
@@ -243,27 +314,36 @@ class ChartWidget(QtChart.QChartView):
 
             # swap the old axis for the new one in chart and all series attached to old_axis
             self.chart().addAxis(self.axes[axis_name], self.axis_alignment[axis_name])
-            for name, series in self.series.items():
+            for unused_name, series in self.series.items():
                 if old_axis in series.attachedAxes():
                     series.detachAxis(old_axis)
                     series.attachAxis(new_axis)
             self.chart().removeAxis(old_axis)
 
     def onAxisMaximumChanged(self, axis_name, value):
+        """
+        Axis maximum value changed
+        """
         if axis_name in self.axes:
-            if value == None:
+            if value is None:
                 self.axes[axis_name].setMax(self.max[axis_name])
             else:
                 self.axes[axis_name].setMax(value)
 
     def onAxisMinimumChanged(self, axis_name, value):
+        """
+        Axis minimum value changed
+        """
         if axis_name in self.axes:
-            if value == None:
+            if value is None:
                 self.axes[axis_name].setMin(self.min[axis_name])
             else:
                 self.axes[axis_name].setMin(value)
 
     def onHovered(self, point, state):
+        """
+        Triggered when hovered on the series
+        """
         series = self.sender()
         if state:
             pos = QtGui.QCursor.pos()
@@ -273,6 +353,9 @@ class ChartWidget(QtChart.QChartView):
             QtWidgets.QToolTip.hideText()
 
     def exportPdf(self, file_name):
+        """
+        Export to PDF
+        """
         # temporarily disable the roundness, so that plots are rectangular
         self.chart().setBackgroundRoundness(0)
 
@@ -284,7 +367,8 @@ class ChartWidget(QtChart.QChartView):
 
         writer = QtGui.QPdfWriter(file_name)
         writer.setResolution(600)
-        writer.setPageSizeMM(QtCore.QSizeF(scale * contents_rect.width(), scale * contents_rect.height()))
+        writer.setPageSizeMM(
+            QtCore.QSizeF(scale * contents_rect.width(), scale * contents_rect.height()))
         painter = QtGui.QPainter(writer)
         self.render(painter)
         painter.end()
@@ -292,22 +376,29 @@ class ChartWidget(QtChart.QChartView):
         self.chart().setBackgroundRoundness(self.chart_corner_roundness)
 
     def exportPng(self, file_name):
+        """
+        Export to PNG
+        """
         # temporarily disable the roundness, so that plots are rectangular
         self.chart().setBackgroundRoundness(0)
 
-        p = self.grab(self.chart().layout().contentsRect().toRect())
-        p.save(file_name, "PNG")
+        painter = self.grab(self.chart().layout().contentsRect().toRect())
+        painter.save(file_name, "PNG")
 
         self.chart().setBackgroundRoundness(self.chart_corner_roundness)
 
     def exportGnuplot(self, file_name, csv_file_name):
+        """
+        Export to gnuplot
+        """
+        # pylint: disable=too-many-locals,too-many-branches
         # build a map from variable name to its index
         hdrs = {}
         line = ""
         with open(csv_file_name, "r") as f:
             line = f.readline()
-        vars = line.split(",")
-        for i, v in enumerate(vars):
+        variables = line.split(",")
+        for i, v in enumerate(variables):
             n = v.strip().strip('"').strip("'")
             hdrs[n] = i + 1
 
@@ -365,7 +456,7 @@ class ChartWidget(QtChart.QChartView):
                         ln += " '{}'".format(os.path.basename(csv_file_name))
                         ln += " using {}:{}".format(pri_var_idx, var_idx)
                         ln += " title '{}'".format(name)
-                        ln += " with lines".format(name)
+                        ln += " with lines"
                         ln += " dt {}".format(dashtype)
                         ln += " lc rgb \"{}\"".format(rgb)
                         ln += " lw {}".format(pen.width())

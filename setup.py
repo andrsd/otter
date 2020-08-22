@@ -10,7 +10,7 @@ Notes:
 
 from setuptools import setup
 import os
-from src.globals import *
+from src.consts import *
 from glob import glob
 
 pth = os.environ.get("OUTDIR", "/tmp")

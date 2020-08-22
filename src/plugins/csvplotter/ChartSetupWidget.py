@@ -1,14 +1,21 @@
+"""
+ChartSetupWidget.py
+"""
+
 from PyQt5 import QtWidgets, QtCore, QtGui
+# pylint: disable=import-error
 import mooseutils
 
 
 class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
-
-    def __init__(self, parent):
-        super(VariablesParamDelegate, self).__init__(parent)
+    """
+    Delegate for variable parameter
+    """
 
     def createEditor(self, parent, option, index):
+        # pylint: disable=missing-function-docstring
         col = index.column()
+        # pylint: disable=no-else-return
         if col == ChartSetupWidget.IDX_AXIS:
             editor = QtWidgets.QComboBox(parent)
             editor.addItem('right')
@@ -31,9 +38,10 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
             editor.setSingleStep(1)
             return editor
         else:
-            return super(VariablesParamDelegate, self).createEditor(parent, option, index)
+            return super().createEditor(parent, option, index)
 
     def setEditorData(self, editor, index):
+        # pylint: disable=missing-function-docstring
         model = index.model()
         if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
             value = model.data(index, QtCore.Qt.EditRole)
@@ -45,9 +53,10 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
             value = model.data(index, QtCore.Qt.EditRole)
             editor.setValue(int(value))
         else:
-            super(VariablesParamDelegate, self).setEditorData(editor, index)
+            super().setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
+        # pylint: disable=missing-function-docstring
         if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
             value = editor.currentText()
             model.setData(index, value, QtCore.Qt.EditRole)
@@ -60,22 +69,26 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
             value = editor.value()
             model.setData(index, str(value), QtCore.Qt.EditRole)
         else:
-            super(VariablesParamDelegate, self).setModelData(editor, model, index)
+            super().setModelData(editor, model, index)
 
     def updateEditorGeometry(self, editor, option, index):
+        # pylint: disable=missing-function-docstring
         if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
             rect = option.rect
             rect.setTop(rect.top() - 2)
             rect.setBottom(rect.bottom() + 3)
             editor.setGeometry(rect)
         else:
-            super(VariablesParamDelegate, self).updateEditorGeometry(editor, option, index)
+            super().updateEditorGeometry(editor, option, index)
 
 
 class AxisTab(QtWidgets.QWidget):
+    """
+    Tab widget for axis
+    """
 
     def __init__(self, parent, axis_name):
-        super(AxisTab, self).__init__()
+        super().__init__()
         self.parent = parent
         self.axis_name = axis_name
 
@@ -100,10 +113,10 @@ class AxisTab(QtWidgets.QWidget):
         self.minimum.setValidator(QtGui.QDoubleValidator())
         self.layout_main.addRow("Minimum", self.minimum)
 
-        self.majorTicks = QtWidgets.QSpinBox()
-        self.majorTicks.setMinimum(2)
-        self.majorTicks.setValue(5)
-        self.layout_main.addRow("Major ticks", self.majorTicks)
+        self.major_ticks = QtWidgets.QSpinBox()
+        self.major_ticks.setMinimum(2)
+        self.major_ticks.setValue(5)
+        self.layout_main.addRow("Major ticks", self.major_ticks)
 
         self.bottom_layout = QtWidgets.QHBoxLayout()
 
@@ -118,7 +131,7 @@ class AxisTab(QtWidgets.QWidget):
         self.setLayout(self.layout_main)
 
         self.label.textChanged.connect(self.onLabelChanged)
-        self.majorTicks.valueChanged.connect(self.onMajorTicksValueChanged)
+        self.major_ticks.valueChanged.connect(self.onMajorTicksValueChanged)
         self.grid.stateChanged.connect(self.onGridChanged)
         self.log_scale.stateChanged.connect(self.onLogScaleChanged)
         self.maximum.textChanged.connect(self.onMaximumChanged)
@@ -129,51 +142,90 @@ class AxisTab(QtWidgets.QWidget):
         self.update_minimum_timer.timeout.connect(self.onUpdateMinimumTimer)
 
     def onLabelChanged(self, text):
+        """
+        Label changed handler
+        """
         self.parent.axisLabelChanged.emit(self.axis_name, text)
 
     def onMajorTicksValueChanged(self, value):
+        """
+        Major ticks value handler
+        """
         self.parent.axisMajorTicksChanged.emit(self.axis_name, value)
 
     def onGridChanged(self, state):
+        """
+        Grid changed handler
+        """
         self.parent.axisGridLineVisiblityChanged.emit(self.axis_name, state == QtCore.Qt.Checked)
 
     def onLogScaleChanged(self, state):
+        """
+        Log scale changed handler
+        """
         self.parent.axisLogScaleChanged.emit(self.axis_name, state == QtCore.Qt.Checked)
 
-    def onMaximumChanged(self, text):
+    def onMaximumChanged(self, unused_text):
+        """
+        Maximum value changed handler
+        """
         self.update_maximum_timer.start(1000)
 
     def emitMaximumChanged(self, text):
+        """
+        Emit 'maximum value changed' signal
+        """
         if len(text) > 0:
             self.parent.axisMaximumChanged.emit(self.axis_name, float(text))
         else:
             self.parent.axisMaximumChanged.emit(self.axis_name, None)
 
     def onMaximumEditingFinished(self):
+        """
+        Editing maximum value finished
+        """
         self.update_maximum_timer.stop()
         self.emitMaximumChanged(self.maximum.text())
 
     def onUpdateMaximumTimer(self):
+        """
+        'Update maximum value' timer expired
+        """
         self.emitMaximumChanged(self.maximum.text())
 
-    def onMinimumChanged(self, text):
+    def onMinimumChanged(self, unused_text):
+        """
+        Minimum value changed handler
+        """
         self.update_minimum_timer.start(1000)
 
     def emitMinimumChanged(self, text):
+        """
+        Emit 'minimum value changed' signal
+        """
         if len(text) > 0:
             self.parent.axisMinimumChanged.emit(self.axis_name, float(text))
         else:
             self.parent.axisMinimumChanged.emit(self.axis_name, None)
 
     def onUpdateMinimumTimer(self):
+        """
+        'Update minimum value' timer expired
+        """
         self.emitMinimumChanged(self.minimum.text())
 
     def onMinimumEditingFinished(self):
+        """
+        Editing maximum value finished
+        """
         self.update_minimum_timer.stop()
         self.emitMinimumChanged(self.minimum.text())
 
 
 class ChartSetupWidget(QtWidgets.QWidget):
+    """
+    Widget to setup chart
+    """
 
     IDX_VARIABLE_NAME = 0
     IDX_COLOR = 1
@@ -203,7 +255,7 @@ class ChartSetupWidget(QtWidgets.QWidget):
     axisMinimumChanged = QtCore.pyqtSignal(str, object)
 
     def __init__(self, parent):
-        super(ChartSetupWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # CSV reader
         self.reader = None
@@ -216,26 +268,30 @@ class ChartSetupWidget(QtWidgets.QWidget):
 
         # Variables
         self.variables = QtGui.QStandardItemModel()
-        self.variables.setHorizontalHeaderLabels(["Name", "", "Axis", "Line style", "Line width", ""])
+        self.variables.setHorizontalHeaderLabels(["Name", "", "Axis", "Line style", "Line width",
+            ""])
 
         self.primary_variable_layout = QtWidgets.QHBoxLayout()
 
-        self.primary_variableLabel = QtWidgets.QLabel("Primary variable")
-        self.primary_variable_layout.addWidget(self.primary_variableLabel)
+        self.primary_variable_label = QtWidgets.QLabel("Primary variable")
+        self.primary_variable_layout.addWidget(self.primary_variable_label)
 
         self.primary_variable = QtWidgets.QComboBox()
-        self.primary_variable.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.primary_variable.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Fixed)
         self.primary_variable.setModel(self.variables)
         self.primary_variable_layout.addWidget(self.primary_variable)
         self.layout_main.addLayout(self.primary_variable_layout)
 
         #
         self.variables_view = QtWidgets.QTreeView()
-        self.variables_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.variables_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Expanding)
         self.variables_view.setModel(self.variables)
         self.variables_view.setRootIsDecorated(False)
         self.variables_view.setItemDelegate(VariablesParamDelegate(self.variables_view))
-        self.variables_view.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed | QtWidgets.QAbstractItemView.CurrentChanged)
+        self.variables_view.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed |
+            QtWidgets.QAbstractItemView.CurrentChanged)
 
         header = self.variables_view.header()
         for i, wd in enumerate([170, 10, 60, 70, 70, 0]):
@@ -302,39 +358,46 @@ class ChartSetupWidget(QtWidgets.QWidget):
         ]
 
     def updateControls(self):
+        """
+        Update controls
+        """
         legend_enabled = self.legend.checkState() == QtCore.Qt.Checked
         self.legend_position.setEnabled(legend_enabled)
 
     def onLoadFile(self, file_name):
+        """
+        Load file handler
+        """
         self.reader = mooseutils.PostprocessorReader(file_name)
         for row, var in enumerate(self.reader.variables()):
             self.variables.blockSignals(True)
-            siName = QtGui.QStandardItem(var)
-            siName.setEditable(True)
-            siName.setCheckable(True)
-            siName.setData(var)
-            self.variables.setItem(row, self.IDX_VARIABLE_NAME, siName)
+            si_name = QtGui.QStandardItem(var)
+            si_name.setEditable(True)
+            si_name.setCheckable(True)
+            si_name.setData(var)
+            self.variables.setItem(row, self.IDX_VARIABLE_NAME, si_name)
 
-            siColor = QtGui.QStandardItem('\u25a0')
-            siColor.setForeground(QtGui.QBrush(self.color[row % len(self.color)]))
-            self.variables.setItem(row, self.IDX_COLOR, siColor)
+            si_color = QtGui.QStandardItem('\u25a0')
+            si_color.setForeground(QtGui.QBrush(self.color[row % len(self.color)]))
+            self.variables.setItem(row, self.IDX_COLOR, si_color)
 
-            siAxis = QtGui.QStandardItem("left")
-            self.variables.setItem(row, self.IDX_AXIS, siAxis)
+            si_axis = QtGui.QStandardItem("left")
+            self.variables.setItem(row, self.IDX_AXIS, si_axis)
 
-            siLineStyle = QtGui.QStandardItem("solid")
-            self.variables.setItem(row, self.IDX_LINE_STYLE, siLineStyle)
+            si_line_style = QtGui.QStandardItem("solid")
+            self.variables.setItem(row, self.IDX_LINE_STYLE, si_line_style)
 
-            siLineWidth = QtGui.QStandardItem("2")
-            self.variables.setItem(row, self.IDX_LINE_WIDTH, siLineWidth)
+            si_line_width = QtGui.QStandardItem("2")
+            self.variables.setItem(row, self.IDX_LINE_WIDTH, si_line_width)
 
-            # this is used by the primary variable combo box, but we are not showing it in the tree view
-            siName2 = QtGui.QStandardItem(var)
-            self.variables.setItem(row, self.IDX_VARIABLE_NAME_HIDDEN, siName2)
+            # this is used by the primary variable combo box, but we are not showing it
+            # in the tree view
+            si_name2 = QtGui.QStandardItem(var)
+            self.variables.setItem(row, self.IDX_VARIABLE_NAME_HIDDEN, si_name2)
 
             self.variables.blockSignals(False)
 
-            siName.setCheckState(QtCore.Qt.Unchecked)
+            si_name.setCheckState(QtCore.Qt.Unchecked)
 
         self.primary_variable.setModelColumn(self.IDX_VARIABLE_NAME_HIDDEN)
         self.primary_variable.setCurrentIndex(0)
@@ -342,6 +405,9 @@ class ChartSetupWidget(QtWidgets.QWidget):
         self.variables_view.hideColumn(self.IDX_VARIABLE_NAME_HIDDEN)
 
     def updateFile(self):
+        """
+        Update file
+        """
         idx = self.primary_variable.currentIndex()
         pri_var = self.primary_variable.itemText(idx)
         start = len(self.reader[pri_var])
@@ -368,6 +434,9 @@ class ChartSetupWidget(QtWidgets.QWidget):
                     self.chartSeriesUpdate.emit(var, xdata[start:end], ydata[start:end])
 
     def onPrimaryVariableChanged(self, idx):
+        """
+        Primary variable cahnged handler
+        """
         # enable all variables in variable view, but disable the primary variable
         pri_var = self.primary_variable.itemText(idx)
         items = self.variables.findItems(pri_var)
@@ -391,6 +460,9 @@ class ChartSetupWidget(QtWidgets.QWidget):
                     self.chartSeriesColorChanged.emit(var, color)
 
     def onVariablesChanged(self, item):
+        """
+        Variables changed handler
+        """
         if item.column() == self.IDX_VARIABLE_NAME:
             checked = item.checkState() == QtCore.Qt.Checked
             self.chartSeriesVisibilityChanged.emit(item.data(), checked)
@@ -410,12 +482,21 @@ class ChartSetupWidget(QtWidgets.QWidget):
             self.chartSeriesLineWidthChanged.emit(name, int(item.text()))
 
     def onTitleChanged(self, text):
+        """
+        Title changed handler
+        """
         self.chartTitleChanged.emit(text)
 
     def onLegendStateChanged(self, state):
+        """
+        Legend state changed
+        """
         self.updateControls()
         self.chartLegendVisibilityChanged.emit(state == QtCore.Qt.Checked)
 
     def onLegendPositionChanged(self, idx):
+        """
+        Legend position changed
+        """
         alignment = self.legend_position.itemText(idx)
         self.chartLegendAlignmentChanged.emit(alignment)

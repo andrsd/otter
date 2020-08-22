@@ -1,51 +1,63 @@
-import sys, os
+"""
+Otter
+"""
+# pylint: disable=invalid-name
+
+import sys
+import os
 import argparse
 import signal
 import importlib.util
-import globals
+import consts
 
-"""
-Check that all packages we are using are present. If not, let users know.
-"""
-def checkRequirements():
+# pylint: disable=invalid-name
+otter_dir = None
+
+def check_requirements():
+    """
+    Check that all packages we are using are present. If not, let users know.
+    """
     stop = False
 
     # check system packages
     modules = [ 'PyQt5', 'vtk', 'numpy', 'bisect', "yaml"]
     not_found_modules = []
     for m in modules:
-        if importlib.util.find_spec(m) == None:
+        if importlib.util.find_spec(m) is None:
             not_found_modules.append(m)
 
     if len(not_found_modules) > 0:
         print("The following modules were not found: {}. "
-            "This may be fixed by installing them either via 'pip' or 'conda'.".format(", ".join(not_found_modules)))
+            "This may be fixed by installing them either "
+            "via 'pip' or 'conda'.".format(", ".join(not_found_modules)))
         stop = True
 
     # check MOOSE packages
     moose_modules = ['mooseutils', 'chigger']
     not_found_modules = []
     for m in moose_modules:
-        if importlib.util.find_spec(m) == None:
+        if importlib.util.find_spec(m) is None:
             not_found_modules.append(m)
 
     if len(not_found_modules) > 0:
         print("The following modules were not found: {}. "
-            "This may be fixed by setting MOOSE_DIR environment variable.".format(", ".join(not_found_modules)))
+            "This may be fixed by setting MOOSE_DIR environment "
+            "variable.".format(", ".join(not_found_modules)))
         stop = True
 
     if stop:
-        exit(1)
+        sys.exit(1)
 
-"""
-Set paths required for running
-"""
 def set_paths():
+    """
+    Set paths required for running
+    """
+    # pylint: disable=global-statement
     global otter_dir
 
     otter_dir = os.path.dirname(os.path.realpath(__file__))
     moose_dir = os.environ.get("MOOSE_DIR", None)
-    if moose_dir == None:
+    if moose_dir is None:
         app_dir = os.path.dirname(otter_dir)
         moose_dir = os.path.join(app_dir, "moose")
     chigger_dir = os.path.join(moose_dir, "python", "chigger")
@@ -55,10 +67,11 @@ def set_paths():
     sys.path.append(otter_dir)
 
 
-"""
-Run the application
-"""
 def run():
+    """
+    Run the application
+    """
+    # pylint: disable=global-statement
     global otter_dir
 
     parser = argparse.ArgumentParser(
@@ -73,13 +86,14 @@ def run():
     parser.add_argument(
         '--version',
         action = 'version',
-        version = 'otter {}'.format(globals.VERSION))
-    args = parser.parse_args()
+        version = 'otter {}'.format(consts.VERSION))
+    unused_args = parser.parse_args()
 
     # ----
 
-    checkRequirements()
+    check_requirements()
 
+    # pylint: disable=import-outside-toplevel
     from PyQt5 import QtWidgets, QtGui, QtCore
     from MainWindow import MainWindow
 

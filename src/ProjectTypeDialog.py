@@ -1,19 +1,25 @@
-import os, sys
+"""
+ProjectTypeDialog.py
+"""
+
+import os
+import sys
 import importlib.util
 import inspect
 from PyQt5 import QtCore, QtWidgets, QtGui
-from plugins import Plugin
 
-"""
-Project type dialog
-"""
 class ProjectTypeDialog(QtWidgets.QDialog):
+    """
+    Project type dialog
+    """
 
     def __init__(self, parent):
-        super(ProjectTypeDialog, self).__init__(parent)
+        super().__init__(parent)
         self.idx = None
         self.plugin = None
         self.plugins_dir = None
+        self.plugins = []
+        self.plugin_map = {}
         self.parent = parent
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -59,48 +65,72 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.list_view.doubleClicked.connect(self.onCreate)
 
     def findPlugins(self):
+        """
+        Find user plug-ins
+        """
         self.plugins = []
         self.plugin_map = {}
         sys.path.append(self.plugins_dir)
         for subdir in os.listdir(self.plugins_dir):
-            dir = os.path.join(self.plugins_dir, subdir)
-            if os.path.isdir(dir):
-                self.loadPlugin(dir)
+            directory = os.path.join(self.plugins_dir, subdir)
+            if os.path.isdir(directory):
+                self.loadPlugin(directory)
 
-    def loadPlugin(self, dir):
-        for file in os.listdir(dir):
+    def loadPlugin(self, directory):
+        """
+        Load plug-in
+        @param directory Directory containing the plugin
+        """
+        for file in os.listdir(directory):
             if file.endswith("Plugin.py"):
                 module_name = os.path.splitext(os.path.basename(file))[0]
-                sys.path.append(dir)
+                sys.path.append(directory)
                 temp = importlib.import_module(module_name)
-                sys.path.remove(dir)
+                sys.path.remove(directory)
 
-                is_class_member = lambda member: inspect.isclass(member) and member.__module__ == module_name
+                is_class_member = lambda member, module_name: \
+                    inspect.isclass(member) and member.__module__ == module_name
                 for name, cls in inspect.getmembers(temp, is_class_member):
                     plugin = cls(self.parent)
                     self.plugins.append(plugin)
                     self.plugin_map[name] = plugin
 
-    def getPluginByType(self, type):
-        if type in self.plugin_map:
-            return self.plugin_map[type]
-        else:
-            return None
+    def getPluginByType(self, plugin_type):
+        """
+        Get plugin by type
+        @param plugin_type Plug-in type
+        @return Plug-in class if know, None otherwise
+        """
+        if plugin_type in self.plugin_map:
+            return self.plugin_map[plugin_type]
+        return None
 
     def addProjectTypes(self):
+        """
+        Add know types of projects (i.e plug-ins)
+        """
         for plugin in self.plugins:
             ri = QtGui.QStandardItem(plugin.icon(), plugin.name())
             ri.setData(plugin)
             self.model.appendRow(ri)
 
     def updateControls(self):
+        """
+        Update controls
+        """
         n_selected = len(self.list_view.selectedIndexes())
         self.create_button.setEnabled(n_selected > 0)
 
-    def onProjectTypeChanged(self, si):
+    def onProjectTypeChanged(self, unused_si):
+        """
+        Called when project selection changed
+        """
         self.updateControls()
 
     def onCreate(self):
+        """
+        Called when clicked on 'Create' button
+        """
         sel_idx = self.list_view.selectedIndexes()[0]
         si = self.model.itemFromIndex(sel_idx)
         self.plugin = si.data()
