@@ -1,41 +1,48 @@
+"""
+FilesWidget.py
+"""
+
 import os
 import glob
 from PyQt5 import QtWidgets, QtCore
 
-"""
-A ComboBox that disables filenames if they do not exist using glob.
-
-NOTE: glob is used so that this will work with MultiApps when that is added.
-"""
 class FilesComboBox(QtWidgets.QComboBox):
+    """
+    A ComboBox that disables filenames if they do not exist using glob.
 
+    NOTE: glob is used so that this will work with MultiApps when that is added.
     """
-    Override to enable/disable files based on existence.
-    """
+
     def showPopup(self):
+        """
+        Override to enable/disable files based on existence.
+        """
         for i in range(self.count()):
             self.model().item(i).setEnabled(bool(glob.glob(self.itemData(i))))
-        super(FilesComboBox, self).showPopup()
+        super().showPopup()
 
-    """
-    Return true if the file already exists.
-    """
     def hasItem(self, full_file):
+        """
+        Return true if the file already exists.
+        """
         return full_file in [self.itemData(i) for i in range(self.count())]
 
-    """
-    Return the index given the full filename.
-    """
     def itemIndex(self, full_file):
+        """
+        Return the index given the full filename.
+        """
         return [self.itemData(i) for i in range(self.count())].index(full_file)
 
 
 class FilesWidget(QtWidgets.QWidget):
+    """
+    Widget for selecting and opening files
+    """
 
     loadFile = QtCore.pyqtSignal(str)
 
     def __init__(self, parent):
-        super(FilesWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setMinimumWidth(300)
         self.setContentsMargins(0, 0, 0, 0)
@@ -67,24 +74,30 @@ class FilesWidget(QtWidgets.QWidget):
         self.updateControls()
 
     def currentFileName(self):
+        """
+        Get current file name
+        """
         index = self.file_list.currentIndex()
         file_name = str(self.file_list.itemData(index))
         return file_name
 
     def updateControls(self):
+        """
+        Update controls
+        """
         if self.file_list.count() > 0:
             self.file_list.setEnabled(True)
         else:
             self.file_list.setEnabled(False)
 
-    """
-    Updates the list of available files for selection.
-
-    This is the entry point for loading a file via the FilePlugin.
-
-    @param filenames[list]: The filenames to include in the FileList widget.
-    """
     def onSetFilenames(self, filenames):
+        """
+        Updates the list of available files for selection.
+
+        This is the entry point for loading a file via the FilePlugin.
+
+        @param filenames[list]: The filenames to include in the FileList widget.
+        """
         self.file_list.clear()
 
         for full_file in filenames:
@@ -96,10 +109,10 @@ class FilesWidget(QtWidgets.QWidget):
         self.file_list.blockSignals(False)
         self.updateControls()
 
-    """
-    Update list of files
-    """
     def updateFileList(self, filenames):
+        """
+        Update list of files
+        """
         if self.file_list.count() == 0:
             self.onSetFilenames(filenames)
 
@@ -117,19 +130,20 @@ class FilesWidget(QtWidgets.QWidget):
         if index != self.file_list.currentIndex():
             self.file_list.setCurrentIndex(index)
 
-    """
-    Callback for opening additional file(s)
-    """
     def onOpenFiles(self):
-        (fn, filter) = QtWidgets.QFileDialog.getOpenFileName(self, self.open_file_caption, os.getcwd(), self.open_file_filter)
+        """
+        Callback for opening additional file(s)
+        """
+        (fn, unused_filter) = QtWidgets.QFileDialog.getOpenFileName(self, self.open_file_caption,
+            os.getcwd(), self.open_file_filter)
         if fn:
             self.updateFileList([fn])
 
-    """
-    Callback for file selection.
-
-    @param index[int]: The index of the selected item.
-    """
     def onFileListIndexChanged(self, index):
+        """
+        Callback for file selection.
+
+        @param index[int]: The index of the selected item.
+        """
         file_name = str(self.file_list.itemData(index))
         self.loadFile.emit(file_name)

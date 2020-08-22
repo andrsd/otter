@@ -1,0 +1,36 @@
+[BASIC]
+class-naming-style=PascalCase
+module-naming-style=PascalCase
+method-naming-style=camelCase
+good-names=i,
+           j,
+           k,
+           ex,
+           Run,
+           _,
+           si,
+           ri,
+           f, fn,
+           w,
+           m,
+           x,
+           y,
+           v,
+           n,
+           a,
+           ln,
+           s,
+           on,
+           wd
+
+[MESSAGES CONTROL]
+disable=
+  c-extension-no-member,
+  too-few-public-methods,
+  fixme,
+  duplicate-code
+
+[DESIGN]
+max-attributes=100
+max-public-methods=100
+max-statements=100

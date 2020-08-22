@@ -1,22 +1,33 @@
-import os
+"""
+ChiggerPluginBase.py
+"""
+
+# pylint: disable=no-name-in-module,import-error
 from Plugin import Plugin
-from PyQt5 import QtCore, QtWidgets, QtGui
 from common.ResultWindow import ResultWindow
 from common.ParamsWindow import ParamsWindow
 
 class ChiggerPluginBase(Plugin):
+    """
+    Base class for chigger plugins
+    """
 
     def __init__(self, parent):
-        super(ChiggerPluginBase, self).__init__(parent)
-        fileMenu = self.menubar.menus["File"]
-        self.addMenuSeparator(fileMenu)
-        self.addMenuAction(fileMenu, "Render", self.onRender, "Ctrl+Shift+R")
+        super().__init__(parent)
+        file_menu = self.menubar.menus["File"]
+        self.addMenuSeparator(file_menu)
+        self.addMenuAction(file_menu, "Render", self.onRender, "Ctrl+Shift+R")
 
     def onCreate(self):
+        """
+        Called when plug-in created
+        """
         params_window = ParamsWindow(self)
         self.registerWindow(params_window)
         result_window = ResultWindow(self)
         self.registerWindow(result_window)
 
     def onRender(self):
-        pass
+        """
+        Called when rendering is triggered
+        """

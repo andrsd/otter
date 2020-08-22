@@ -1,32 +1,42 @@
+"""
+MainWindow.py
+"""
+
 import os
 import io
 import yaml
-from globals import *
 from PyQt5 import QtWidgets, QtCore
+import consts
 from MenuBar import MenuBar
 from AboutDialog import AboutDialog
 from ProjectTypeDialog import ProjectTypeDialog
 from RecentFilesTab import RecentFilesTab
 from TemplatesTab import TemplatesTab
 
-"""
-Main window
-"""
 class MainWindow(QtWidgets.QMainWindow):
+    """
+    Main window
+    """
+
     MAX_RECENT_FILES = 10
 
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.about_dlg = None
         self.result_window = None
         self.params_window = None
         self.plugin = None
         self.plugin_dir = None
         self.recent_files = []
+        self._clear_recent_file = None
 
         self.project_type_dlg = ProjectTypeDialog(self)
 
-        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.CustomizeWindowHint)
+        self.setWindowFlags(
+            QtCore.Qt.Window |
+            QtCore.Qt.WindowTitleHint |
+            QtCore.Qt.WindowCloseButtonHint |
+            QtCore.Qt.CustomizeWindowHint)
 
         self.readSettings()
 
@@ -40,15 +50,25 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.project_type_dlg.finished.connect(self.onCreateProject)
 
-    def setPluginsDir(self, dir):
-        self.project_type_dlg.plugins_dir = dir
+    def setPluginsDir(self, directory):
+        """
+        Set plugin directory
+        @param directory[str] Plugin directory
+        """
+        self.project_type_dlg.plugins_dir = directory
 
     def loadPlugins(self):
+        """
+        Load plug-ins
+        """
         self.project_type_dlg.findPlugins()
         self.project_type_dlg.addProjectTypes()
         self.project_type_dlg.updateControls()
 
     def setupWidgets(self):
+        """
+        Setup widgets
+        """
         w = QtWidgets.QWidget(self)
         w.setContentsMargins(0, 0, 0 ,0)
         layout = QtWidgets.QHBoxLayout()
@@ -71,7 +91,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.title.setAlignment(QtCore.Qt.AlignHCenter)
         left_layout.addWidget(self.title)
 
-        self.version = QtWidgets.QLabel("Version " + str(VERSION))
+        self.version = QtWidgets.QLabel("Version " + str(consts.VERSION))
         font = self.version.font()
         font.setBold(True)
         font.setPointSize(int(0.9 * font.pointSize()))
@@ -100,44 +120,51 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(w)
 
     def setupMenuBar(self):
+        """
+        Setup menu bar
+        """
         self.menubar = MenuBar(self)
 
-        fileMenu = self.menubar.addMenu("File")
-        self._new_action = fileMenu.addAction("New", self.onNewFile, "Ctrl+N")
-        self._open_action = fileMenu.addAction("Open", self.onOpenFile, "Ctrl+O")
-        self._recent_menu = fileMenu.addMenu("Open Recent")
+        file_menu = self.menubar.addMenu("File")
+        self._new_action = file_menu.addAction("New", self.onNewFile, "Ctrl+N")
+        self._open_action = file_menu.addAction("Open", self.onOpenFile, "Ctrl+O")
+        self._recent_menu = file_menu.addMenu("Open Recent")
         self.buildRecentFilesMenu()
-        fileMenu.addSeparator()
-        self._close_action = fileMenu.addAction("Close", self.onCloseFile, "Ctrl+W")
-        self._save_action = fileMenu.addAction("Save", self.onSaveFile, "Ctrl+S")
-        self._save_as_action = fileMenu.addAction("Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
+        file_menu.addSeparator()
+        self._close_action = file_menu.addAction("Close", self.onCloseFile, "Ctrl+W")
+        self._save_action = file_menu.addAction("Save", self.onSaveFile, "Ctrl+S")
+        self._save_as_action = file_menu.addAction("Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
 
-        # The "About" item is fine here, since we assume Mac and that will place the itme into different submenu
-        # but this will need to be fixed for linux and windows
-        fileMenu.addSeparator()
-        self._about_box_action = fileMenu.addAction("About", self.onAbout)
+        # The "About" item is fine here, since we assume Mac and that will place the item into
+        # different submenu but this will need to be fixed for linux and windows
+        file_menu.addSeparator()
+        self._about_box_action = file_menu.addAction("About", self.onAbout)
 
-        self._windowMenu = self.menubar.addMenu("Window")
-        self._minimize = self._windowMenu.addAction("Minimize", self.onMinimize, "Ctrl+M")
-        self._windowMenu.addSeparator()
-        self._bring_all_to_front = self._windowMenu.addAction("Bring All to Front", self.onBringAllToFront)
+        self.window_menu = self.menubar.addMenu("Window")
+        self._minimize = self.window_menu.addAction("Minimize", self.onMinimize, "Ctrl+M")
+        self.window_menu.addSeparator()
+        self._bring_all_to_front = self.window_menu.addAction("Bring All to Front",
+            self.onBringAllToFront)
 
-        self._windowMenu.addSeparator()
-        self._show_main_window = self._windowMenu.addAction("Otter", self.onShowMainWindow)
+        self.window_menu.addSeparator()
+        self._show_main_window = self.window_menu.addAction("Otter", self.onShowMainWindow)
         self._show_main_window.setCheckable(True)
 
-        self._action_group_windows = QtWidgets.QActionGroup(self)
-        self._action_group_windows.addAction(self._show_main_window)
+        self.action_group_windows = QtWidgets.QActionGroup(self)
+        self.action_group_windows.addAction(self._show_main_window)
 
         self.setMenuBar(self.menubar)
 
     def updateMenuBar(self):
+        """
+        Update menu bar
+        """
         qapp = QtWidgets.QApplication.instance()
         active_window = qapp.activeWindow()
         if active_window == self:
             self._show_main_window.setChecked(True)
 
-        have_file = self.plugin != None
+        have_file = self.plugin is not None
         if have_file:
             self.plugin.updateMenuBar()
             self.plugin.setWindowVisible(True)
@@ -148,6 +175,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._close_action.setEnabled(have_file)
 
     def openFile(self, file_name):
+        """
+        Open menu bar
+        @param file_name[str] Name of the file to open
+        """
+
         yml = self.readYml(file_name)
         if "type" in yml:
             self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
@@ -157,15 +189,21 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
             self.addToRecentFiles(file_name)
         else:
-            mb = QtWidgets.QMessageBox.information(
+            QtWidgets.QMessageBox.information(
                 self,
                 "Information",
                 "Failed to open '{}'.".format(file_name))
 
     def onNewFile(self):
+        """
+        Called when FileNew action is triggered
+        """
         self.project_type_dlg.open()
 
     def onCreateProject(self):
+        """
+        Called when creating new project
+        """
         if self.project_type_dlg.result() == QtWidgets.QDialog.Accepted:
             self.plugin = self.project_type_dlg.plugin
             self.plugin.create()
@@ -173,12 +211,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateMenuBar()
 
     def onOpenFile(self):
+        """
+        Called when FileOpen action is triggered
+        """
         file_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File')
         if file_name[0]:
             self.openFile(file_name[0])
 
     def onCloseFile(self):
-        if self.plugin != None:
+        """
+        Called when FileClose action is triggered
+        """
+        if self.plugin is None:
             self.plugin.close()
             self.plugin.showMenu(False)
             self.show()
@@ -187,10 +231,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateMenuBar()
 
     def onSaveFile(self):
-        if self.plugin == None:
+        """
+        Called when FileSave action is triggered
+        """
+        if self.plugin is None:
             return
 
-        if self.plugin.getFileName() == None:
+        if self.plugin.getFileName() is None:
             file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
             if file_name[0]:
                 self.writeYml(file_name[0])
@@ -200,7 +247,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.writeYml(file_name[0])
 
     def onSaveFileAs(self):
-        if self.plugin == None:
+        """
+        Called when FileSaveAs action is triggered
+        """
+        if self.plugin is None:
             return
 
         file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
@@ -208,45 +258,72 @@ class MainWindow(QtWidgets.QMainWindow):
             self.writeYml(file_name[0])
 
     def onAbout(self):
-        if self.about_dlg == None:
+        """
+        Called when FileAbout action is triggered
+        """
+        if self.about_dlg is None:
             self.about_dlg = AboutDialog(self)
         self.about_dlg.show()
 
     def onMinimize(self):
-        if self.plugin != None:
+        """
+        Called when WindowMinimize is triggered
+        """
+        if self.plugin is not None:
             self.plugin.minimize()
         else:
             self.showMinimized()
 
     def onBringAllToFront(self):
-        if self.plugin != None:
+        """
+        Called when WindowBringAllToFront is triggered
+        """
+        if self.plugin is not None:
             self.plugin.bringAllToFront()
         else:
             self.showNormal()
 
     def onShowMainWindow(self):
+        """
+        Called when show main window is triggered
+        """
         self.showNormal()
         self.activateWindow()
         self.raise_()
         self.updateMenuBar()
 
-    def event(self, e):
-        if (e.type() == QtCore.QEvent.WindowActivate):
+    def event(self, event):
+        """
+        Event override
+        """
+        if event.type() == QtCore.QEvent.WindowActivate:
             self.updateMenuBar()
-        return super(MainWindow, self).event(e);
+        return super().event(event)
 
     def closeEvent(self, event):
+        """
+        Called when EventClose is recieved
+        """
         self.writeSettings()
         event.accept()
 
     def readYml(self, file_name):
+        """
+        Read YML file
+        @param file_name[str] Name of the file
+        """
+        # pylint: disable=no-self-use
         with open(file_name, 'r') as stream:
             try:
                 return yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
+            except yaml.YAMLError as unused_exc:
                 return None
 
     def writeYml(self, file_name):
+        """
+        Write YML file
+        @param file_name[str] Name of the file
+        """
         data = {
             "type": self.plugin.__class__.__name__,
             "params": self.plugin.params()
@@ -256,6 +333,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plugin.setFileName(file_name)
 
     def writeSettings(self):
+        """
+        Write settings
+        """
         settings = QtCore.QSettings()
 
         settings.beginGroup("MainWindow")
@@ -263,6 +343,9 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.endGroup()
 
     def readSettings(self):
+        """
+        Read settings
+        """
         settings = QtCore.QSettings()
 
         settings.beginGroup("MainWindow")
@@ -270,21 +353,28 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.endGroup()
 
     def buildRecentFilesMenu(self):
+        """
+        Build recent files submenu
+        """
         self._recent_menu.clear()
         if len(self.recent_files) > 0:
             for f in reversed(self.recent_files):
-                path, file_name = os.path.split(f)
+                unused_path, file_name = os.path.split(f)
                 action = self._recent_menu.addAction(file_name, self.onOpenRecentFile)
                 action.setData(f)
             self._recent_menu.addSeparator()
         self._clear_recent_file = self._recent_menu.addAction("Clear Menu", self.onClearRecentFiles)
 
     def addToRecentFiles(self, file_name):
+        """
+        Add file to recent files
+        @param file_name[str] Name of the file
+        """
         # TODO: join the two loops into one
         exist = False
         for f in self.recent_files:
-             if f == file_name:
-                 exist = True
+            if f == file_name:
+                exist = True
         self.recent_files = [f for f in self.recent_files if f != file_name]
         self.recent_files.append(file_name)
         if len(self.recent_files) > self.MAX_RECENT_FILES:
@@ -294,11 +384,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.recent_tab.addFileItem(file_name)
 
     def onOpenRecentFile(self):
+        """
+        Called when opening a file from 'Recent files' submenu
+        """
         action = self.sender()
         file_name = action.data()
         self.openFile(file_name)
 
     def onClearRecentFiles(self):
+        """
+        Called when activating 'Clear' in 'Recent files' submenu
+        """
         self.recent_files = []
         self.buildRecentFilesMenu()
         self.recent_tab.clear()

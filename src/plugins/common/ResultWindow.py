@@ -1,9 +1,16 @@
+"""
+ResultWindow.py
+"""
+
 from PyQt5 import QtCore, QtWidgets
 
 class ResultWindow(QtWidgets.QMainWindow):
+    """
+    Window for displaying the result
+    """
 
     def __init__(self, plugin):
-        super(ResultWindow, self).__init__()
+        super().__init__()
         self.plugin = plugin
 
         self.frame = QtWidgets.QFrame()
@@ -15,7 +22,10 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Result")
         self.show()
 
-    def event(self, e):
-        if (e.type() == QtCore.QEvent.WindowActivate):
+    def event(self, event):
+        """
+        Event callback
+        """
+        if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
-        return super(ResultWindow, self).event(e);
+        return super().event(event)

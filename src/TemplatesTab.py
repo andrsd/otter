@@ -1,13 +1,17 @@
-from PyQt5 import QtWidgets, QtCore
+"""
+TemplatesTab.py
+"""
+
+from PyQt5 import QtWidgets
 from OListView import OListView
 
-"""
-List of recent file that show on the MainWindow
-"""
 class TemplatesTab(QtWidgets.QWidget):
+    """
+    List of recent file that show on the MainWindow
+    """
 
     def __init__(self, parent):
-        super(TemplatesTab, self).__init__(parent)
+        super().__init__(parent)
 
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 0)
@@ -39,13 +43,20 @@ class TemplatesTab(QtWidgets.QWidget):
         self.updateWidgets()
 
     def updateWidgets(self):
+        """
+        Update controls
+        """
         if len(self.template_list.selectedIndexes()) == 1:
             self.open_button.setEnabled()
         else:
             self.open_button.setEnabled(False)
 
     def onNew(self):
-        pass
+        """
+        Called when clicked on 'New' button
+        """
 
     def onOpen(self):
-        pass
+        """
+        Called when clicked on 'Open' button
+        """
