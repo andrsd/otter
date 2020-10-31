@@ -222,7 +222,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Called when FileClose action is triggered
         """
-        if self.plugin is None:
+        if self.plugin is not None:
             self.plugin.close()
             self.plugin.showMenu(False)
             self.show()
