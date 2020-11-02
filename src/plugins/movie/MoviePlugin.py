@@ -4,7 +4,7 @@ MoviePlugin.py
 
 import os
 # pylint: disable=no-name-in-module,import-error
-from common.ChiggerPluginBase import ChiggerPluginBase
+from ChiggerPluginBase import ChiggerPluginBase
 from PyQt5 import QtGui
 
 class MoviePlugin(ChiggerPluginBase):
