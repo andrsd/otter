@@ -4,8 +4,8 @@ ChiggerPluginBase.py
 
 # pylint: disable=no-name-in-module,import-error
 from Plugin import Plugin
-from common.ResultWindow import ResultWindow
-from common.ParamsWindow import ParamsWindow
+from ResultWindow import ResultWindow
+from ParamsWindow import ParamsWindow
 
 class ChiggerPluginBase(Plugin):
     """
