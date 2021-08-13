@@ -12,7 +12,7 @@ To run tests:
 
 .. code-block:: bash
 
-  $ python run -m unittest discover -s tests -v
+  $ python -m unittest discover -s tests -v
 
 
 To generate code coverage:

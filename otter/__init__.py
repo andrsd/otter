@@ -17,7 +17,7 @@ from . import viewports
 from . import colorbars
 from . import annotations
 
-__testing__ = 'TRAVIS_CI' in os.environ
+__testing__ = 'TEST_CI' in os.environ
 
 size = {
     '720p' : [1280, 720],
