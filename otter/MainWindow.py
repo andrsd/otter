@@ -41,6 +41,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setFixedHeight(475)
         self.setFixedWidth(750)
 
+        settings = QtCore.QSettings()
+        settings.beginGroup("MainWindow")
+        geom = settings.value("geometry")
+        if geom is not None:
+            self.restoreGeometry(geom)
+        settings.endGroup()
+
         self.updateMenuBar()
 
         self.project_type_dlg.finished.connect(self.onCreateProject)
@@ -344,6 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         settings.beginGroup("MainWindow")
         settings.setValue("recentFiles", self.recent_files)
+        settings.setValue("geometry", self.saveGeometry())
         settings.endGroup()
 
     def readSettings(self):
