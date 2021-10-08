@@ -88,12 +88,11 @@ class ProjectTypeDialog(QtWidgets.QDialog):
                 temp = importlib.import_module(module_name)
                 sys.path.remove(directory)
 
-                is_class_member = lambda member, module_name=module_name: \
-                    inspect.isclass(member) and member.__module__ == module_name
-                for name, cls in inspect.getmembers(temp, is_class_member):
-                    plugin = cls(self.parent)
-                    self.plugins.append(plugin)
-                    self.plugin_map[name] = plugin
+                for name, cls in inspect.getmembers(temp, inspect.isclass):
+                    if cls.__module__ == module_name:
+                        plugin = cls(self.parent)
+                        self.plugins.append(plugin)
+                        self.plugin_map[name] = plugin
 
     def getPluginByType(self, plugin_type):
         """
