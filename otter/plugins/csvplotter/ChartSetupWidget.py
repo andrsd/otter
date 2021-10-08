@@ -3,7 +3,7 @@ ChartSetupWidget.py
 """
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-import mooseutils
+from PostprocessorReader import PostprocessorReader
 
 
 class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
@@ -374,7 +374,7 @@ class ChartSetupWidget(QtWidgets.QWidget):
         """
         Load file handler
         """
-        self.reader = mooseutils.PostprocessorReader(file_name)
+        self.reader = PostprocessorReader(file_name)
         for row, var in enumerate(self.reader.variables()):
             self.variables.blockSignals(True)
             si_name = QtGui.QStandardItem(var)
