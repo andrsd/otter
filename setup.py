@@ -83,7 +83,7 @@ setup(
         'pyparsing==2.4.6',
         'python-dateutil==2.8.1',
         'pytz==2021.3',
-        'six==1.14.0',
+        'six==1.15.0',
         'terminaltables==3.1.0',
         'sphinx==1.8.5'
     ],

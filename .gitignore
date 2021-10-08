@@ -1,9 +1,13 @@
 *.pyc
+*.egg-info/
+
 
 # py2app
 .eggs/*
 venv/*
 icon.icns
+dist/*
+build/*
 
 # garbagge created by me
 tmp/*
