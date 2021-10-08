@@ -6,6 +6,7 @@ from Plugin import Plugin
 from ResultWindow import ResultWindow
 from ParamsWindow import ParamsWindow
 
+
 class ChiggerPluginBase(Plugin):
     """
     Base class for chigger plugins

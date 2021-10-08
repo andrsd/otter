@@ -2,10 +2,9 @@
 MoviePlugin.py
 """
 
-import os
 from ChiggerPluginBase import ChiggerPluginBase
-from PyQt5 import QtGui
 from otter.assets import Assets
+
 
 class MoviePlugin(ChiggerPluginBase):
     """

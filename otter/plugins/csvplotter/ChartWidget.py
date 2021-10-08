@@ -5,6 +5,7 @@ ChartWidget.py
 import os
 from PyQt5 import QtWidgets, QtCore, QtGui, QtChart
 
+
 class ChartWidget(QtChart.QChartView):
     """
     Widget for ploting charts
@@ -45,7 +46,8 @@ class ChartWidget(QtChart.QChartView):
 
         self.setAcceptDrops(True)
         self.setMinimumSize(600, 500)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                           QtWidgets.QSizePolicy.Expanding)
         self.chart().layout().setContentsMargins(0, 0, 0, 0)
         self.chart().setBackgroundRoundness(self.chart_corner_roundness)
 
@@ -137,7 +139,7 @@ class ChartWidget(QtChart.QChartView):
         self.min['x'] = self.xmin
         self.max['x'] = self.xmax
 
-    def rescaleYAxes(self, force = False):
+    def rescaleYAxes(self, force=False):
         """
         Rescale Y-axes
         """
@@ -312,8 +314,10 @@ class ChartWidget(QtChart.QChartView):
             new_axis.setTitleText(old_axis.titleText())
             self.axes[axis_name] = new_axis
 
-            # swap the old axis for the new one in chart and all series attached to old_axis
-            self.chart().addAxis(self.axes[axis_name], self.axis_alignment[axis_name])
+            # swap the old axis for the new one in chart and all series
+            # attached to old_axis
+            self.chart().addAxis(self.axes[axis_name],
+                                 self.axis_alignment[axis_name])
             for unused_name, series in self.series.items():
                 if old_axis in series.attachedAxes():
                     series.detachAxis(old_axis)
@@ -347,7 +351,8 @@ class ChartWidget(QtChart.QChartView):
         series = self.sender()
         if state:
             pos = QtGui.QCursor.pos()
-            text = "{}: {:f}\n {}: {:f}".format(self.pri_var, point.x(), series.name(), point.y())
+            text = "{}: {:f}\n {}: {:f}".format(
+                self.pri_var, point.x(), series.name(), point.y())
             QtWidgets.QToolTip.showText(pos, text)
         else:
             QtWidgets.QToolTip.hideText()
@@ -368,7 +373,8 @@ class ChartWidget(QtChart.QChartView):
         writer = QtGui.QPdfWriter(file_name)
         writer.setResolution(600)
         writer.setPageSizeMM(
-            QtCore.QSizeF(scale * contents_rect.width(), scale * contents_rect.height()))
+            QtCore.QSizeF(scale * contents_rect.width(),
+                          scale * contents_rect.height()))
         painter = QtGui.QPainter(writer)
         self.render(painter)
         painter.end()
@@ -403,7 +409,8 @@ class ChartWidget(QtChart.QChartView):
 
         with open(file_name, "w") as f:
             f.write("set terminal svg\n")
-            f.write("set output \"{}.svg\"\n".format(os.path.basename(file_name)))
+            f.write("set output \"{}.svg\"\n".format(
+                os.path.basename(file_name)))
             f.write("\n")
             if len(self.chart().title()) > 0:
                 f.write("set title '{}'\n".format(self.chart().title()))
@@ -412,9 +419,11 @@ class ChartWidget(QtChart.QChartView):
                 if a in self.axes and self.axes[a].isVisible():
                     axis = self.axes[a]
                     f.write("set {}label '{}'\n".format(a, axis.titleText()))
-                    f.write("set {}range [{}:{}]\n".format(a, axis.min(), axis.max()))
+                    f.write("set {}range [{}:{}]\n".format(
+                        a, axis.min(), axis.max()))
                     incr = (axis.max() - axis.min()) / (axis.tickCount() - 1)
-                    f.write("set {}tics {},{},{}\n".format(a, axis.min(), incr, axis.max()))
+                    f.write("set {}tics {},{},{}\n".format(
+                        a, axis.min(), incr, axis.max()))
                     if axis.isGridLineVisible():
                         f.write("set grid {}tics\n".format(a))
                     else:

@@ -6,6 +6,7 @@ import os
 import csv
 from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
 
+
 class ComputedVsMeasuredWindow(QtWidgets.QWidget):
     """
     Main window of the computed vs measured data plug-in
@@ -37,10 +38,11 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.chart_view = QtChart.QChartView()
         self.chart_view.setMinimumSize(600, 500)
         self.chart_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding)
-        self.chart_view.chart().legend().setVisible(False)
-        self.chart_view.chart().layout().setContentsMargins(3, 3, 3, 3)
-        self.chart_view.chart().setBackgroundRoundness(self.chart_corner_roundness)
+                                      QtWidgets.QSizePolicy.Expanding)
+        chart = self.chart_view.chart()
+        chart.legend().setVisible(False)
+        chart.layout().setContentsMargins(3, 3, 3, 3)
+        chart.setBackgroundRoundness(self.chart_corner_roundness)
 
         self.ideal_series = QtChart.QLineSeries()
         self.ideal_series.append(0, 0)
@@ -74,7 +76,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.left_layout_bottom = QtWidgets.QHBoxLayout()
 
         self.error_type = QtWidgets.QGroupBox()
-        self.error_type.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.error_type.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                      QtWidgets.QSizePolicy.Fixed)
         self.error_type.setContentsMargins(0, 0, 0, 0)
 
         error_type_layout = QtWidgets.QGridLayout()
@@ -82,7 +85,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.relative_error = QtWidgets.QRadioButton("Relative")
         error_type_layout.addWidget(self.relative_error, 0, 0)
 
-        self.relative_error_amount = QtWidgets.QLineEdit("{}".format(self.rel_err))
+        self.relative_error_amount = QtWidgets.QLineEdit(
+            "{}".format(self.rel_err))
         validator = QtGui.QDoubleValidator()
         self.relative_error_amount.setValidator(validator)
         error_type_layout.addWidget(self.relative_error_amount, 0, 1)
@@ -93,7 +97,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.absolute_error = QtWidgets.QRadioButton("Absolute")
         error_type_layout.addWidget(self.absolute_error, 1, 0)
 
-        self.absolute_error_amount = QtWidgets.QLineEdit("{}".format(self.abs_err))
+        self.absolute_error_amount = QtWidgets.QLineEdit(
+            "{}".format(self.abs_err))
         validator = QtGui.QDoubleValidator()
         self.absolute_error_amount.setValidator(validator)
         error_type_layout.addWidget(self.absolute_error_amount, 1, 1)
@@ -119,7 +124,7 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
 
         self.file_view = QtWidgets.QTreeView(self)
         self.file_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding)
+                                     QtWidgets.QSizePolicy.Expanding)
         self.file_view.setMinimumWidth(255)
         self.file_view.setRootIsDecorated(False)
         self.file_view.setModel(self.file_list)
@@ -129,7 +134,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.layout_right.addWidget(self.file_view)
 
         self.add_button = QtWidgets.QPushButton("+", self)
-        self.add_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.add_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                      QtWidgets.QSizePolicy.Fixed)
         self.layout_right.addWidget(self.add_button)
 
         self.right_pane = QtWidgets.QWidget()
@@ -137,7 +143,10 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.right_pane.setContentsMargins(0, 4, 4, 0)
 
         self.vsplitter = QtWidgets.QSplitter()
-        self.vsplitter.setStyleSheet("QSplitter::handle { background-image: none; }")
+        self.vsplitter.setStyleSheet("""
+            QSplitter::handle {
+                background-image: none;
+            }""")
         self.vsplitter.setHandleWidth(2)
         self.vsplitter.addWidget(self.left_pane)
         self.vsplitter.addWidget(self.right_pane)
@@ -148,9 +157,11 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
 
         # connect signals
         self.relative_error.toggled.connect(self.onRelativeError)
-        self.relative_error_amount.textChanged.connect(self.onRelativeErrorAmountChanged)
+        self.relative_error_amount.textChanged.connect(
+            self.onRelativeErrorAmountChanged)
         self.absolute_error.toggled.connect(self.onAbsoluteError)
-        self.absolute_error_amount.textChanged.connect(self.onAbsoluteErrorAmountChanged)
+        self.absolute_error_amount.textChanged.connect(
+            self.onAbsoluteErrorAmountChanged)
         self.file_list.itemChanged.connect(self.onFileListItemChanged)
         self.add_button.clicked.connect(self.onAddFiles)
 
@@ -179,17 +190,25 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.ideal_series.replace(1, self.smax, self.smax)
 
         if self.relative_error.isChecked():
-            self.lower_bound_series.replace(0, self.smin, self.smin * (1 - (self.rel_err / 100.)))
-            self.lower_bound_series.replace(1, self.smax, self.smax * (1 - (self.rel_err / 100.)))
+            self.lower_bound_series.replace(
+                0, self.smin, self.smin * (1 - (self.rel_err / 100.)))
+            self.lower_bound_series.replace(
+                1, self.smax, self.smax * (1 - (self.rel_err / 100.)))
 
-            self.upper_bound_series.replace(0, self.smin, self.smin * (1 + (self.rel_err / 100.)))
-            self.upper_bound_series.replace(1, self.smax, self.smax * (1 + (self.rel_err / 100.)))
+            self.upper_bound_series.replace(
+                0, self.smin, self.smin * (1 + (self.rel_err / 100.)))
+            self.upper_bound_series.replace(
+                1, self.smax, self.smax * (1 + (self.rel_err / 100.)))
         elif self.absolute_error.isChecked():
-            self.lower_bound_series.replace(0, self.smin, self.smin - self.abs_err)
-            self.lower_bound_series.replace(1, self.smax, self.smax - self.abs_err)
+            self.lower_bound_series.replace(
+                0, self.smin, self.smin - self.abs_err)
+            self.lower_bound_series.replace(
+                1, self.smax, self.smax - self.abs_err)
 
-            self.upper_bound_series.replace(0, self.smin, self.smin + self.abs_err)
-            self.upper_bound_series.replace(1, self.smax, self.smax + self.abs_err)
+            self.upper_bound_series.replace(
+                0, self.smin, self.smin + self.abs_err)
+            self.upper_bound_series.replace(
+                1, self.smax, self.smax + self.abs_err)
 
     def onRelativeError(self):
         """
@@ -227,9 +246,9 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
 
     def buildFileList(self, file_names):
         """
-        Take a list of file names and build a list of file name pairs with computed and measured
-        data. We assume that 'gold' in file name refers to measured data. The lack of 'gold'
-        refers to computed.
+        Take a list of file names and build a list of file name pairs with
+        computed and measured data. We assume that 'gold' in file name refers
+        to measured data. The lack of 'gold' refers to computed.
 
         @param file_names[list]: The list of file names
         @return list of pairs [measured, computed]
@@ -259,7 +278,7 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         @return [dict] with the data
         """
         d = None
-        with open(file_name, newline = '') as csvfile:
+        with open(file_name, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             d = next(reader)
 
@@ -300,7 +319,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         """
         Add 'files' into the file list widget
 
-        @param files[list]: The list of files to add into the plugin for plotting
+        @param files[list]: The list of files to add into the plugin for
+            plotting
         """
         for f in files:
             measured_data = self.readFile(f[0])
@@ -320,18 +340,20 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
                 series.attachAxis(self.axis_x)
                 series.attachAxis(self.axis_y)
 
-                # to prevent the garbagge collector to destroy the series object
-                # so we can use it later
+                # to prevent the garbagge collector to destroy the series
+                # object so we can use it later
                 self.s.append(series)
 
                 # rescale the axis
-                smin = min(min(measured_data.values()), min(computed_data.values()))
+                smin = min(min(measured_data.values()),
+                           min(computed_data.values()))
                 if len(self.s) == 1:
                     self.smin = smin
                 else:
                     self.smin = min(self.smin, smin)
 
-                smax = max(max(measured_data.values()), max(computed_data.values()))
+                smax = max(max(measured_data.values()),
+                           max(computed_data.values()))
                 if len(self.s) == 1:
                     self.smax = smax
                 else:
@@ -352,13 +374,12 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
 
                 self.file_list.appendRow([item1, item2])
 
-
     def onAddFiles(self):
         """
         Called when adding files
         """
-        file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(self,
-            "Select one or more files to open")
+        file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            self, "Select one or more files to open")
         if len(file_names) > 0:
             files = self.buildFileList(file_names)
             self.addFiles(files)
@@ -376,7 +397,6 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
                 checked = item.checkState() == QtCore.Qt.Checked
                 series.setVisible(checked)
 
-
     def onHovered(self, point, state):
         """
         Callback when cursor hover on a data point
@@ -384,7 +404,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         @param point[QPointF]: Point where the cursor hovered
         """
         if state:
-            QtWidgets.QToolTip.showText(QtGui.QCursor.pos(),
+            QtWidgets.QToolTip.showText(
+                QtGui.QCursor.pos(),
                 "{}, {}".format(point.x(), point.y()),
                 self.chart_view)
         else:

@@ -4,6 +4,7 @@ Plugin.py
 
 from PyQt5 import QtWidgets
 
+
 class Plugin:
     """
     Base class for plug-ins
@@ -58,8 +59,8 @@ class Plugin:
         """
         self.windows.append(window)
 
-        action = self.parent.window_menu.addAction(window.windowTitle(),
-            lambda : self.onShowWindow(window))
+        action = self.parent.window_menu.addAction(
+            window.windowTitle(), lambda: self.onShowWindow(window))
         action.setCheckable(True)
         self.parent.action_group_windows.addAction(action)
         self._show_window[window] = action
@@ -152,7 +153,7 @@ class Plugin:
         self.actions.append(action)
         return action
 
-    def addMenuAction(self, menu, string, method, keysequece = 0):
+    def addMenuAction(self, menu, string, method, keysequece=0):
         """
         Add action to plugin-specific menu
         """

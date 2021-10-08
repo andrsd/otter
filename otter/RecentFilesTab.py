@@ -2,6 +2,7 @@ import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.OListView import OListView
 
+
 class RecentFilesTab(QtWidgets.QWidget):
     """
     List of recent file that show on the MainWindow
@@ -19,7 +20,8 @@ class RecentFilesTab(QtWidgets.QWidget):
 
         self.file_list = OListView(self)
         self.file_list.setEmptyMessage("No recent files")
-        self.file_list.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.file_list.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers)
         self.file_list.setModel(self.model)
         self.fillFileList()
         main_layout.addWidget(self.file_list)
@@ -46,7 +48,8 @@ class RecentFilesTab(QtWidgets.QWidget):
         self.new_button.clicked.connect(self.onNew)
         self.browse_button.clicked.connect(self.onBrowseDocuments)
         self.open_button.clicked.connect(self.onOpen)
-        self.file_list.selectionModel().selectionChanged.connect(self.onFileChanged)
+        self.file_list.selectionModel().selectionChanged.connect(
+            self.onFileChanged)
         self.file_list.doubleClicked.connect(self.onOpen)
 
         self.updateControls()
@@ -102,7 +105,8 @@ class RecentFilesTab(QtWidgets.QWidget):
         """
         Called when clicked on 'Browse Documents' button
         """
-        docs_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.DocumentsLocation)
+        docs_dir = QtCore.QStandardPaths.writableLocation(
+            QtCore.QStandardPaths.DocumentsLocation)
         file_name = QtWidgets.QFileDialog.getOpenFileName(
             self.main_window,
             "Browse Documents",

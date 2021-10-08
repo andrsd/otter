@@ -2,11 +2,10 @@
 CSVPlotterPlugin.py
 """
 
-import os
 from Plugin import Plugin
-from PyQt5 import QtGui
 from otter.assets import Assets
 from CSVPlotterWindow import CSVPlotterWindow
+
 
 class CSVPlotterPlugin(Plugin):
     """
@@ -19,10 +18,12 @@ class CSVPlotterPlugin(Plugin):
         file_menu = self.menubar.menus["File"]
         self.addMenuSeparator(file_menu)
         self._export_menu = self.addMenu(file_menu, "Export")
-        self._export_png = self.addMenuAction(self._export_menu, "PNG...", self.onExportPng)
-        self._export_pdf = self.addMenuAction(self._export_menu, "PDF...", self.onExportPdf)
-        self._export_gnuplot = self.addMenuAction(self._export_menu, "gnuplot...",
-            self.onExportGnuplot)
+        self._export_png = self.addMenuAction(
+            self._export_menu, "PNG...", self.onExportPng)
+        self._export_pdf = self.addMenuAction(
+            self._export_menu, "PDF...", self.onExportPdf)
+        self._export_gnuplot = self.addMenuAction(
+            self._export_menu, "gnuplot...", self.onExportGnuplot)
 
     @staticmethod
     def name():

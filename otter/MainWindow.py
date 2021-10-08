@@ -9,6 +9,7 @@ from otter.ProjectTypeDialog import ProjectTypeDialog
 from otter.RecentFilesTab import RecentFilesTab
 from otter.TemplatesTab import TemplatesTab
 
+
 class MainWindow(QtWidgets.QMainWindow):
     """
     Main window
@@ -66,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Setup widgets
         """
         w = QtWidgets.QWidget(self)
-        w.setContentsMargins(0, 0, 0 ,0)
+        w.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QHBoxLayout()
 
         self.left_pane = QtWidgets.QWidget(self)
@@ -122,28 +123,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menubar = MenuBar(self)
 
         file_menu = self.menubar.addMenu("File")
-        self._new_action = file_menu.addAction("New", self.onNewFile, "Ctrl+N")
-        self._open_action = file_menu.addAction("Open", self.onOpenFile, "Ctrl+O")
+        self._new_action = file_menu.addAction(
+            "New", self.onNewFile, "Ctrl+N")
+        self._open_action = file_menu.addAction(
+            "Open", self.onOpenFile, "Ctrl+O")
         self._recent_menu = file_menu.addMenu("Open Recent")
         self.buildRecentFilesMenu()
         file_menu.addSeparator()
-        self._close_action = file_menu.addAction("Close", self.onCloseFile, "Ctrl+W")
-        self._save_action = file_menu.addAction("Save", self.onSaveFile, "Ctrl+S")
-        self._save_as_action = file_menu.addAction("Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
+        self._close_action = file_menu.addAction(
+            "Close", self.onCloseFile, "Ctrl+W")
+        self._save_action = file_menu.addAction(
+            "Save", self.onSaveFile, "Ctrl+S")
+        self._save_as_action = file_menu.addAction(
+            "Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
 
-        # The "About" item is fine here, since we assume Mac and that will place the item into
-        # different submenu but this will need to be fixed for linux and windows
+        # The "About" item is fine here, since we assume Mac and that will
+        # place the item into different submenu but this will need to be fixed
+        # for linux and windows
         file_menu.addSeparator()
         self._about_box_action = file_menu.addAction("About", self.onAbout)
 
         self.window_menu = self.menubar.addMenu("Window")
-        self._minimize = self.window_menu.addAction("Minimize", self.onMinimize, "Ctrl+M")
+        self._minimize = self.window_menu.addAction(
+            "Minimize", self.onMinimize, "Ctrl+M")
         self.window_menu.addSeparator()
-        self._bring_all_to_front = self.window_menu.addAction("Bring All to Front",
-            self.onBringAllToFront)
+        self._bring_all_to_front = self.window_menu.addAction(
+            "Bring All to Front", self.onBringAllToFront)
 
         self.window_menu.addSeparator()
-        self._show_main_window = self.window_menu.addAction("Otter", self.onShowMainWindow)
+        self._show_main_window = self.window_menu.addAction(
+            "Otter", self.onShowMainWindow)
         self._show_main_window.setCheckable(True)
 
         self.action_group_windows = QtWidgets.QActionGroup(self)
@@ -234,7 +243,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         if self.plugin.getFileName() is None:
-            file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
+            file_name = QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Save File')
             if file_name[0]:
                 self.writeYml(file_name[0])
             else:
@@ -311,7 +321,7 @@ class MainWindow(QtWidgets.QMainWindow):
         with open(file_name, 'r') as stream:
             try:
                 return yaml.safe_load(stream)
-            except yaml.YAMLError as unused_exc:
+            except yaml.YAMLError:
                 return None
 
     def writeYml(self, file_name):
@@ -323,8 +333,9 @@ class MainWindow(QtWidgets.QMainWindow):
             "type": self.plugin.__class__.__name__,
             "params": self.plugin.params()
         }
-        with io.open(file_name, 'w', encoding = 'utf8') as outfile:
-            yaml.dump(data, outfile, default_flow_style = False, allow_unicode = True)
+        with io.open(file_name, 'w', encoding='utf8') as outfile:
+            yaml.dump(data, outfile, default_flow_style=False,
+                      allow_unicode=True)
             self.plugin.setFileName(file_name)
 
     def writeSettings(self):
@@ -355,10 +366,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(self.recent_files) > 0:
             for f in reversed(self.recent_files):
                 unused_path, file_name = os.path.split(f)
-                action = self._recent_menu.addAction(file_name, self.onOpenRecentFile)
+                action = self._recent_menu.addAction(file_name,
+                                                     self.onOpenRecentFile)
                 action.setData(f)
             self._recent_menu.addSeparator()
-        self._clear_recent_file = self._recent_menu.addAction("Clear Menu", self.onClearRecentFiles)
+        self._clear_recent_file = self._recent_menu.addAction(
+            "Clear Menu", self.onClearRecentFiles)
 
     def addToRecentFiles(self, file_name):
         """

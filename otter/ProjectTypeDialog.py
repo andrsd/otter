@@ -4,6 +4,7 @@ import importlib.util
 import inspect
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+
 class ProjectTypeDialog(QtWidgets.QDialog):
     """
     Project type dialog
@@ -32,11 +33,13 @@ class ProjectTypeDialog(QtWidgets.QDialog):
         self.list_view.setViewMode(QtWidgets.QListView.IconMode)
         self.list_view.setMovement(QtWidgets.QListView.Static)
         self.list_view.setResizeMode(QtWidgets.QListView.Fixed)
-        self.list_view.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.list_view.setSelectionMode(
+            QtWidgets.QAbstractItemView.SingleSelection)
         self.list_view.setUniformItemSizes(True)
         self.list_view.setIconSize(QtCore.QSize(64, 64))
         self.list_view.setGridSize(QtCore.QSize(96, 96))
-        self.list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.list_view.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.layout.addWidget(self.list_view)
 
@@ -57,7 +60,8 @@ class ProjectTypeDialog(QtWidgets.QDialog):
 
         self.setLayout(self.layout)
 
-        self.list_view.selectionModel().selectionChanged.connect(self.onProjectTypeChanged)
+        self.list_view.selectionModel().selectionChanged.connect(
+            self.onProjectTypeChanged)
         self.list_view.doubleClicked.connect(self.onCreate)
 
     def findPlugins(self):

@@ -4,6 +4,7 @@ ParamsWindow.py
 
 from PyQt5 import QtWidgets, QtCore
 
+
 class ParamsWindow(QtWidgets.QMainWindow):
     """
     Window for entering parameters

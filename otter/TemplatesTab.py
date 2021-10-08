@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 from otter.OListView import OListView
 
+
 class TemplatesTab(QtWidgets.QWidget):
     """
     List of recent file that show on the MainWindow
@@ -14,7 +15,8 @@ class TemplatesTab(QtWidgets.QWidget):
 
         self.template_list = OListView(self)
         self.template_list.setEmptyMessage("No templates")
-        self.template_list.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.template_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.SingleSelection)
         main_layout.addWidget(self.template_list)
 
         button_layout = QtWidgets.QHBoxLayout()

@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from otter import consts
 
+
 class AboutDialog(QtWidgets.QDialog):
     """ About dialog """
 

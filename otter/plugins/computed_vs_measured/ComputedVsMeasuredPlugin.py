@@ -2,11 +2,10 @@
 ComputedVsMeasuredPlugin.py
 """
 
-import os
 from Plugin import Plugin
-from PyQt5 import QtGui
 from otter.assets import Assets
 from ComputedVsMeasuredWindow import ComputedVsMeasuredWindow
+
 
 class ComputedVsMeasuredPlugin(Plugin):
     """

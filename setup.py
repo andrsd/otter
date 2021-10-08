@@ -5,11 +5,12 @@ Usage:
     python setup.py py2app
 
 Notes:
-    - if you get an error about missing 'libpython3.5.dylib', make a symlink to 'libpython3.5m.dylib'
+    - if you get an error about missing 'libpython3.5.dylib', make a symlink
+      to 'libpython3.5m.dylib'
 """
 
 from setuptools import setup
-import os
+import platform
 from otter import consts
 from glob import glob
 
@@ -34,7 +35,8 @@ if platform.system() == 'Darwin':
             ('icons', glob(assets_dir + '/icons/*.svg')),
             ('icons', glob(assets_dir + '/icons/*.png')),
             ('plugins', glob('src/plugins/*.py')),
-            ('plugins/computed_vs_measured', glob('src/plugins/computed_vs_measured/*.py')),
+            ('plugins/computed_vs_measured',
+                glob('src/plugins/computed_vs_measured/*.py')),
             ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
             ('plugins/movie', glob('src/plugins/movie/*.py')),
         ],
@@ -42,7 +44,7 @@ if platform.system() == 'Darwin':
             'py2app': {
                 'argv_emulation': False,
                 'plist': PLIST_INFO,
-                'iconfile': 'icon.icns'
+                'iconfile': 'icon.icns',
                 'packages': [
                     'vtk', 'mooseutils', 'chigger'
                 ]

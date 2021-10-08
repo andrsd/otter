@@ -6,11 +6,13 @@ import os
 import glob
 from PyQt5 import QtWidgets, QtCore
 
+
 class FilesComboBox(QtWidgets.QComboBox):
     """
     A ComboBox that disables filenames if they do not exist using glob.
 
-    NOTE: glob is used so that this will work with MultiApps when that is added.
+    NOTE: glob is used so that this will work with MultiApps when that is
+    added.
     """
 
     def showPopup(self):
@@ -96,12 +98,14 @@ class FilesWidget(QtWidgets.QWidget):
 
         This is the entry point for loading a file via the FilePlugin.
 
-        @param filenames[list]: The filenames to include in the FileList widget.
+        @param filenames[list]: The filenames to include in the FileList
+            widget.
         """
         self.file_list.clear()
 
         for full_file in filenames:
-            txt = "{} ({})".format(os.path.basename(full_file), os.path.dirname(full_file))
+            txt = "{} ({})".format(os.path.basename(full_file),
+                                   os.path.dirname(full_file))
             self.file_list.addItem(txt, full_file)
 
         self.file_list.blockSignals(True)
@@ -134,8 +138,8 @@ class FilesWidget(QtWidgets.QWidget):
         """
         Callback for opening additional file(s)
         """
-        (fn, unused_filter) = QtWidgets.QFileDialog.getOpenFileName(self, self.open_file_caption,
-            os.getcwd(), self.open_file_filter)
+        (fn, unused_filter) = QtWidgets.QFileDialog.getOpenFileName(
+            self, self.open_file_caption, os.getcwd(), self.open_file_filter)
         if fn:
             self.updateFileList([fn])
 

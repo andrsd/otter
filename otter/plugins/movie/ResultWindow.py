@@ -4,6 +4,7 @@ ResultWindow.py
 
 from PyQt5 import QtCore, QtWidgets
 
+
 class ResultWindow(QtWidgets.QMainWindow):
     """
     Window for displaying the result

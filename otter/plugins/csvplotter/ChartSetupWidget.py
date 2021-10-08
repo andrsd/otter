@@ -39,7 +39,8 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         model = index.model()
-        if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
+        if index.column() in [ChartSetupWidget.IDX_AXIS,
+                              ChartSetupWidget.IDX_LINE_STYLE]:
             value = model.data(index, QtCore.Qt.EditRole)
             editor.setCurrentIndex(editor.findText(value))
         elif index.column() == ChartSetupWidget.IDX_COLOR:
@@ -52,7 +53,8 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
             super().setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
-        if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
+        if index.column() in [ChartSetupWidget.IDX_AXIS,
+                              ChartSetupWidget.IDX_LINE_STYLE]:
             value = editor.currentText()
             model.setData(index, value, QtCore.Qt.EditRole)
         elif index.column() == ChartSetupWidget.IDX_COLOR:
@@ -67,7 +69,8 @@ class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
             super().setModelData(editor, model, index)
 
     def updateEditorGeometry(self, editor, option, index):
-        if index.column() in [ChartSetupWidget.IDX_AXIS, ChartSetupWidget.IDX_LINE_STYLE]:
+        if index.column() in [ChartSetupWidget.IDX_AXIS,
+                              ChartSetupWidget.IDX_LINE_STYLE]:
             rect = option.rect
             rect.setTop(rect.top() - 2)
             rect.setBottom(rect.bottom() + 3)
@@ -94,7 +97,8 @@ class AxisTab(QtWidgets.QWidget):
         self.layout_main = QtWidgets.QFormLayout()
         self.layout_main.setContentsMargins(10, 10, 10, 5)
         self.layout_main.setLabelAlignment(QtCore.Qt.AlignLeft)
-        self.layout_main.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+        self.layout_main.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.ExpandingFieldsGrow)
 
         self.label = QtWidgets.QLineEdit("")
         self.layout_main.addRow("Label", self.label)
@@ -151,13 +155,15 @@ class AxisTab(QtWidgets.QWidget):
         """
         Grid changed handler
         """
-        self.parent.axisGridLineVisiblityChanged.emit(self.axis_name, state == QtCore.Qt.Checked)
+        self.parent.axisGridLineVisiblityChanged.emit(
+            self.axis_name, state == QtCore.Qt.Checked)
 
     def onLogScaleChanged(self, state):
         """
         Log scale changed handler
         """
-        self.parent.axisLogScaleChanged.emit(self.axis_name, state == QtCore.Qt.Checked)
+        self.parent.axisLogScaleChanged.emit(
+            self.axis_name, state == QtCore.Qt.Checked)
 
     def onMaximumChanged(self, unused_text):
         """
@@ -256,14 +262,15 @@ class ChartSetupWidget(QtWidgets.QWidget):
 
         self.layout_main = QtWidgets.QVBoxLayout()
         self.layout_main.setContentsMargins(0, 0, 0, 0)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                           QtWidgets.QSizePolicy.Expanding)
         self.setMinimumWidth(400)
         self.setLayout(self.layout_main)
 
         # Variables
         self.variables = QtGui.QStandardItemModel()
-        self.variables.setHorizontalHeaderLabels(["Name", "", "Axis", "Line style", "Line width",
-            ""])
+        self.variables.setHorizontalHeaderLabels(
+            ["Name", "", "Axis", "Line style", "Line width", ""])
 
         self.primary_variable_layout = QtWidgets.QHBoxLayout()
 
@@ -272,7 +279,7 @@ class ChartSetupWidget(QtWidgets.QWidget):
 
         self.primary_variable = QtWidgets.QComboBox()
         self.primary_variable.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Fixed)
+                                            QtWidgets.QSizePolicy.Fixed)
         self.primary_variable.setModel(self.variables)
         self.primary_variable_layout.addWidget(self.primary_variable)
         self.layout_main.addLayout(self.primary_variable_layout)
@@ -280,11 +287,13 @@ class ChartSetupWidget(QtWidgets.QWidget):
         #
         self.variables_view = QtWidgets.QTreeView()
         self.variables_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding)
+                                          QtWidgets.QSizePolicy.Expanding)
         self.variables_view.setModel(self.variables)
         self.variables_view.setRootIsDecorated(False)
-        self.variables_view.setItemDelegate(VariablesParamDelegate(self.variables_view))
-        self.variables_view.setEditTriggers(QtWidgets.QAbstractItemView.EditKeyPressed |
+        self.variables_view.setItemDelegate(
+            VariablesParamDelegate(self.variables_view))
+        self.variables_view.setEditTriggers(
+            QtWidgets.QAbstractItemView.EditKeyPressed |
             QtWidgets.QAbstractItemView.CurrentChanged)
 
         header = self.variables_view.header()
@@ -312,7 +321,8 @@ class ChartSetupWidget(QtWidgets.QWidget):
         self.y2_axis = AxisTab(self, 'y2')
 
         self.axes_tab = QtWidgets.QTabWidget()
-        self.axes_tab.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.axes_tab.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                    QtWidgets.QSizePolicy.Fixed)
         self.axes_tab.addTab(self.x_axis, "X axis")
         self.axes_tab.addTab(self.y_axis, "Y axis")
         self.axes_tab.addTab(self.y2_axis, "Y2 axis")
@@ -337,11 +347,13 @@ class ChartSetupWidget(QtWidgets.QWidget):
 
         self.updateControls()
 
-        self.primary_variable.currentIndexChanged.connect(self.onPrimaryVariableChanged)
+        self.primary_variable.currentIndexChanged.connect(
+            self.onPrimaryVariableChanged)
         self.variables.itemChanged.connect(self.onVariablesChanged)
         self.title.textChanged.connect(self.onTitleChanged)
         self.legend.stateChanged.connect(self.onLegendStateChanged)
-        self.legend_position.currentIndexChanged.connect(self.onLegendPositionChanged)
+        self.legend_position.currentIndexChanged.connect(
+            self.onLegendPositionChanged)
 
         self.color = [
             QtGui.QColor(0, 141, 223),
@@ -372,7 +384,8 @@ class ChartSetupWidget(QtWidgets.QWidget):
             self.variables.setItem(row, self.IDX_VARIABLE_NAME, si_name)
 
             si_color = QtGui.QStandardItem('\u25a0')
-            si_color.setForeground(QtGui.QBrush(self.color[row % len(self.color)]))
+            si_color.setForeground(
+                QtGui.QBrush(self.color[row % len(self.color)]))
             self.variables.setItem(row, self.IDX_COLOR, si_color)
 
             si_axis = QtGui.QStandardItem("left")
@@ -384,10 +397,11 @@ class ChartSetupWidget(QtWidgets.QWidget):
             si_line_width = QtGui.QStandardItem("2")
             self.variables.setItem(row, self.IDX_LINE_WIDTH, si_line_width)
 
-            # this is used by the primary variable combo box, but we are not showing it
-            # in the tree view
+            # this is used by the primary variable combo box, but we are not
+            # showing it in the tree view
             si_name2 = QtGui.QStandardItem(var)
-            self.variables.setItem(row, self.IDX_VARIABLE_NAME_HIDDEN, si_name2)
+            self.variables.setItem(
+                row, self.IDX_VARIABLE_NAME_HIDDEN, si_name2)
 
             self.variables.blockSignals(False)
 
@@ -415,7 +429,8 @@ class ChartSetupWidget(QtWidgets.QWidget):
             parent = self.variables.invisibleRootItem().index()
             for row in range(self.variables.rowCount()):
                 if not self.variables_view.isRowHidden(row, parent):
-                    var = self.variables.item(row, self.IDX_VARIABLE_NAME).data()
+                    var = self.variables.item(row,
+                                              self.IDX_VARIABLE_NAME).data()
                     self.chartSeriesReset.emit(var)
                     ydata = self.reader[var]
                     self.chartSeriesUpdate.emit(var, xdata, ydata)
@@ -423,15 +438,18 @@ class ChartSetupWidget(QtWidgets.QWidget):
             parent = self.variables.invisibleRootItem().index()
             for row in range(self.variables.rowCount()):
                 if not self.variables_view.isRowHidden(row, parent):
-                    var = self.variables.item(row, self.IDX_VARIABLE_NAME).data()
+                    var = self.variables.item(row,
+                                              self.IDX_VARIABLE_NAME).data()
                     ydata = self.reader[var]
-                    self.chartSeriesUpdate.emit(var, xdata[start:end], ydata[start:end])
+                    self.chartSeriesUpdate.emit(
+                        var, xdata[start:end], ydata[start:end])
 
     def onPrimaryVariableChanged(self, idx):
         """
-        Primary variable cahnged handler
+        Primary variable changed handler
         """
-        # enable all variables in variable view, but disable the primary variable
+        # enable all variables in variable view, but disable the primary
+        # variable
         pri_var = self.primary_variable.itemText(idx)
         items = self.variables.findItems(pri_var)
         if len(items) > 0:
@@ -440,17 +458,21 @@ class ChartSetupWidget(QtWidgets.QWidget):
             self.variables.blockSignals(True)
             parent = self.variables.invisibleRootItem().index()
             for row in range(self.variables.rowCount()):
-                self.variables_view.setRowHidden(row, parent, row == disabled_row)
+                self.variables_view.setRowHidden(
+                    row, parent, row == disabled_row)
             self.variables.blockSignals(False)
 
             # series
             self.chartRemoveSeries.emit()
             for row in range(self.variables.rowCount()):
                 if row != disabled_row:
-                    var = self.variables.item(row, self.IDX_VARIABLE_NAME).data()
-                    self.chartSeriesAdded.emit(pri_var, var, self.reader[pri_var], self.reader[var])
+                    var = self.variables.item(
+                        row, self.IDX_VARIABLE_NAME).data()
+                    self.chartSeriesAdded.emit(
+                        pri_var, var, self.reader[pri_var], self.reader[var])
 
-                    color = self.variables.item(row, self.IDX_COLOR).foreground().color()
+                    color = self.variables.item(
+                        row, self.IDX_COLOR).foreground().color()
                     self.chartSeriesColorChanged.emit(var, color)
 
     def onVariablesChanged(self, item):
@@ -462,17 +484,21 @@ class ChartSetupWidget(QtWidgets.QWidget):
             self.chartSeriesVisibilityChanged.emit(item.data(), checked)
             self.chartSeriesNameChanged.emit(item.data(), item.text())
         elif item.column() == self.IDX_COLOR:
-            name = self.variables.item(item.row(), self.IDX_VARIABLE_NAME).data()
+            name = self.variables.item(
+                item.row(), self.IDX_VARIABLE_NAME).data()
             color = item.foreground().color()
             self.chartSeriesColorChanged.emit(name, color)
         elif item.column() == self.IDX_AXIS:
-            name = self.variables.item(item.row(), self.IDX_VARIABLE_NAME).data()
+            name = self.variables.item(
+                item.row(), self.IDX_VARIABLE_NAME).data()
             self.chartSeriesAxisChanged.emit(name, item.text())
         elif item.column() == self.IDX_LINE_STYLE:
-            name = self.variables.item(item.row(), self.IDX_VARIABLE_NAME).data()
+            name = self.variables.item(
+                item.row(), self.IDX_VARIABLE_NAME).data()
             self.chartSeriesLineStyleChanged.emit(name, item.text())
         elif item.column() == self.IDX_LINE_WIDTH:
-            name = self.variables.item(item.row(), self.IDX_VARIABLE_NAME).data()
+            name = self.variables.item(
+                item.row(), self.IDX_VARIABLE_NAME).data()
             self.chartSeriesLineWidthChanged.emit(name, int(item.text()))
 
     def onTitleChanged(self, text):

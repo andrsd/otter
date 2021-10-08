@@ -8,6 +8,7 @@ from FilesWidget import FilesWidget
 from ChartSetupWidget import ChartSetupWidget
 from ChartWidget import ChartWidget
 
+
 class CSVPlotterWindow(QtWidgets.QWidget):
     """
     Main window of the CSV plotter plug-in
@@ -39,7 +40,10 @@ class CSVPlotterWindow(QtWidgets.QWidget):
 
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
         self.splitter.setHandleWidth(5)
-        self.splitter.setStyleSheet("QSplitter::handle { background-image: none; }")
+        self.splitter.setStyleSheet("""
+            QSplitter::handle {
+                background-image: none;
+            }""")
         self.splitter.addWidget(self.left)
         self.splitter.addWidget(self.right)
 
@@ -62,15 +66,20 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         self.files_widget.loadFile.connect(self.onLoadFile)
         self.files_widget.loadFile.connect(self.chart_setup_widget.onLoadFile)
 
-        self.chart_setup_widget.chartTitleChanged.connect(self.chart_widget.onChartTitleChanged)
+        self.chart_setup_widget.chartTitleChanged.connect(
+            self.chart_widget.onChartTitleChanged)
         self.chart_setup_widget.chartLegendVisibilityChanged.connect(
             self.chart_widget.onChartLegendVisibilityChanged)
         self.chart_setup_widget.chartLegendAlignmentChanged.connect(
             self.chart_widget.onChartLegendAlignmentChanged)
-        self.chart_setup_widget.chartRemoveSeries.connect(self.chart_widget.onChartRemoveSeries)
-        self.chart_setup_widget.chartSeriesAdded.connect(self.chart_widget.onChartSeriesAdded)
-        self.chart_setup_widget.chartSeriesReset.connect(self.chart_widget.onChartSeriesReset)
-        self.chart_setup_widget.chartSeriesUpdate.connect(self.chart_widget.onChartSeriesUpdate)
+        self.chart_setup_widget.chartRemoveSeries.connect(
+            self.chart_widget.onChartRemoveSeries)
+        self.chart_setup_widget.chartSeriesAdded.connect(
+            self.chart_widget.onChartSeriesAdded)
+        self.chart_setup_widget.chartSeriesReset.connect(
+            self.chart_widget.onChartSeriesReset)
+        self.chart_setup_widget.chartSeriesUpdate.connect(
+            self.chart_widget.onChartSeriesUpdate)
         self.chart_setup_widget.chartSeriesVisibilityChanged.connect(
             self.chart_widget.onChartSeriesVisibilityChanged)
         self.chart_setup_widget.chartSeriesNameChanged.connect(
@@ -83,14 +92,18 @@ class CSVPlotterWindow(QtWidgets.QWidget):
             self.chart_widget.onChartSeriesLineStyleChanged)
         self.chart_setup_widget.chartSeriesLineWidthChanged.connect(
             self.chart_widget.onChartSeriesLineWidthChanged)
-        self.chart_setup_widget.axisLabelChanged.connect(self.chart_widget.onAxisLabelChanged)
+        self.chart_setup_widget.axisLabelChanged.connect(
+            self.chart_widget.onAxisLabelChanged)
         self.chart_setup_widget.axisMajorTicksChanged.connect(
             self.chart_widget.onAxisMajorTicksChanged)
         self.chart_setup_widget.axisGridLineVisiblityChanged.connect(
             self.chart_widget.onAxisGridLineVisiblityChanged)
-        self.chart_setup_widget.axisLogScaleChanged.connect(self.chart_widget.onAxisLogScaleChanged)
-        self.chart_setup_widget.axisMaximumChanged.connect(self.chart_widget.onAxisMaximumChanged)
-        self.chart_setup_widget.axisMinimumChanged.connect(self.chart_widget.onAxisMinimumChanged)
+        self.chart_setup_widget.axisLogScaleChanged.connect(
+            self.chart_widget.onAxisLogScaleChanged)
+        self.chart_setup_widget.axisMaximumChanged.connect(
+            self.chart_widget.onAxisMaximumChanged)
+        self.chart_setup_widget.axisMinimumChanged.connect(
+            self.chart_widget.onAxisMinimumChanged)
 
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.onUpdateTimer)
@@ -117,18 +130,24 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         Export file handler
         """
         if file_format == 'pdf':
-            file_name = self.exportFileDialog('Export to PDF', 'PDF files (*.pdf)', 'pdf')
+            file_name = self.exportFileDialog('Export to PDF',
+                                              'PDF files (*.pdf)',
+                                              'pdf')
             if file_name:
                 self.chart_widget.exportPdf(file_name)
 
         elif file_format == 'png':
-            file_name = self.exportFileDialog('Export to PNG', 'PNG files (*.png)', 'png')
+            file_name = self.exportFileDialog('Export to PNG',
+                                              'PNG files (*.png)',
+                                              'png')
             if file_name:
                 self.chart_widget.exportPng(file_name)
 
         elif file_format == 'gnuplot':
-            file_name = self.exportFileDialog('Export to gnuplot',
-                'gnuplot files (*.plt, *.gnu, *.gpi, *.gih)', 'plt')
+            file_name = self.exportFileDialog(
+                'Export to gnuplot',
+                'gnuplot files (*.plt, *.gnu, *.gpi, *.gih)',
+                'plt')
             if file_name:
                 csv_file_name = self.files_widget.currentFileName()
                 self.chart_widget.exportGnuplot(file_name, csv_file_name)

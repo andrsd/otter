@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+
 class OItemDelegate(QtWidgets.QStyledItemDelegate):
     """
     List view item delegate
@@ -20,6 +21,7 @@ class OItemDelegate(QtWidgets.QStyledItemDelegate):
         Size hint
         """
         return QtCore.QSize(400, 50)
+
 
 class OListView(QtWidgets.QListView):
     """
@@ -52,4 +54,6 @@ class OListView(QtWidgets.QListView):
         painter = QtGui.QPainter(self.viewport())
         rect = self.rect()
         rect.adjust(0, 10, 0, 0)
-        painter.drawText(rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop, self.empty_message)
+        painter.drawText(rect,
+                         QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop,
+                         self.empty_message)

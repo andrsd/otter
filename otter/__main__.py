@@ -1,12 +1,11 @@
 import sys
 import os
-import argparse
 import signal
-import importlib.util
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 from otter import consts
 from otter.MainWindow import MainWindow
 from otter.assets import Assets
+
 
 def safe_timer(timeout, func, *args, **kwargs):
     """Create a timer that is safe against garbage collection and
@@ -29,7 +28,9 @@ def handle_uncaught_exception(exc_type, exc, traceback):
     print('Unhandled exception', exc_type, exc, traceback)
     QtWidgets.QApplication.quit()
 
+
 sys.excepthook = handle_uncaught_exception
+
 
 def main():
     home_dir = QtCore.QStandardPaths.writableLocation(
@@ -40,10 +41,9 @@ def main():
     QtCore.QCoreApplication.setOrganizationDomain("name.andrs")
     QtCore.QCoreApplication.setApplicationName(consts.APP_NAME)
 
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
-
     qapp = QtWidgets.QApplication(sys.argv)
+    qapp.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     qapp.setQuitOnLastWindowClosed(False)
     qapp.setWindowIcon(Assets().app_icon)
     qapp.setQuitOnLastWindowClosed(False)
@@ -61,6 +61,7 @@ def main():
     safe_timer(50, lambda: None)
 
     qapp.exec()
+
 
 if __name__ == '__main__':
     main()
