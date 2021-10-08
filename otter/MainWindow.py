@@ -20,8 +20,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.about_dlg = None
-        self.result_window = None
-        self.params_window = None
         self.plugin = None
         self.plugin_dir = None
         self.recent_files = []
