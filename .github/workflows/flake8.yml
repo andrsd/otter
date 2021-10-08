@@ -1,0 +1,23 @@
+name: flake8
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  flake8-lint:
+    runs-on: ubuntu-latest
+    name: lint
+    steps:
+      - name: checkout source
+        uses: actions/checkout@v2
+      - name: set up python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: flake8 lint
+        uses: py-actions/flake8@v1
