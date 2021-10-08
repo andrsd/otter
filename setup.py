@@ -10,43 +10,92 @@ Notes:
 
 from setuptools import setup
 import os
-from src.consts import *
+from otter import consts
 from glob import glob
 
-pth = os.environ.get("OUTDIR", "/tmp")
+main_script = 'otter/__main__.py'
+assets_dir = 'otter/assets'
 
-APP = ['src/main.py']
-APP_NAME = 'Otter'
-DATA_FILES = [
-    ('icons', glob('src/icons/*.svg')),
-    ('plugins', glob('src/plugins/*.py')),
-    ('plugins/computed_vs_measured', glob('src/plugins/computed_vs_measured/*.py')),
-    ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
-    ('plugins/movie', glob('src/plugins/movie/*.py')),
-]
-OPTIONS = {
-    'argv_emulation': True,
-    'plist': {
-        'CFBundleName': APP_NAME,
-        'CFBundleDisplayName': APP_NAME,
-        'CFBundleGetInfoString': "GUI frontend for chigger",
+if platform.system() == 'Darwin':
+    PLIST_INFO = {
+        'CFBundleName': consts.APP_NAME,
+        'CFBundleDisplayName': consts.APP_NAME,
+        'CFBundleGetInfoString': consts.DESCRIPTION,
         'CFBundleIdentifier': "name.andrs.osx.otter",
-        'CFBundleVersion': str(VERSION),
-        'CFBundleShortVersionString': str(VERSION),
-        'NSHumanReadableCopyright': COPYRIGHT
-    },
-    'bdist_base': pth + '/build',
-    'dist_dir': pth + '/dist',
-    'packages': [
-        'vtk', 'mooseutils', 'chigger'
-    ],
-    'iconfile': 'icon.icns'
-}
+        'CFBundleVersion': str(consts.VERSION),
+        'CFBundleShortVersionString': str(consts.VERSION),
+        'NSHumanReadableCopyright': consts.COPYRIGHT
+    }
+
+    extra_options = dict(
+        setup_requires=['py2app'],
+        app=[main_script],
+        data_files=[
+            ('icons', glob(assets_dir + '/icons/*.svg')),
+            ('icons', glob(assets_dir + '/icons/*.png')),
+            ('plugins', glob('src/plugins/*.py')),
+            ('plugins/computed_vs_measured', glob('src/plugins/computed_vs_measured/*.py')),
+            ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
+            ('plugins/movie', glob('src/plugins/movie/*.py')),
+        ],
+        options={
+            'py2app': {
+                'argv_emulation': False,
+                'plist': PLIST_INFO,
+                'iconfile': 'icon.icns'
+                'packages': [
+                    'vtk', 'mooseutils', 'chigger'
+                ]
+            }
+        }
+    )
+elif platform.system() == 'win32':
+    extra_options = dict(
+     setup_requires=['py2exe'],
+     app=[main_script],
+    )
+else:
+    extra_options = dict(
+        # Normally unix-like platforms will use "setup.py install" and install
+        # the main script as such
+        scripts=[main_script]
+    )
 
 setup(
-    name = APP_NAME,
-    app = APP,
-    data_files = DATA_FILES,
-    options = {'py2app': OPTIONS},
-    setup_requires = ['py2app']
+    name=consts.APP_NAME,
+    version=consts.VERSION,
+    author='David Andrš',
+    author_email='andrsd@gmail.com',
+    url='https://github.com/andrsd/otter',
+    license='LICENSE',
+    description=consts.DESCRIPTION,
+    install_requires=[
+        'PyQt5==5.15.2',
+        'PyQtChart==5.15.2',
+        'cycler==0.10.0',
+        'kiwisolver==1.1.0',
+        'matplotlib==3.1.1',
+        'numpy==1.18.1',
+        'pycparser==2.19',
+        'pyparsing==2.4.6',
+        'python-dateutil==2.8.1',
+        'pytz==2019.3',
+        'six==1.14.0',
+        'terminaltables==3.1.0',
+        'sphinx==1.8.5'
+    ],
+    packages=[
+        'otter',
+        'otter.assets',
+    ],
+    entry_points={
+        'gui_scripts': [
+            'otter = otter.__main__:main'
+        ]
+    },
+    include_package_data=True,
+    package_data={
+        'otter.assets': ['*.svg']
+    },
+    **extra_options
 )
