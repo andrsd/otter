@@ -46,7 +46,7 @@ if platform.system() == 'Darwin':
                 'plist': PLIST_INFO,
                 'iconfile': 'icon.icns',
                 'packages': [
-                    'vtk', 'chigger'
+                    'vtk'
                 ]
             }
         }
@@ -85,7 +85,8 @@ setup(
         'pytz==2021.3',
         'six==1.15.0',
         'terminaltables==3.1.0',
-        'sphinx==1.8.5'
+        'sphinx==1.8.5',
+        'vtk==9.0.3'
     ],
     packages=[
         'otter',
