@@ -41,9 +41,11 @@ def main():
     QtCore.QCoreApplication.setOrganizationDomain("name.andrs")
     QtCore.QCoreApplication.setApplicationName(consts.APP_NAME)
 
+    QtCore.QCoreApplication.setAttribute(
+        QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
     qapp = QtWidgets.QApplication(sys.argv)
-    qapp.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     qapp.setQuitOnLastWindowClosed(False)
     qapp.setWindowIcon(Assets().app_icon)
     qapp.setQuitOnLastWindowClosed(False)
