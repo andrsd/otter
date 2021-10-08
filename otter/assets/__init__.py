@@ -20,6 +20,12 @@ class Assets:
 
         icons_dir = os.path.join(path, 'icons')
 
-        self.app_icon = QtGui.QIcon(os.path.join(icons_dir, 'otter.svg'))
-        self.graph_icon = QtGui.QIcon(os.path.join(icons_dir, 'graph.svg'))
-        self.movie_icon = QtGui.QIcon(os.path.join(icons_dir, 'movie.svg'))
+        icons = {
+            'app': 'otter.svg',
+            'graph': 'graph.svg',
+            'movie': 'movie.svg'
+        }
+        self.icons = {}
+
+        for name, file_name in icons.items():
+            self.icons[name] = QtGui.QIcon(os.path.join(icons_dir, file_name))

@@ -26,4 +26,4 @@ class MoviePlugin(ChiggerPluginBase):
         """
         Icon of the plug-in
         """
-        return Assets().movie_icon
+        return Assets().icons['movie']

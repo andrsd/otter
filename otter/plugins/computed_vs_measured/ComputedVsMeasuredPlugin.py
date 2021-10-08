@@ -28,7 +28,7 @@ class ComputedVsMeasuredPlugin(Plugin):
         """
         Icon of the plug-in
         """
-        return Assets().graph_icon
+        return Assets().icons['graph']
 
     def onCreate(self):
         """
