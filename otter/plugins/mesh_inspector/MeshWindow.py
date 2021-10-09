@@ -60,9 +60,9 @@ class LoadThread(QtCore.QThread):
             for j in range(self._reader.GetNumberOfObjects(obj_type)):
                 index += 1
                 name = self._reader.GetObjectName(obj_type, j)
-                vtkid = str(self._reader.GetObjectId(obj_type, j))
+                vtkid = self._reader.GetObjectId(obj_type, j)
                 if name.startswith('Unnamed'):
-                    name = vtkid
+                    name = str(vtkid)
 
                 binfo = BlockInformation(object_type=obj_type,
                                          name=name,
@@ -83,22 +83,13 @@ class MeshWindow(QtWidgets.QMainWindow):
     Window for displaying the mesh
     """
 
+    fileLoaded = QtCore.pyqtSignal(object)
+
     def __init__(self, plugin):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
-
-        self._colors = [
-            [0, 141, 223],
-            [121, 199, 44],
-            [255, 146, 0],
-            [94, 61, 212],
-            [192, 60, 40]
-        ]
-        clrs = []
-        for color in self._colors:
-            clrs.append([n / 255 for n in color])
-        self._colors = clrs
+        self._block_actors = {}
 
         self._frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
@@ -180,10 +171,10 @@ class MeshWindow(QtWidgets.QMainWindow):
         block_info = self._load_thread.getBlockInfo()
 
         blocks = block_info[vtk.vtkExodusIIReader.ELEM_BLOCK].values()
-        for index, blk in enumerate(blocks):
+        for index, binfo in enumerate(blocks):
             eb = vtk.vtkExtractBlock()
             eb.SetInputConnection(reader.GetOutputPort(0))
-            eb.AddIndex(blk.multiblock_index)
+            eb.AddIndex(binfo.multiblock_index)
             eb.Update()
 
             geometry = vtk.vtkCompositeDataGeometryFilter()
@@ -200,14 +191,33 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             property = actor.GetProperty()
             property.SetRepresentationToSurface()
-            clr_idx = index % len(self._colors)
-            property.SetColor(self._colors[clr_idx])
+            property.SetColor([0.8, 0.8, 0.8])
             property.SetEdgeVisibility(True)
             # FIXME: set color from preferences/templates
             property.SetEdgeColor([0.1, 0.1, 0.4])
 
-            self._vtk_renderer.AddViewProp(actor)
-            self._vtk_renderer.ResetCamera()
-            self._vtk_renderer.GetActiveCamera().Zoom(1.5)
+            self._block_actors[binfo.number] = actor
+
+        self._vtk_renderer.ResetCamera()
+        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
+
+        self.fileLoaded.emit(block_info)
 
         self._vtk_render_window.Render()
+
+    def _getBlockActor(self, block_id):
+        return self._block_actors[block_id]
+
+    def onBlockVisibilityChanged(self, block_id, visible):
+        actor = self._getBlockActor(block_id)
+        if visible:
+            self._vtk_renderer.AddViewProp(actor)
+        else:
+            self._vtk_renderer.RemoveViewProp(actor)
+        self._vtk_render_window.Render()
+
+    def onBlockColorChanged(self, block_id, qcolor):
+        actor = self._getBlockActor(block_id)
+        property = actor.GetProperty()
+        clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
+        property.SetColor(clr)

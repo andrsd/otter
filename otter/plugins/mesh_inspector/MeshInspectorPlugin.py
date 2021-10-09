@@ -29,6 +29,12 @@ class MeshInspectorPlugin(Plugin):
         self.info_window = InfoWindow(self)
         self.registerWindow(self.info_window)
 
+        self.mesh_window.fileLoaded.connect(self.info_window.onFileLoaded)
+        self.info_window.blockVisibilityChanged.connect(
+            self.mesh_window.onBlockVisibilityChanged)
+        self.info_window.blockColorChanged.connect(
+            self.mesh_window.onBlockColorChanged)
+
         screen_rc = QtWidgets.QApplication.desktop().screenGeometry()
         left_wd = 0.8 * screen_rc.width()
         mesh_rc = QtCore.QRect(screen_rc.left(),
