@@ -49,14 +49,38 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self._lbl_sidesets = QtWidgets.QLabel("Side sets")
         self._layout.addWidget(self._lbl_sidesets)
+        self._sideset_model = QtGui.QStandardItemModel()
+        self._sideset_model.setHorizontalHeaderLabels([
+            "Name", "", "ID"
+        ])
+        self._sideset_model.itemChanged.connect(self.onSidesetChanged)
         self._sidesets = QtWidgets.QTreeView()
         self._sidesets.setFixedHeight(200)
+        self._sidesets.setRootIsDecorated(False)
+        self._sidesets.setModel(self._sideset_model)
+        self._sidesets.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers)
+        self._sidesets.setColumnWidth(0, 220)
+        self._sidesets.setColumnWidth(2, 50)
+        self._sidesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._sidesets)
 
         self._lbl_nodesets = QtWidgets.QLabel("Node sets")
         self._layout.addWidget(self._lbl_nodesets)
         self._nodesets = QtWidgets.QTreeView()
+        self._nodeset_model = QtGui.QStandardItemModel()
+        self._nodeset_model.setHorizontalHeaderLabels([
+            "Name", "", "ID"
+        ])
+        self._nodeset_model.itemChanged.connect(self.onNodesetChanged)
         self._nodesets.setFixedHeight(200)
+        self._nodesets.setRootIsDecorated(False)
+        self._nodesets.setModel(self._nodeset_model)
+        self._nodesets.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers)
+        self._nodesets.setColumnWidth(0, 220)
+        self._nodesets.setColumnWidth(2, 50)
+        self._nodesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._nodesets)
 
         self._dimensions = QtWidgets.QCheckBox("Display dimensions")
@@ -77,10 +101,9 @@ class InfoWindow(QtWidgets.QScrollArea):
             self.plugin.updateMenuBar()
         return super().event(event)
 
-    def onFileLoaded(self, block_info):
+    def _loadBlocks(self, blocks):
         self._block_model.removeRows(0, self._block_model.rowCount())
-        block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
-        for index, blk in enumerate(block_info[block_type].values()):
+        for index, blk in enumerate(blocks):
             row = self._block_model.rowCount()
 
             si_name = QtGui.QStandardItem()
@@ -102,6 +125,44 @@ class InfoWindow(QtWidgets.QScrollArea):
             si_id.setText(str(blk.number))
             self._block_model.setItem(row, self.IDX_ID, si_id)
 
+    def _loadSideSets(self, sidesets):
+        self._sideset_model.removeRows(0, self._sideset_model.rowCount())
+        for index, ss in enumerate(sidesets):
+            row = self._sideset_model.rowCount()
+
+            si_name = QtGui.QStandardItem()
+            si_name.setText(ss.name)
+            si_name.setCheckable(True)
+            si_name.setData(ss)
+            self._sideset_model.setItem(row, self.IDX_NAME, si_name)
+
+            si_id = QtGui.QStandardItem()
+            si_id.setText(str(ss.number))
+            self._sideset_model.setItem(row, self.IDX_ID, si_id)
+
+    def _loadNodeSets(self, nodesets):
+        self._nodeset_model.removeRows(0, self._nodeset_model.rowCount())
+        for index, ss in enumerate(nodesets):
+            row = self._nodeset_model.rowCount()
+
+            si_name = QtGui.QStandardItem()
+            si_name.setText(ss.name)
+            si_name.setCheckable(True)
+            si_name.setData(ss)
+            self._nodeset_model.setItem(row, self.IDX_NAME, si_name)
+
+            si_id = QtGui.QStandardItem()
+            si_id.setText(str(ss.number))
+            self._nodeset_model.setItem(row, self.IDX_ID, si_id)
+
+    def onFileLoaded(self, block_info):
+        block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
+        self._loadBlocks(block_info[block_type].values())
+        block_type = vtk.vtkExodusIIReader.SIDE_SET
+        self._loadSideSets(block_info[block_type].values())
+        block_type = vtk.vtkExodusIIReader.NODE_SET
+        self._loadNodeSets(block_info[block_type].values())
+
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
             visible = item.checkState() == QtCore.Qt.Checked
@@ -113,3 +174,9 @@ class InfoWindow(QtWidgets.QScrollArea):
             name_index = index.siblingAtColumn(self.IDX_NAME)
             block_info = self._block_model.itemFromIndex(name_index).data()
             self.blockColorChanged.emit(block_info.number, color)
+
+    def onSidesetChanged(self, item):
+        pass
+
+    def onNodesetChanged(self, item):
+        pass
