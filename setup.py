@@ -72,8 +72,8 @@ setup(
     license='LICENSE',
     description=consts.DESCRIPTION,
     install_requires=[
-        'PyQt5==5.15.2',
-        'PyQtChart==5.15.2',
+        'PyQt5==5.13.1',
+        'PyQtChart==5.13.1',
         'cycler==0.10.0',
         'kiwisolver==1.1.0',
         'matplotlib==3.1.1',
