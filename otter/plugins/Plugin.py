@@ -10,14 +10,15 @@ class Plugin:
     Base class for plug-ins
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         self.parent = parent
         self.file_name = None
         self.windows = []
         self.menus = []
         self.actions = []
         self._show_window = {}
-        self.menubar = parent.menubar
+        if self.parent is not None:
+            self.menubar = parent.menubar
 
     @staticmethod
     def name():
@@ -59,11 +60,12 @@ class Plugin:
         """
         self.windows.append(window)
 
-        action = self.parent.window_menu.addAction(
-            window.windowTitle(), lambda: self.onShowWindow(window))
-        action.setCheckable(True)
-        self.parent.action_group_windows.addAction(action)
-        self._show_window[window] = action
+        if self.parent is not None:
+            action = self.parent.window_menu.addAction(
+                window.windowTitle(), lambda: self.onShowWindow(window))
+            action.setCheckable(True)
+            self.parent.action_group_windows.addAction(action)
+            self._show_window[window] = action
 
     def create(self):
         """
