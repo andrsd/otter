@@ -1,3 +1,4 @@
+import collections
 import contextlib
 import fcntl
 import vtk
@@ -17,6 +18,12 @@ def lock_file(filename):
         fcntl.flock(f, fcntl.LOCK_UN)
 
 
+BlockInformation = collections.namedtuple(
+    'BlockInformation', [
+        'name', 'object_type', 'object_index', 'number', 'multiblock_index'
+    ])
+
+
 class LoadThread(QtCore.QThread):
     """ Worker thread for loading ExodusII files """
 
@@ -24,6 +31,8 @@ class LoadThread(QtCore.QThread):
         super().__init__()
         self._file_name = file_name
         self._reader = None
+        # BlockInformation objects
+        self._block_info = dict()
 
     def run(self):
         self._reader = vtk.vtkExodusIIReader()
@@ -33,8 +42,40 @@ class LoadThread(QtCore.QThread):
             self._reader.UpdateInformation()
             self._reader.Update()
 
+            self._readBlockInfo()
+
+    def _readBlockInfo(self):
+        object_types = [
+            vtk.vtkExodusIIReader.ELEM_BLOCK,
+            vtk.vtkExodusIIReader.SIDE_SET,
+            vtk.vtkExodusIIReader.NODE_SET
+        ]
+
+        # Index to be used with the vtkExtractBlock::AddIndex method
+        index = 0
+        # Loop over all blocks of the vtk.MultiBlockDataSet
+        for obj_type in object_types:
+            index += 1
+            self._block_info[obj_type] = dict()
+            for j in range(self._reader.GetNumberOfObjects(obj_type)):
+                index += 1
+                name = self._reader.GetObjectName(obj_type, j)
+                vtkid = str(self._reader.GetObjectId(obj_type, j))
+                if name.startswith('Unnamed'):
+                    name = vtkid
+
+                binfo = BlockInformation(object_type=obj_type,
+                                         name=name,
+                                         number=vtkid,
+                                         object_index=j,
+                                         multiblock_index=index)
+                self._block_info[obj_type][vtkid] = binfo
+
     def getReader(self):
         return self._reader
+
+    def getBlockInfo(self):
+        return self._block_info
 
 
 class MeshWindow(QtWidgets.QMainWindow):
@@ -46,6 +87,18 @@ class MeshWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
+
+        self._colors = [
+            [0, 141, 223],
+            [121, 199, 44],
+            [255, 146, 0],
+            [94, 61, 212],
+            [192, 60, 40]
+        ]
+        clrs = []
+        for color in self._colors:
+            clrs.append([n / 255 for n in color])
+        self._colors = clrs
 
         self._frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
@@ -124,26 +177,37 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def onLoadFinished(self):
         reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
 
-        self._geometry = vtk.vtkCompositeDataGeometryFilter()
-        self._geometry.SetInputConnection(0, reader.GetOutputPort(0))
-        self._geometry.Update()
+        blocks = block_info[vtk.vtkExodusIIReader.ELEM_BLOCK].values()
+        for index, blk in enumerate(blocks):
+            eb = vtk.vtkExtractBlock()
+            eb.SetInputConnection(reader.GetOutputPort(0))
+            eb.AddIndex(blk.multiblock_index)
+            eb.Update()
 
-        self._mapper = vtk.vtkPolyDataMapper()
-        self._mapper.SetInputConnection(self._geometry.GetOutputPort())
-        self._mapper.SetScalarModeToUsePointFieldData()
-        self._mapper.InterpolateScalarsBeforeMappingOn()
+            geometry = vtk.vtkCompositeDataGeometryFilter()
+            geometry.SetInputConnection(0, eb.GetOutputPort(0))
+            geometry.Update()
 
-        self._vtk_actor = vtk.vtkActor()
-        self._vtk_actor.SetMapper(self._mapper)
-        property = self._vtk_actor.GetProperty()
-        property.SetRepresentationToSurface()
-        property.SetColor([1, 1, 0])
-        property.SetEdgeVisibility(True)
-        property.SetEdgeColor([0.1, 0.1, 0.4])
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(geometry.GetOutputPort())
+            mapper.SetScalarModeToUsePointFieldData()
+            mapper.InterpolateScalarsBeforeMappingOn()
 
-        self._vtk_renderer.AddViewProp(self._vtk_actor)
-        self._vtk_renderer.ResetCamera()
-        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+
+            property = actor.GetProperty()
+            property.SetRepresentationToSurface()
+            clr_idx = index % len(self._colors)
+            property.SetColor(self._colors[clr_idx])
+            property.SetEdgeVisibility(True)
+            # FIXME: set color from preferences/templates
+            property.SetEdgeColor([0.1, 0.1, 0.4])
+
+            self._vtk_renderer.AddViewProp(actor)
+            self._vtk_renderer.ResetCamera()
+            self._vtk_renderer.GetActiveCamera().Zoom(1.5)
 
         self._vtk_render_window.Render()
