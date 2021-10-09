@@ -13,6 +13,7 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     blockVisibilityChanged = QtCore.pyqtSignal(int, object)
     blockColorChanged = QtCore.pyqtSignal(int, object)
+    dimensionsStateChanged = QtCore.pyqtSignal(bool)
 
     def __init__(self, plugin):
         super().__init__()
@@ -83,7 +84,18 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._nodesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._nodesets)
 
-        self._dimensions = QtWidgets.QCheckBox("Display dimensions")
+        self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
+        self._layout.addWidget(self._lbl_dimensions)
+
+        self._x_range = QtWidgets.QLabel("x-range:")
+        self._layout.addWidget(self._x_range)
+        self._y_range = QtWidgets.QLabel("y-range:")
+        self._layout.addWidget(self._y_range)
+        self._z_range = QtWidgets.QLabel("z-range:")
+        self._layout.addWidget(self._z_range)
+
+        self._dimensions = QtWidgets.QCheckBox("Show dimensions")
+        self._dimensions.stateChanged.connect(self.onDimensionsStateChanged)
         self._layout.addWidget(self._dimensions)
 
         self._layout.addStretch()
@@ -180,3 +192,14 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     def onNodesetChanged(self, item):
         pass
+
+    def onDimensionsStateChanged(self, state):
+        self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
+
+    def onBoundsChanged(self, bnds):
+        self._x_range.setText(
+            "x-range: {:.5f} to {:.5f}".format(bnds[0], bnds[1]))
+        self._y_range.setText(
+            "y-range: {:.5f} to {:.5f}".format(bnds[2], bnds[3]))
+        self._z_range.setText(
+            "z-range: {:.5f} to {:.5f}".format(bnds[4], bnds[5]))

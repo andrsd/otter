@@ -98,6 +98,7 @@ class MeshWindow(QtWidgets.QMainWindow):
     """
 
     fileLoaded = QtCore.pyqtSignal(object)
+    boundsChanged = QtCore.pyqtSignal(list)
 
     def __init__(self, plugin):
         super().__init__()
@@ -216,10 +217,27 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             self._block_actors[binfo.number] = actor
 
+        gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
+        gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
+        for bnd in self._block_bounds.values():
+            bmin, bmax = bnd
+            gmin = point_min(bmin, gmin)
+            gmax = point_max(bmax, gmax)
+        bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
+
+        self._cube_axes_actor = vtk.vtkCubeAxesActor()
+        self._cube_axes_actor.SetBounds(*bnds)
+        self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
+        self._cube_axes_actor.SetGridLineLocation(
+            vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
+        self._cube_axes_actor.SetFlyMode(
+            vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
+
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
 
         self.fileLoaded.emit(block_info)
+        self.boundsChanged.emit(bnds)
 
         self._vtk_render_window.Render()
 
@@ -261,3 +279,10 @@ class MeshWindow(QtWidgets.QMainWindow):
                     glob_max = point_max(bnd_max, glob_max)
 
         return (glob_min, glob_max)
+
+    def onCubeAxisVisibilityChanged(self, visible):
+        if visible:
+            self._vtk_renderer.AddViewProp(self._cube_axes_actor)
+        else:
+            self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
+        self._vtk_render_window.Render()

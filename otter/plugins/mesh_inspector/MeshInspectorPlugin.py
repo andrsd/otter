@@ -30,10 +30,14 @@ class MeshInspectorPlugin(Plugin):
         self.registerWindow(self.info_window)
 
         self.mesh_window.fileLoaded.connect(self.info_window.onFileLoaded)
+        self.mesh_window.boundsChanged.connect(
+            self.info_window.onBoundsChanged)
         self.info_window.blockVisibilityChanged.connect(
             self.mesh_window.onBlockVisibilityChanged)
         self.info_window.blockColorChanged.connect(
             self.mesh_window.onBlockColorChanged)
+        self.info_window.dimensionsStateChanged.connect(
+            self.mesh_window.onCubeAxisVisibilityChanged)
 
         screen_rc = QtWidgets.QApplication.desktop().screenGeometry()
         left_wd = 0.8 * screen_rc.width()
