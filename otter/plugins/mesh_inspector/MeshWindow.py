@@ -2,7 +2,7 @@ import collections
 import contextlib
 import fcntl
 import vtk
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 
@@ -22,6 +22,20 @@ BlockInformation = collections.namedtuple(
     'BlockInformation', [
         'name', 'object_type', 'object_index', 'number', 'multiblock_index'
     ])
+
+
+def point_min(pt1, pt2):
+    x = min(pt1.x(), pt2.x())
+    y = min(pt1.y(), pt2.y())
+    z = min(pt1.z(), pt2.z())
+    return QtGui.QVector3D(x, y, z)
+
+
+def point_max(pt1, pt2):
+    x = max(pt1.x(), pt2.x())
+    y = max(pt1.y(), pt2.y())
+    z = max(pt1.z(), pt2.z())
+    return QtGui.QVector3D(x, y, z)
 
 
 class LoadThread(QtCore.QThread):
@@ -90,6 +104,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.plugin = plugin
         self._load_thread = None
         self._block_actors = {}
+        self._block_bounds = {}
 
         self._frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
@@ -177,6 +192,9 @@ class MeshWindow(QtWidgets.QMainWindow):
             eb.AddIndex(binfo.multiblock_index)
             eb.Update()
 
+            bounds = self._getBlocksBounds(eb)
+            self._block_bounds[binfo.number] = bounds
+
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
             geometry.Update()
@@ -221,3 +239,25 @@ class MeshWindow(QtWidgets.QMainWindow):
         property = actor.GetProperty()
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
         property.SetColor(clr)
+
+    def _getBlocksBounds(self, extract_block):
+        glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
+        glob_max = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
+        for i in range(extract_block.GetOutput().GetNumberOfBlocks()):
+            current = extract_block.GetOutput().GetBlock(i)
+            if isinstance(current, vtk.vtkUnstructuredGrid):
+                bnd = current.GetBounds()
+                bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
+                bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
+                glob_min = point_min(bnd_min, glob_min)
+                glob_max = point_max(bnd_max, glob_max)
+
+            elif isinstance(current, vtk.vtkMultiBlockDataSet):
+                for j in range(current.GetNumberOfBlocks()):
+                    bnd = current.GetBlock(j).GetBounds()
+                    bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
+                    bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
+                    glob_min = point_min(bnd_min, glob_min)
+                    glob_max = point_max(bnd_max, glob_max)
+
+        return (glob_min, glob_max)
