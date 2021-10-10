@@ -36,6 +36,10 @@ class MeshInspectorPlugin(Plugin):
             self.mesh_window.onBlockVisibilityChanged)
         self.info_window.blockColorChanged.connect(
             self.mesh_window.onBlockColorChanged)
+        self.info_window.sidesetVisibilityChanged.connect(
+            self.mesh_window.onSidesetVisibilityChanged)
+        self.info_window.nodesetVisibilityChanged.connect(
+            self.mesh_window.onNodesetVisibilityChanged)
         self.info_window.dimensionsStateChanged.connect(
             self.mesh_window.onCubeAxisVisibilityChanged)
 

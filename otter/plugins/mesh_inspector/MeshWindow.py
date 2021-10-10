@@ -57,11 +57,20 @@ class LoadThread(QtCore.QThread):
             self._reader.Update()
 
             self._readBlockInfo()
+            for obj_type, data in self._block_info.items():
+                for info in data.values():
+                    self._reader.SetObjectStatus(
+                        info.object_type, info.object_index, 1)
 
     def _readBlockInfo(self):
         object_types = [
             vtk.vtkExodusIIReader.ELEM_BLOCK,
+            vtk.vtkExodusIIReader.FACE_BLOCK,
+            vtk.vtkExodusIIReader.EDGE_BLOCK,
+            vtk.vtkExodusIIReader.ELEM_SET,
             vtk.vtkExodusIIReader.SIDE_SET,
+            vtk.vtkExodusIIReader.FACE_SET,
+            vtk.vtkExodusIIReader.EDGE_SET,
             vtk.vtkExodusIIReader.NODE_SET
         ]
 
@@ -105,6 +114,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.plugin = plugin
         self._load_thread = None
         self._block_actors = {}
+        self._sideset_actors = {}
+        self._nodeset_actors = {}
         self._block_bounds = {}
 
         self._frame = QtWidgets.QFrame(self)
@@ -217,6 +228,62 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             self._block_actors[binfo.number] = actor
 
+        faces = block_info[vtk.vtkExodusIIReader.SIDE_SET].values()
+        for index, finfo in enumerate(faces):
+            eb = vtk.vtkExtractBlock()
+            eb.SetInputConnection(reader.GetOutputPort())
+            eb.AddIndex(finfo.multiblock_index)
+            eb.Update()
+
+            geometry = vtk.vtkCompositeDataGeometryFilter()
+            geometry.SetInputConnection(0, eb.GetOutputPort(0))
+            geometry.Update()
+
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(geometry.GetOutputPort())
+            mapper.SetScalarModeToUsePointFieldData()
+            mapper.InterpolateScalarsBeforeMappingOn()
+
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+
+            property = actor.GetProperty()
+            property.SetRepresentationToSurface()
+            property.SetColor([0.85, 0.85, 0.85])
+            property.SetEdgeVisibility(True)
+            # FIXME: set color from preferences/templates
+            property.SetEdgeColor([0.1, 0.1, 0.4])
+
+            self._sideset_actors[finfo.number] = actor
+
+        nodes = block_info[vtk.vtkExodusIIReader.NODE_SET].values()
+        for index, ninfo in enumerate(nodes):
+            eb = vtk.vtkExtractBlock()
+            eb.SetInputConnection(reader.GetOutputPort())
+            eb.AddIndex(ninfo.multiblock_index)
+            eb.Update()
+
+            geometry = vtk.vtkCompositeDataGeometryFilter()
+            geometry.SetInputConnection(0, eb.GetOutputPort(0))
+            geometry.Update()
+
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(geometry.GetOutputPort())
+            mapper.SetScalarModeToUsePointFieldData()
+            mapper.InterpolateScalarsBeforeMappingOn()
+
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+
+            property = actor.GetProperty()
+            property.SetRepresentationToPoints()
+            property.SetRenderPointsAsSpheres(True)
+            property.SetVertexVisibility(True)
+            property.SetPointSize(10)
+            property.SetColor([0.1, 0.1, 0.1])
+
+            self._nodeset_actors[ninfo.number] = actor
+
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
         for bnd in self._block_bounds.values():
@@ -244,6 +311,12 @@ class MeshWindow(QtWidgets.QMainWindow):
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
 
+    def _getSidesetActor(self, sideset_id):
+        return self._sideset_actors[sideset_id]
+
+    def _getNodesetActor(self, nodeset_id):
+        return self._nodeset_actors[nodeset_id]
+
     def onBlockVisibilityChanged(self, block_id, visible):
         actor = self._getBlockActor(block_id)
         if visible:
@@ -257,6 +330,22 @@ class MeshWindow(QtWidgets.QMainWindow):
         property = actor.GetProperty()
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
         property.SetColor(clr)
+
+    def onSidesetVisibilityChanged(self, sideset_id, visible):
+        actor = self._getSidesetActor(sideset_id)
+        if visible:
+            self._vtk_renderer.AddViewProp(actor)
+        else:
+            self._vtk_renderer.RemoveViewProp(actor)
+        self._vtk_render_window.Render()
+
+    def onNodesetVisibilityChanged(self, nodeset_id, visible):
+        actor = self._getNodesetActor(nodeset_id)
+        if visible:
+            self._vtk_renderer.AddViewProp(actor)
+        else:
+            self._vtk_renderer.RemoveViewProp(actor)
+        self._vtk_render_window.Render()
 
     def _getBlocksBounds(self, extract_block):
         glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))

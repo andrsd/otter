@@ -12,6 +12,8 @@ class InfoWindow(QtWidgets.QScrollArea):
     IDX_ID = 2
 
     blockVisibilityChanged = QtCore.pyqtSignal(int, object)
+    sidesetVisibilityChanged = QtCore.pyqtSignal(int, object)
+    nodesetVisibilityChanged = QtCore.pyqtSignal(int, object)
     blockColorChanged = QtCore.pyqtSignal(int, object)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
 
@@ -154,17 +156,17 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     def _loadNodeSets(self, nodesets):
         self._nodeset_model.removeRows(0, self._nodeset_model.rowCount())
-        for index, ss in enumerate(nodesets):
+        for index, ns in enumerate(nodesets):
             row = self._nodeset_model.rowCount()
 
             si_name = QtGui.QStandardItem()
-            si_name.setText(ss.name)
+            si_name.setText(ns.name)
             si_name.setCheckable(True)
-            si_name.setData(ss)
+            si_name.setData(ns)
             self._nodeset_model.setItem(row, self.IDX_NAME, si_name)
 
             si_id = QtGui.QStandardItem()
-            si_id.setText(str(ss.number))
+            si_id.setText(str(ns.number))
             self._nodeset_model.setItem(row, self.IDX_ID, si_id)
 
     def onFileLoaded(self, block_info):
@@ -188,10 +190,16 @@ class InfoWindow(QtWidgets.QScrollArea):
             self.blockColorChanged.emit(block_info.number, color)
 
     def onSidesetChanged(self, item):
-        pass
+        if item.column() == self.IDX_NAME:
+            visible = item.checkState() == QtCore.Qt.Checked
+            sideset_info = item.data()
+            self.sidesetVisibilityChanged.emit(sideset_info.number, visible)
 
     def onNodesetChanged(self, item):
-        pass
+        if item.column() == self.IDX_NAME:
+            visible = item.checkState() == QtCore.Qt.Checked
+            nodeset_info = item.data()
+            self.nodesetVisibilityChanged.emit(nodeset_info.number, visible)
 
     def onDimensionsStateChanged(self, state):
         self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
