@@ -21,15 +21,27 @@ def handle_sigint(signum, frame):
     QtWidgets.QApplication.quit()
 
 
+class PluginApp(QtWidgets.QApplication):
+
+    def __init__(self, plugin, argv):
+        super().__init__(argv)
+        self._plugin = plugin
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Close:
+            self._plugin.close()
+        return super().event(e)
+
+
 def main():
     QtCore.QCoreApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    qapp = QtWidgets.QApplication(sys.argv)
-    qapp.setQuitOnLastWindowClosed(True)
-
     plugin = MeshInspectorPlugin()
+    app = PluginApp(plugin, sys.argv)
+    app.setQuitOnLastWindowClosed(True)
+
     signal.signal(signal.SIGINT, handle_sigint)
     plugin.create()
 
@@ -37,9 +49,9 @@ def main():
     # handle signals
     safe_timer(50, lambda: None)
 
-    qapp.exec()
+    app.exec()
 
-    del qapp
+    del app
 
 
 if __name__ == '__main__':

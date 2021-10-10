@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 from otter.assets import Assets
 from Plugin import Plugin
 from mesh_inspector.MeshWindow import MeshWindow
@@ -43,18 +43,23 @@ class MeshInspectorPlugin(Plugin):
         self.info_window.dimensionsStateChanged.connect(
             self.mesh_window.onCubeAxisVisibilityChanged)
 
-        screen_rc = QtWidgets.QApplication.desktop().screenGeometry()
-        left_wd = 0.8 * screen_rc.width()
-        mesh_rc = QtCore.QRect(screen_rc.left(),
-                               screen_rc.top(),
-                               left_wd,
-                               screen_rc.height())
-        info_rc = QtCore.QRect(left_wd,
-                               screen_rc.top(),
-                               screen_rc.width() - left_wd,
-                               screen_rc.height())
+        settings = QtCore.QSettings()
+        settings.beginGroup(self.name())
+        geom = settings.value("mesh_wnd_geometry")
+        if geom is None:
+            self.mesh_window.resize(700, 500)
+        else:
+            self.mesh_window.restoreGeometry(geom)
+        geom = settings.value("info_wnd_geometry")
+        if geom is None:
+            self.info_window.resize(350, 700)
+        else:
+            self.info_window.restoreGeometry(geom)
+        settings.endGroup()
 
-        mesh_rc.adjust(60, 70, -5, -40)
-        self.mesh_window.setGeometry(mesh_rc)
-        info_rc.adjust(5, 70, -10, -40)
-        self.info_window.setGeometry(info_rc)
+    def onClose(self):
+        settings = QtCore.QSettings()
+        settings.beginGroup(self.name())
+        settings.setValue("mesh_wnd_geometry", self.mesh_window.saveGeometry())
+        settings.setValue("info_wnd_geometry", self.info_window.saveGeometry())
+        settings.endGroup()

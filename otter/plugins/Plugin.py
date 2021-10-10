@@ -89,6 +89,7 @@ class Plugin:
         """
         Close the plugin
         """
+        self.onClose()
         for (window, action) in self._show_window.items():
             window.close()
             self.parent.action_group_windows.removeAction(action)
@@ -181,4 +182,9 @@ class Plugin:
     def onCreate(self):
         """
         Callback when create happens
+        """
+
+    def onClose(self):
+        """
+        Callback when close happens
         """
