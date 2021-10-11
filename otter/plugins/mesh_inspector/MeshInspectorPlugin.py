@@ -42,6 +42,8 @@ class MeshInspectorPlugin(Plugin):
             self.mesh_window.onNodesetVisibilityChanged)
         self.info_window.dimensionsStateChanged.connect(
             self.mesh_window.onCubeAxisVisibilityChanged)
+        self.info_window.orientationMarkerStateChanged.connect(
+            self.mesh_window.onOrientationmarkerVisibilityChanged)
 
         settings = QtCore.QSettings()
         settings.beginGroup(self.name())

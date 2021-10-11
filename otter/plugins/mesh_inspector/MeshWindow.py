@@ -156,6 +156,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._vtk_interactor.Initialize()
         self._vtk_interactor.Start()
 
+        self._setupOrientationMarker()
+
         self.show()
 
     def event(self, event):
@@ -317,6 +319,15 @@ class MeshWindow(QtWidgets.QMainWindow):
     def _getNodesetActor(self, nodeset_id):
         return self._nodeset_actors[nodeset_id]
 
+    def _setupOrientationMarker(self):
+        axes = vtk.vtkAxesActor()
+        self._ori_marker = vtk.vtkOrientationMarkerWidget()
+        self._ori_marker.SetOrientationMarker(axes)
+        self._ori_marker.SetViewport(0.8, 0, 1.0, 0.2)
+        self._ori_marker.SetInteractor(self._vtk_interactor)
+        self._ori_marker.SetEnabled(1)
+        self._ori_marker.SetInteractive(False)
+
     def onBlockVisibilityChanged(self, block_id, visible):
         actor = self._getBlockActor(block_id)
         if visible:
@@ -374,4 +385,11 @@ class MeshWindow(QtWidgets.QMainWindow):
             self._vtk_renderer.AddViewProp(self._cube_axes_actor)
         else:
             self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
+        self._vtk_render_window.Render()
+
+    def onOrientationmarkerVisibilityChanged(self, visible):
+        if visible:
+            self._ori_marker.EnabledOn()
+        else:
+            self._ori_marker.EnabledOff()
         self._vtk_render_window.Render()

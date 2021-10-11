@@ -16,6 +16,7 @@ class InfoWindow(QtWidgets.QScrollArea):
     nodesetVisibilityChanged = QtCore.pyqtSignal(int, object)
     blockColorChanged = QtCore.pyqtSignal(int, object)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
+    orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
 
     def __init__(self, plugin):
         super().__init__()
@@ -99,6 +100,11 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._dimensions = QtWidgets.QCheckBox("Show dimensions")
         self._dimensions.stateChanged.connect(self.onDimensionsStateChanged)
         self._layout.addWidget(self._dimensions)
+
+        self._ori_marker = QtWidgets.QCheckBox("Orientation marker")
+        self._ori_marker.stateChanged.connect(self.onOriMarkerStateChanged)
+        self._ori_marker.setCheckState(QtCore.Qt.Checked)
+        self._layout.addWidget(self._ori_marker)
 
         self._layout.addStretch()
 
@@ -211,3 +217,6 @@ class InfoWindow(QtWidgets.QScrollArea):
             "y-range: {:.5f} to {:.5f}".format(bnds[2], bnds[3]))
         self._z_range.setText(
             "z-range: {:.5f} to {:.5f}".format(bnds[4], bnds[5]))
+
+    def onOriMarkerStateChanged(self, state):
+        self.orientationMarkerStateChanged.emit(state == QtCore.Qt.Checked)
