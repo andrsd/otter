@@ -34,11 +34,13 @@ if platform.system() == 'Darwin':
         data_files=[
             ('icons', glob(assets_dir + '/icons/*.svg')),
             ('icons', glob(assets_dir + '/icons/*.png')),
-            ('plugins', glob('src/plugins/*.py')),
+            ('plugins', glob('otter/plugins/*.py')),
             ('plugins/computed_vs_measured',
-                glob('src/plugins/computed_vs_measured/*.py')),
-            ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
-            ('plugins/movie', glob('src/plugins/movie/*.py')),
+                glob('otter/plugins/computed_vs_measured/*.py')),
+            ('plugins/csvplotter',
+                glob('otter/plugins/csvplotter/*.py')),
+            ('plugins/mesh_inspector',
+                glob('otter/plugins/mesh_inspector/*.py')),
         ],
         options={
             'py2app': {
@@ -46,7 +48,7 @@ if platform.system() == 'Darwin':
                 'plist': PLIST_INFO,
                 'iconfile': 'icon.icns',
                 'packages': [
-                    'vtk'
+                    'vtk', 'fcntl', 'pandas', 'cmath', 'glob'
                 ]
             }
         }
