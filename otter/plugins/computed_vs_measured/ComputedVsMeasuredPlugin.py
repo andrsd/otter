@@ -4,7 +4,7 @@ ComputedVsMeasuredPlugin.py
 
 from Plugin import Plugin
 from otter.assets import Assets
-from ComputedVsMeasuredWindow import ComputedVsMeasuredWindow
+from .ComputedVsMeasuredWindow import ComputedVsMeasuredWindow
 
 
 class ComputedVsMeasuredPlugin(Plugin):

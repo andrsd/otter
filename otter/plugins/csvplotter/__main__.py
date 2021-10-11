@@ -1,7 +1,7 @@
 import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
-from .MeshInspectorPlugin import MeshInspectorPlugin
+from csvplotter.CSVPlotterPlugin import CSVPlotterPlugin
 
 
 def safe_timer(timeout, func, *args, **kwargs):
@@ -44,13 +44,12 @@ def main():
     app.setQuitOnLastWindowClosed(True)
 
     window = MainWindow()
-    plugin = MeshInspectorPlugin(window)
+    plugin = CSVPlotterPlugin(window)
     window.plugin = plugin
     plugin.create()
     # Repeatedly run python-noop to give the interpreter time to
     # handle signals
     safe_timer(50, lambda: None)
-
     app.exec()
 
     del app
