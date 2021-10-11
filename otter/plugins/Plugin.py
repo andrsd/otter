@@ -18,6 +18,7 @@ class Plugin:
         self.actions = []
         self._show_window = {}
         self.menubar = parent.menubar
+        self._menu_map = {}
 
     @staticmethod
     def name():
@@ -59,11 +60,12 @@ class Plugin:
         """
         self.windows.append(window)
 
-        action = self.parent.window_menu.addAction(
-            window.windowTitle(), lambda: self.onShowWindow(window))
-        action.setCheckable(True)
-        self.parent.action_group_windows.addAction(action)
-        self._show_window[window] = action
+        if hasattr(self.parent, 'window_menu'):
+            action = self.parent.window_menu.addAction(
+                window.windowTitle(), lambda: self.onShowWindow(window))
+            action.setCheckable(True)
+            self.parent.action_group_windows.addAction(action)
+            self._show_window[window] = action
 
     def create(self):
         """
@@ -87,6 +89,7 @@ class Plugin:
         """
         Close the plugin
         """
+        self.onClose()
         for (window, action) in self._show_window.items():
             window.close()
             self.parent.action_group_windows.removeAction(action)
@@ -132,6 +135,17 @@ class Plugin:
         window.activateWindow()
         window.raise_()
         self.updateMenuBar()
+
+    def getMenu(self, name):
+        if hasattr(self.menubar, 'menus'):
+            return self.menubar.menus[name]
+        else:
+            if name in self._menu_map:
+                return self._menu_map[name]
+            else:
+                menu = self.menubar.addMenu(name)
+                self._menu_map[name] = menu
+                return menu
 
     def addMenu(self, menu, text):
         """
@@ -179,4 +193,9 @@ class Plugin:
     def onCreate(self):
         """
         Callback when create happens
+        """
+
+    def onClose(self):
+        """
+        Callback when close happens
         """

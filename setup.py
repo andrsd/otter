@@ -34,11 +34,13 @@ if platform.system() == 'Darwin':
         data_files=[
             ('icons', glob(assets_dir + '/icons/*.svg')),
             ('icons', glob(assets_dir + '/icons/*.png')),
-            ('plugins', glob('src/plugins/*.py')),
+            ('plugins', glob('otter/plugins/*.py')),
             ('plugins/computed_vs_measured',
-                glob('src/plugins/computed_vs_measured/*.py')),
-            ('plugins/csvplotter', glob('src/plugins/csvplotter/*.py')),
-            ('plugins/movie', glob('src/plugins/movie/*.py')),
+                glob('otter/plugins/computed_vs_measured/*.py')),
+            ('plugins/csvplotter',
+                glob('otter/plugins/csvplotter/*.py')),
+            ('plugins/mesh_inspector',
+                glob('otter/plugins/mesh_inspector/*.py')),
         ],
         options={
             'py2app': {
@@ -46,7 +48,7 @@ if platform.system() == 'Darwin':
                 'plist': PLIST_INFO,
                 'iconfile': 'icon.icns',
                 'packages': [
-                    'vtk', 'chigger'
+                    'vtk', 'fcntl', 'pandas', 'cmath', 'glob'
                 ]
             }
         }
@@ -72,8 +74,8 @@ setup(
     license='LICENSE',
     description=consts.DESCRIPTION,
     install_requires=[
-        'PyQt5==5.15.2',
-        'PyQtChart==5.15.2',
+        'PyQt5==5.13.1',
+        'PyQtChart==5.13.1',
         'cycler==0.10.0',
         'kiwisolver==1.1.0',
         'matplotlib==3.1.1',
@@ -83,9 +85,10 @@ setup(
         'pyparsing==2.4.6',
         'python-dateutil==2.8.1',
         'pytz==2021.3',
-        'six==1.14.0',
+        'six==1.15.0',
         'terminaltables==3.1.0',
-        'sphinx==1.8.5'
+        'sphinx==1.8.5',
+        'vtk==9.0.3'
     ],
     packages=[
         'otter',

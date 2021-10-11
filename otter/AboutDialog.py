@@ -30,8 +30,6 @@ class AboutDialog(QtWidgets.QDialog):
         self.text = QtWidgets.QLabel(
             "Version {}\n"
             "\n"
-            "Powered by chigger\n"
-            "\n"
             "Application icon by partimonio design\n"
             "\n"
             "{}".format(consts.VERSION, consts.COPYRIGHT)

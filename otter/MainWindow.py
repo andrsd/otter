@@ -20,8 +20,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.about_dlg = None
-        self.result_window = None
-        self.params_window = None
         self.plugin = None
         self.plugin_dir = None
         self.recent_files = []
@@ -42,6 +40,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setFixedHeight(475)
         self.setFixedWidth(750)
+
+        settings = QtCore.QSettings()
+        settings.beginGroup("MainWindow")
+        geom = settings.value("geometry")
+        if geom is not None:
+            self.restoreGeometry(geom)
+        settings.endGroup()
 
         self.updateMenuBar()
 
@@ -346,6 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         settings.beginGroup("MainWindow")
         settings.setValue("recentFiles", self.recent_files)
+        settings.setValue("geometry", self.saveGeometry())
         settings.endGroup()
 
     def readSettings(self):

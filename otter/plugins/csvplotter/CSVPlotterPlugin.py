@@ -4,7 +4,7 @@ CSVPlotterPlugin.py
 
 from Plugin import Plugin
 from otter.assets import Assets
-from CSVPlotterWindow import CSVPlotterWindow
+from .CSVPlotterWindow import CSVPlotterWindow
 
 
 class CSVPlotterPlugin(Plugin):
@@ -12,10 +12,10 @@ class CSVPlotterPlugin(Plugin):
     Plug-in for CVS plotting
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.window = None
-        file_menu = self.menubar.menus["File"]
+        file_menu = self.getMenu("File")
         self.addMenuSeparator(file_menu)
         self._export_menu = self.addMenu(file_menu, "Export")
         self._export_png = self.addMenuAction(

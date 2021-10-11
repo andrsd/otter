@@ -48,7 +48,6 @@ def main():
     qapp = QtWidgets.QApplication(sys.argv)
     qapp.setQuitOnLastWindowClosed(False)
     qapp.setWindowIcon(Assets().icons['app'])
-    qapp.setQuitOnLastWindowClosed(False)
 
     otter_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -63,6 +62,9 @@ def main():
     safe_timer(50, lambda: None)
 
     qapp.exec()
+
+    del window
+    del qapp
 
 
 if __name__ == '__main__':

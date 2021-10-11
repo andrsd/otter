@@ -3,7 +3,7 @@ ChartSetupWidget.py
 """
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PostprocessorReader import PostprocessorReader
+from .PostprocessorReader import PostprocessorReader
 
 
 class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
