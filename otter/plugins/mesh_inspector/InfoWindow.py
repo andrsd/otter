@@ -114,6 +114,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.setWindowTitle("Info")
         self.setMinimumWidth(350)
         self.setWidgetResizable(True)
+        self.setWindowFlags(QtCore.Qt.Tool)
         self.show()
 
     def event(self, event):
