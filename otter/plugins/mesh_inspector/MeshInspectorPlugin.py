@@ -1,8 +1,8 @@
 from PyQt5 import QtCore
 from otter.assets import Assets
 from Plugin import Plugin
-from .MeshWindow import MeshWindow
-from .InfoWindow import InfoWindow
+from mesh_inspector.MeshWindow import MeshWindow
+from mesh_inspector.InfoWindow import InfoWindow
 
 
 class MeshInspectorPlugin(Plugin):

@@ -5,7 +5,7 @@ CSVPlotterPlugin.py
 from PyQt5 import QtCore, QtWidgets
 from Plugin import Plugin
 from otter.assets import Assets
-from .CSVPlotterWindow import CSVPlotterWindow
+from csvplotter.CSVPlotterWindow import CSVPlotterWindow
 
 
 class CSVPlotterPlugin(Plugin):

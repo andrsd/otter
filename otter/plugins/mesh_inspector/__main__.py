@@ -1,7 +1,7 @@
 import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
-from .MeshInspectorPlugin import MeshInspectorPlugin
+from mesh_inspector.MeshInspectorPlugin import MeshInspectorPlugin
 
 
 def safe_timer(timeout, func, *args, **kwargs):
