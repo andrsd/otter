@@ -1,7 +1,8 @@
 import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
-from .ComputedVsMeasuredPlugin import ComputedVsMeasuredPlugin
+from computed_vs_measured.ComputedVsMeasuredPlugin \
+    import ComputedVsMeasuredPlugin
 
 
 def safe_timer(timeout, func, *args, **kwargs):
