@@ -24,10 +24,10 @@ class MeshInspectorPlugin(Plugin):
         return Assets().icons['movie']
 
     def onCreate(self):
-        self.mesh_window = MeshWindow(self)
-        self.registerWindow(self.mesh_window)
         self.info_window = InfoWindow(self)
         self.registerWindow(self.info_window)
+        self.mesh_window = MeshWindow(self)
+        self.registerWindow(self.mesh_window)
 
         self.mesh_window.fileLoaded.connect(self.info_window.onFileLoaded)
         self.mesh_window.boundsChanged.connect(
