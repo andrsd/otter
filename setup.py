@@ -82,13 +82,14 @@ setup(
         'numpy==1.18.1',
         'pandas==1.3.3',
         'pycparser==2.19',
-        'pyparsing==2.4.6',
+        'pyparsing==2.4.7',
         'python-dateutil==2.8.1',
         'pytz==2021.3',
         'six==1.15.0',
         'terminaltables==3.1.0',
         'sphinx==1.8.5',
-        'vtk==9.0.3'
+        'vtk==9.0.3',
+        'PyYAML==5.4.1'
     ],
     packages=[
         'otter',
