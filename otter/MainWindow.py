@@ -191,7 +191,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
 
         yml = self.readYml(file_name)
-        if "type" in yml:
+        if yml is not None and "type" in yml:
             self.plugin = self.project_type_dlg.getPluginByType(yml["type"])
             self.plugin.create()
             self.plugin.setupFromYml(yml)
@@ -255,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 return
         else:
-            self.writeYml(file_name[0])
+            self.writeYml(self.plugin.getFileName())
 
     def onSaveFileAs(self):
         """
