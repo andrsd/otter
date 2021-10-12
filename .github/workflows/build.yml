@@ -12,6 +12,7 @@ jobs:
   build:
     env:
       TEST_CI: YES
+      XDG_RUNTIME_DIR: /tmp/runtime-builduser
     runs-on: ubuntu-latest
     name: ubuntu
     steps:
@@ -29,8 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
           pip install -r requirements/test.txt
+          mkdir -p /tmp/runtime-builduser
       - name: Run tests
         run: |
-          coverage run -m unittest -v && coverage xml
+          xvfb-run --auto-servernum --server-num=1 --server-args="-screen 1 1920x1200x24 -ac +extension GLX" coverage run --source=otter -m pytest -v -s
       - name: Code coverage
         uses: codecov/codecov-action@v2

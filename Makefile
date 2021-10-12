@@ -16,10 +16,10 @@ syntax-check check-syntax:
 	@flake8 otter tests setup.py
 
 test:
-	@pytest .
+	@PYTEST_QT_API=pyqt5 pytest .
 
 coverage:
-	@coverage run --source=otter -m pytest
+	@PYTEST_QT_API=pyqt5 coverage run --source=otter -m pytest -v -s
 	@coverage html
 
 icon.icns:
