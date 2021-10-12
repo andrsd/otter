@@ -2,6 +2,7 @@
 CSVPlotterPlugin.py
 """
 
+from PyQt5 import QtCore, QtWidgets
 from Plugin import Plugin
 from otter.assets import Assets
 from .CSVPlotterWindow import CSVPlotterWindow
@@ -45,6 +46,30 @@ class CSVPlotterPlugin(Plugin):
         """
         self.window = CSVPlotterWindow(self)
         self.registerWindow(self.window)
+
+        settings = QtCore.QSettings()
+        settings.beginGroup(self.name())
+        geom = settings.value("wnd_geometry")
+        if geom is None:
+            self.window.resize(700, 900)
+            qapp = QtWidgets.QApplication.instance()
+            self.window.setGeometry(
+                QtWidgets.QStyle.alignedRect(
+                    QtCore.Qt.LeftToRight,
+                    QtCore.Qt.AlignCenter,
+                    self.window.size(),
+                    qapp.desktop().screenGeometry()
+                )
+            )
+        else:
+            self.window.restoreGeometry(geom)
+        settings.endGroup()
+
+    def onClose(self):
+        settings = QtCore.QSettings()
+        settings.beginGroup(self.name())
+        settings.setValue("wnd_geometry", self.window.saveGeometry())
+        settings.endGroup()
 
     def onExportPdf(self):
         """
