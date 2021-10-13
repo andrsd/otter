@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from model_inspector.InputReader import InputReader
 import common
+from common.OtterInteractorStyle import OtterInteractorStyle
 
 
 class LoadThread(QtCore.QThread):
@@ -36,6 +37,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._components = None
         self._component_bounds = {}
 
+        self._last_picked_actor = None
+        self._last_picked_property = vtk.vtkProperty()
+
         self._frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
 
@@ -55,8 +59,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
-        self._vtk_interactor.SetInteractorStyle(
-            vtk.vtkInteractorStyleTrackballCamera())
+        self._style = OtterInteractorStyle(self)
+        self._style.SetDefaultRenderer(self._vtk_renderer)
+        self._vtk_interactor.SetInteractorStyle(self._style)
 
         # TODO: set background from preferences/templates
         self._vtk_renderer.SetGradientBackground(True)
@@ -193,3 +198,31 @@ class ModelWindow(QtWidgets.QMainWindow):
         else:
             self._ori_marker.EnabledOff()
         self._vtk_render_window.Render()
+
+    def onClicked(self, pos):
+        picker = vtk.vtkPicker()
+        picker.Pick(pos.x(), pos.y(), 0, self._vtk_renderer)
+
+        picked_actor = picker.GetActor()
+        if picked_actor is None:
+            if self._last_picked_actor is not None:
+                # self._last_picked_actor.SetProperty(self._last_picked_property)
+                self._last_picked_actor.GetProperty().SetColor(
+                    self._last_picked_property.GetColor())
+        else:
+            property = picked_actor.GetProperty()
+            if picked_actor != self._last_picked_actor:
+                if self._last_picked_actor is not None:
+                    self._last_picked_actor.GetProperty().SetColor(
+                        self._last_picked_property.GetColor())
+
+                # self._last_picked_property.DeepCopy(property)
+                self._last_picked_property.SetColor(property.GetColor())
+
+                property.SetColor([1, 1, 1])
+                # property.SetDiffuse(1.0)
+                # property.SetSpecular(0.0)
+                # property.EdgeVisibilityOn()
+
+        self._vtk_render_window.Render()
+        self._last_picked_actor = picked_actor
