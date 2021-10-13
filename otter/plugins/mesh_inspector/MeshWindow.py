@@ -1,41 +1,14 @@
 import collections
-import contextlib
-import fcntl
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
-
-@contextlib.contextmanager
-def lock_file(filename):
-    """
-    Locks a file so that the exodus reader can safely read
-    a file without something else writing to it while we do it.
-    """
-    with open(filename, "a+") as f:
-        fcntl.flock(f, fcntl.LOCK_SH)
-        yield
-        fcntl.flock(f, fcntl.LOCK_UN)
+import common
 
 
 BlockInformation = collections.namedtuple(
     'BlockInformation', [
         'name', 'object_type', 'object_index', 'number', 'multiblock_index'
     ])
-
-
-def point_min(pt1, pt2):
-    x = min(pt1.x(), pt2.x())
-    y = min(pt1.y(), pt2.y())
-    z = min(pt1.z(), pt2.z())
-    return QtGui.QVector3D(x, y, z)
-
-
-def point_max(pt1, pt2):
-    x = max(pt1.x(), pt2.x())
-    y = max(pt1.y(), pt2.y())
-    z = max(pt1.z(), pt2.z())
-    return QtGui.QVector3D(x, y, z)
 
 
 class LoadThread(QtCore.QThread):
@@ -51,7 +24,7 @@ class LoadThread(QtCore.QThread):
     def run(self):
         self._reader = vtk.vtkExodusIIReader()
 
-        with lock_file(self._file_name):
+        with common.lock_file(self._file_name):
             self._reader.SetFileName(self._file_name)
             self._reader.UpdateInformation()
             self._reader.Update()
@@ -290,8 +263,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
         for bnd in self._block_bounds.values():
             bmin, bmax = bnd
-            gmin = point_min(bmin, gmin)
-            gmax = point_max(bmax, gmax)
+            gmin = common.point_min(bmin, gmin)
+            gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
@@ -367,16 +340,16 @@ class MeshWindow(QtWidgets.QMainWindow):
                 bnd = current.GetBounds()
                 bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
                 bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-                glob_min = point_min(bnd_min, glob_min)
-                glob_max = point_max(bnd_max, glob_max)
+                glob_min = common.point_min(bnd_min, glob_min)
+                glob_max = common.point_max(bnd_max, glob_max)
 
             elif isinstance(current, vtk.vtkMultiBlockDataSet):
                 for j in range(current.GetNumberOfBlocks()):
                     bnd = current.GetBlock(j).GetBounds()
                     bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
                     bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-                    glob_min = point_min(bnd_min, glob_min)
-                    glob_max = point_max(bnd_max, glob_max)
+                    glob_min = common.point_min(bnd_min, glob_min)
+                    glob_max = common.point_max(bnd_max, glob_max)
 
         return (glob_min, glob_max)
 
