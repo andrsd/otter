@@ -12,6 +12,7 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     componentVisibilityChanged = QtCore.pyqtSignal(str, object)
     componentColorChanged = QtCore.pyqtSignal(str, object)
+    componentSelected = QtCore.pyqtSignal(object)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
     orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
 
@@ -46,6 +47,8 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._components.setColumnWidth(0, 180)
         self._components.setColumnWidth(1, 20)
         self._components.setColumnWidth(2, 70)
+        sel_model = self._components.selectionModel()
+        sel_model.currentChanged.connect(self.onComponentCurrentChanged)
         self._layout.addWidget(self._components)
 
         self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
@@ -135,3 +138,19 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     def onOriMarkerStateChanged(self, state):
         self.orientationMarkerStateChanged.emit(state == QtCore.Qt.Checked)
+
+    def onComponentSelected(self, comp_name):
+        self._components.blockSignals(True)
+        if comp_name is None:
+            self._components.clearSelection()
+        else:
+            items = self._component_model.findItems(comp_name)
+            if len(items) == 1:
+                index = self._component_model.indexFromItem(items[0])
+                self._components.setCurrentIndex(index)
+        self._components.blockSignals(False)
+
+    def onComponentCurrentChanged(self, current, previous):
+        item = self._component_model.itemFromIndex(current)
+        comp_name = item.text()
+        self.componentSelected.emit(comp_name)

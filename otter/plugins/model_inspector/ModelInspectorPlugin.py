@@ -31,6 +31,9 @@ class ModelInspectorPlugin(Plugin):
         self.model_window.fileLoaded.connect(self.info_window.onFileLoaded)
         self.model_window.boundsChanged.connect(
             self.info_window.onBoundsChanged)
+        self.model_window.componentSelected.connect(
+            self.info_window.onComponentSelected)
+
         self.info_window.componentVisibilityChanged.connect(
             self.model_window.onComponentVisibilityChanged)
         self.info_window.componentColorChanged.connect(

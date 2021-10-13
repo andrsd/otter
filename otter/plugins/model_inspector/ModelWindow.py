@@ -7,19 +7,19 @@ from common.OtterInteractorStyle import OtterInteractorStyle
 
 
 class LoadThread(QtCore.QThread):
-    """ Worker thread for loading ExodusII files """
+    """ Worker thread for loading input files """
 
     def __init__(self, file_name):
         super().__init__()
         self._file_name = file_name
-        self._componets = None
+        self._components = None
 
     def run(self):
         reader = InputReader()
-        self._componets = reader.load(self._file_name)
+        self._components = reader.load(self._file_name)
 
     def getComponents(self):
-        return self._componets
+        return self._components
 
 
 class ModelWindow(QtWidgets.QMainWindow):
@@ -29,6 +29,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     fileLoaded = QtCore.pyqtSignal(object)
     boundsChanged = QtCore.pyqtSignal(list)
+    componentSelected = QtCore.pyqtSignal(object)
 
     def __init__(self, plugin):
         super().__init__()
@@ -36,6 +37,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._load_thread = None
         self._components = None
         self._component_bounds = {}
+        self._actor_to_comp = {}
 
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
@@ -109,6 +111,11 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def onLoadFinished(self):
         self._components = self._load_thread.getComponents()
+
+        self._actor_to_comp = {}
+        for name, comp in self._components.items():
+            actors = comp.getActor()
+            self._actor_to_comp[actors[0]] = comp
 
         bnds = self._computeBounds()
         self.boundsChanged.emit(bnds)
@@ -206,23 +213,24 @@ class ModelWindow(QtWidgets.QMainWindow):
         picked_actor = picker.GetActor()
         if picked_actor is None:
             if self._last_picked_actor is not None:
-                # self._last_picked_actor.SetProperty(self._last_picked_property)
                 self._last_picked_actor.GetProperty().SetColor(
                     self._last_picked_property.GetColor())
-        else:
+            self.componentSelected.emit(None)
+        elif picked_actor != self._last_picked_actor:
             property = picked_actor.GetProperty()
-            if picked_actor != self._last_picked_actor:
-                if self._last_picked_actor is not None:
-                    self._last_picked_actor.GetProperty().SetColor(
-                        self._last_picked_property.GetColor())
+            if self._last_picked_actor is not None:
+                self._last_picked_actor.GetProperty().SetColor(
+                    self._last_picked_property.GetColor())
 
-                # self._last_picked_property.DeepCopy(property)
-                self._last_picked_property.SetColor(property.GetColor())
+            self._last_picked_property.SetColor(property.GetColor())
 
-                property.SetColor([1, 1, 1])
-                # property.SetDiffuse(1.0)
-                # property.SetSpecular(0.0)
-                # property.EdgeVisibilityOn()
+            # FIXME: set color from preferences
+            property.SetColor([1, 1, 1])
+            property.SetDiffuse(1.0)
+            property.SetSpecular(0.0)
+
+            comp = self._actor_to_comp[picked_actor]
+            self.componentSelected.emit(comp.name)
 
         self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor

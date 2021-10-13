@@ -10,9 +10,9 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self._last_mouse_pos = None
         self._left_button_down = False
 
-        self.AddObserver("LeftButtonPressEvent", self.onLeftButtonPress)
-        self.AddObserver("LeftButtonReleaseEvent", self.onLeftButtonRelease)
-        self.AddObserver("MouseMoveEvent", self.onMouseMove)
+        # self.AddObserver("LeftButtonPressEvent", self.onLeftButtonPress)
+        # self.AddObserver("LeftButtonReleaseEvent", self.onLeftButtonRelease)
+        # self.AddObserver("MouseMoveEvent", self.onMouseMove)
 
     def onLeftButtonPress(self, interactor_style, event):
         self._left_button_down = True
