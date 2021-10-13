@@ -31,13 +31,20 @@ class ModelWindow(QtWidgets.QMainWindow):
     boundsChanged = QtCore.pyqtSignal(list)
     componentSelected = QtCore.pyqtSignal(object)
 
+    SHADED = 0
+    SILHOUETTE = 1
+
     def __init__(self, plugin):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
         self._components = None
+        self._component_color = {}
         self._component_bounds = {}
-        self._actor_to_comp = {}
+        self._actors = {}
+        self._silhouette_actors = {}
+        self._actor_to_comp_name = {}
+        self._render_mode = self.SHADED
 
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
@@ -66,9 +73,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_interactor.SetInteractorStyle(self._style)
 
         # TODO: set background from preferences/templates
-        self._vtk_renderer.SetGradientBackground(True)
-        self._vtk_renderer.SetBackground([0.321, 0.3411, 0.4313])
-        self._vtk_renderer.SetBackground2([0.321, 0.3411, 0.4313])
+        self._vtk_renderer.SetBackground([0.98, 0.98, 0.98])
         # set anti-aliasing on
         self._vtk_renderer.SetUseFXAA(True)
         self._vtk_render_window.SetMultiSamples(1)
@@ -79,6 +84,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._setupOrientationMarker()
 
         self.show()
+
+    def setRenderMode(self, mode):
+        self._render_mode = mode
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
@@ -112,10 +120,23 @@ class ModelWindow(QtWidgets.QMainWindow):
     def onLoadFinished(self):
         self._components = self._load_thread.getComponents()
 
-        self._actor_to_comp = {}
+        self._actor_to_comp_name = {}
         for name, comp in self._components.items():
-            actors = comp.getActor()
-            self._actor_to_comp[actors[0]] = comp
+            actor = comp.getActor()
+            self._actors[name] = actor
+            self._vtk_renderer.AddViewProp(actor)
+
+            silhouette_actor = comp.getSilhouetteActor()
+            if self._render_mode == self.SHADED:
+                silhouette_actor.VisibilityOff()
+            self._silhouette_actors[name] = silhouette_actor
+            self._vtk_renderer.AddViewProp(silhouette_actor)
+            comp.setSilhouetteCamera(self._vtk_renderer.GetActiveCamera())
+            property = silhouette_actor.GetProperty()
+            property.SetColor([0, 0, 0])
+            property.SetLineWidth(2)
+
+            self._actor_to_comp_name[actor] = name
 
         bnds = self._computeBounds()
         self.boundsChanged.emit(bnds)
@@ -153,6 +174,18 @@ class ModelWindow(QtWidgets.QMainWindow):
         else:
             return None
 
+    def _getComponentSilhouetteActor(self, component_name):
+        if component_name in self._components:
+            return self._components[component_name].getSilhouetteActor()
+        else:
+            return None
+
+    def _getComponentMapper(self, component_name):
+        if component_name in self._components:
+            return self._components[component_name].getMapper()
+        else:
+            return None
+
     def _setupOrientationMarker(self):
         axes = vtk.vtkAxesActor()
         self._ori_marker = vtk.vtkOrientationMarkerWidget()
@@ -163,32 +196,42 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._ori_marker.SetInteractive(False)
 
     def onComponentVisibilityChanged(self, component_name, visible):
-        actors = self._getComponentActor(component_name)
         if visible:
-            for a in actors:
-                self._vtk_renderer.AddViewProp(a)
+            actor = self._getComponentActor(component_name)
+            actor.VisibilityOn()
+
+            if self._render_mode == self.SILHOUETTE:
+                actor = self._getComponentSilhouetteActor(component_name)
+                actor.VisibilityOn()
         else:
-            for a in actors:
-                self._vtk_renderer.RemoveViewProp(a)
+            actor = self._getComponentActor(component_name)
+            actor.VisibilityOff()
+
+            if self._render_mode == self.SILHOUETTE:
+                actor = self._getComponentSilhouetteActor(component_name)
+                actor.VisibilityOff()
+
         self._vtk_render_window.Render()
 
     def onComponentColorChanged(self, component_name, qcolor):
-        actors = self._getComponentActor(component_name)
-        for a in actors:
-            property = a.GetProperty()
-            clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
-            property.SetColor(clr)
+        self._component_color[component_name] = qcolor
+        actor = self._getComponentActor(component_name)
+        property = actor.GetProperty()
+        self._setPropertyColor(property, qcolor)
+
+    def _setPropertyColor(self, property, qcolor):
+        clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
+        property.SetColor(clr)
 
     def _getComponentBounds(self, comp):
         glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         glob_max = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        actors = comp.getActor()
-        for a in actors:
-            bnd = a.GetBounds()
-            bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
-            bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-            glob_min = common.point_min(bnd_min, glob_min)
-            glob_max = common.point_max(bnd_max, glob_max)
+        actor = self._getComponentActor(comp.name)
+        bnd = actor.GetBounds()
+        bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
+        bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
+        glob_min = common.point_min(bnd_min, glob_min)
+        glob_max = common.point_max(bnd_max, glob_max)
 
         return (glob_min, glob_max)
 
@@ -229,8 +272,35 @@ class ModelWindow(QtWidgets.QMainWindow):
             property.SetDiffuse(1.0)
             property.SetSpecular(0.0)
 
-            comp = self._actor_to_comp[picked_actor]
-            self.componentSelected.emit(comp.name)
+            comp_name = self._actor_to_comp_name[picked_actor]
+            self.componentSelected.emit(comp_name)
 
         self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor
+
+    def onRenderModeChanged(self, mode):
+        self.setRenderMode(mode)
+
+        for actor in self._actors.values():
+            actor.VisibilityOn()
+            if mode == self.SHADED:
+                property = actor.GetProperty()
+                property.LightingOn()
+                comp_name = self._actor_to_comp_name[actor]
+                qcolor = self._component_color[comp_name]
+                self._setPropertyColor(property, qcolor)
+            elif mode == self.SILHOUETTE:
+                property = actor.GetProperty()
+                property.LightingOff()
+                self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
+
+        for actor in self._silhouette_actors.values():
+            if mode == self.SHADED:
+                actor.VisibilityOff()
+            elif mode == self.SILHOUETTE:
+                actor.VisibilityOn()
+                property = actor.GetProperty()
+                self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
+                property.SetLineWidth(3)
+
+        self._vtk_render_window.Render()

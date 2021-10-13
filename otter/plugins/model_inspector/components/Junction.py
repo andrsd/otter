@@ -32,15 +32,21 @@ class Junction(Component):
         source.SetCenter(center)
         source.SetBounds(bounds)
 
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(source.GetOutputPort())
+        self._mapper = vtk.vtkPolyDataMapper()
+        self._mapper.SetInputConnection(source.GetOutputPort())
 
         self._actor = vtk.vtkActor()
-        self._actor.SetMapper(mapper)
+        self._actor.SetMapper(self._mapper)
 
-        property = self._actor.GetProperty()
-        property.SetColor(Junction.COLOR)
-        property.SetEdgeVisibility(False)
+        self._silhouette = vtk.vtkPolyDataSilhouette()
+        self._silhouette.SetInputData(self._mapper.GetInput())
+
+        self._silhouette_mapper = vtk.vtkPolyDataMapper()
+        self._silhouette_mapper.SetInputConnection(
+            self._silhouette.GetOutputPort())
+
+        self._silhouette_actor = vtk.vtkActor()
+        self._silhouette_actor.SetMapper(self._silhouette_mapper)
 
     def __computeCenter(self, connections):
         center = [0, 0, 0]

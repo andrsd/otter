@@ -12,6 +12,9 @@ class Boundary(Component):
 
     def __init__(self, reader, name, params):
         super().__init__(reader, name, params)
+        self._mapper = None
+        self._actor = None
+        self._silhouette_actor = None
         self._connection = self.parseConnection(params['input'])
 
     @property
@@ -40,12 +43,27 @@ class Boundary(Component):
         source.SetYLength(Boundary.SIZE)
         source.SetZLength(Boundary.SIZE)
 
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(source.GetOutputPort())
+        self._mapper = vtk.vtkPolyDataMapper()
+        self._mapper.SetInputConnection(source.GetOutputPort())
 
         self._actor = vtk.vtkActor()
-        self._actor.SetMapper(mapper)
+        self._actor.SetMapper(self._mapper)
 
-        property = self._actor.GetProperty()
-        property.SetColor(Boundary.COLOR)
-        property.SetEdgeVisibility(False)
+        self._silhouette = vtk.vtkPolyDataSilhouette()
+        self._silhouette.SetInputData(self._mapper.GetInput())
+
+        self._silhouette_mapper = vtk.vtkPolyDataMapper()
+        self._silhouette_mapper.SetInputConnection(
+            self._silhouette.GetOutputPort())
+
+        self._silhouette_actor = vtk.vtkActor()
+        self._silhouette_actor.SetMapper(self._silhouette_mapper)
+
+    def getActor(self):
+        return self._actor
+
+    def getSilhouetteActor(self):
+        return self._silhouette_actor
+
+    def setSilhouetteCamera(self, camera):
+        self._silhouette.SetCamera(camera)

@@ -64,17 +64,37 @@ class HeatStructure(Component):
         source = vtk.vtkCubeSource()
         source.SetBounds(self._bounds)
 
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(source.GetOutputPort())
+        self._mapper = vtk.vtkPolyDataMapper()
+        self._mapper.SetInputConnection(source.GetOutputPort())
 
         self._actor = vtk.vtkActor()
-        self._actor.SetMapper(mapper)
+        self._actor.SetMapper(self._mapper)
         self._actor.SetPosition(self._position)
         self._actor.SetOrientation(self._orientation)
         self._actor.RotateX(self._rotation)
         self._actor.RotateY(0)
         self._actor.RotateZ(0)
 
-        property = self._actor.GetProperty()
-        property.SetColor(HeatStructure.COLOR)
-        property.SetEdgeVisibility(False)
+        self._silhouette = vtk.vtkPolyDataSilhouette()
+        self._silhouette.SetInputData(self._mapper.GetInput())
+
+        self._silhouette_mapper = vtk.vtkPolyDataMapper()
+        self._silhouette_mapper.SetInputConnection(
+            self._silhouette.GetOutputPort())
+
+        self._silhouette_actor = vtk.vtkActor()
+        self._silhouette_actor.SetMapper(self._silhouette_mapper)
+        self._silhouette_actor.SetPosition(self._position)
+        self._silhouette_actor.SetOrientation(self._orientation)
+        self._silhouette_actor.RotateX(self._rotation)
+        self._silhouette_actor.RotateY(0)
+        self._silhouette_actor.RotateZ(0)
+
+    def getActor(self):
+        return self._actor
+
+    def getSilhouetteActor(self):
+        return self._silhouette_actor
+
+    def setSilhouetteCamera(self, camera):
+        self._silhouette.SetCamera(camera)

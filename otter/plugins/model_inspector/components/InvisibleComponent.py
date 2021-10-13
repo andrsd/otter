@@ -18,4 +18,10 @@ class InvisibleComponent(Component):
         return None
 
     def getActor(self):
-        return []
+        return None
+
+    def getSilhouetteActor(self):
+        return None
+
+    def setSilhouetteCamera(self, camera):
+        pass

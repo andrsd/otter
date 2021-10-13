@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
+from model_inspector.ModelWindow import ModelWindow
 
 
 class InfoWindow(QtWidgets.QScrollArea):
@@ -15,6 +16,7 @@ class InfoWindow(QtWidgets.QScrollArea):
     componentSelected = QtCore.pyqtSignal(object)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
     orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
+    renderModeChanged = QtCore.pyqtSignal(int)
 
     def __init__(self, plugin):
         super().__init__()
@@ -50,6 +52,16 @@ class InfoWindow(QtWidgets.QScrollArea):
         sel_model = self._components.selectionModel()
         sel_model.currentChanged.connect(self.onComponentCurrentChanged)
         self._layout.addWidget(self._components)
+
+        self._render_mode = QtWidgets.QComboBox()
+        self._render_mode.addItem("Shaded",
+                                  ModelWindow.SHADED)
+        self._render_mode.addItem("Hidden edges removed",
+                                  ModelWindow.SILHOUETTE)
+        self._render_mode.currentIndexChanged.connect(self.onRenderModeChanged)
+        self._layout.addWidget(self._render_mode)
+
+        self._layout.addSpacing(10)
 
         self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
         self._layout.addWidget(self._lbl_dimensions)
@@ -154,3 +166,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         item = self._component_model.itemFromIndex(current)
         comp_name = item.text()
         self.componentSelected.emit(comp_name)
+
+    def onRenderModeChanged(self, index):
+        data = self._render_mode.itemData(index)
+        self.renderModeChanged.emit(data)

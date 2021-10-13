@@ -16,7 +16,7 @@ class Component(object):
         self._name = name
         self._params = params
         self._reader._components[name] = self
-        self._actor = None
+        self._color = None
 
     @staticmethod
     def toArray(str_in):
@@ -48,15 +48,24 @@ class Component(object):
         """
         return None
 
+    @property
+    def color(self):
+        return self._color
+
     def create(self):
         """
         Create the vtkSource object(s) to be returned by getSource. (abstract)
         """
         raise NotImplementedError("""The create method must be overridden to
-            build desired vtkSource objects.""")
+            build desired vtk objects.""")
 
     def getActor(self):
         """
         Return the vtk actor
         """
-        return [self._actor]
+        raise NotImplementedError("""The getActor method must be overridden to
+            return vtkActor object.""")
+
+    def getSilhouetteActor(self):
+        raise NotImplementedError("""The getSilhouetteActor method must be
+            overridden to return vtkActor object for silhouette.""")
