@@ -124,6 +124,10 @@ class ModelWindow(QtWidgets.QMainWindow):
         for name, comp in self._components.items():
             actor = comp.getActor()
             self._actors[name] = actor
+            if self._render_mode == self.SILHOUETTE:
+                property = actor.GetProperty()
+                property.LightingOff()
+                self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
             self._vtk_renderer.AddViewProp(actor)
 
             silhouette_actor = comp.getSilhouetteActor()
@@ -215,10 +219,12 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def onComponentColorChanged(self, component_name, qcolor):
         self._component_color[component_name] = qcolor
-        actor = self._getComponentActor(component_name)
-        property = actor.GetProperty()
-        self._setPropertyColor(property, qcolor)
-        self._vtk_render_window.Render()
+
+        if self._render_mode == self.SHADED:
+            actor = self._getComponentActor(component_name)
+            property = actor.GetProperty()
+            self._setPropertyColor(property, qcolor)
+            self._vtk_render_window.Render()
 
     def _setPropertyColor(self, property, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
