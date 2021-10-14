@@ -57,6 +57,7 @@ class InputReader:
               'FormLossFromFunction1Phase',
               'FormLossFromFunction2Phase',
               'HeatGeneration',
+              'HeatSourceFromTotalPower',
               'HeatTransferFromExternalAppHeatFlux1Phase',
               'HeatTransferFromExternalAppTemperature1Phase',
               'HeatTransferFromExternalAppTemperature2Phase',
@@ -68,7 +69,8 @@ class InputReader:
               'HeatTransferFromSpecifiedTemperature2Phase',
               'PrescribedReactorPower',
               'PointKineticsReactorPower',
-              'ReactivityFeedback']:
+              'ReactivityFeedback',
+              'TotalPower']:
         COMPONENT_TYPES[c] = components.InvisibleComponent
 
     def __init__(self):

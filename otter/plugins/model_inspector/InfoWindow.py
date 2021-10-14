@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from model_inspector.ModelWindow import ModelWindow
 from common.ColorPicker import ColorPicker
+from model_inspector import components
 
 
 class InfoWindow(QtWidgets.QScrollArea):
@@ -123,9 +124,12 @@ class InfoWindow(QtWidgets.QScrollArea):
             self.plugin.updateMenuBar()
         return super().event(event)
 
-    def _loadComponents(self, components):
+    def _loadComponents(self, comps):
         self._component_model.removeRows(0, self._component_model.rowCount())
-        for index, comp in enumerate(components):
+        for index, comp in enumerate(comps):
+            if isinstance(comp, components.InvisibleComponent):
+                continue
+
             row = self._component_model.rowCount()
 
             si_name = QtGui.QStandardItem()

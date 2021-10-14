@@ -51,6 +51,15 @@ class Junction(Component):
         self._caption_actor = self._createCaptionActor()
         self._caption_actor.SetAttachmentPoint(center)
 
+    def getActor(self):
+        return self._actor
+
+    def getSilhouetteActor(self):
+        return self._silhouette_actor
+
+    def setSilhouetteCamera(self, camera):
+        self._silhouette.SetCamera(camera)
+
     def __computeCenter(self, connections):
         center = [0, 0, 0]
         n = len(connections)

@@ -125,40 +125,43 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._actor_to_comp_name = {}
         for name, comp in self._components.items():
             actor = comp.getActor()
-            self._actors[name] = actor
-            if self._render_mode == self.SILHOUETTE:
-                property = actor.GetProperty()
-                property.LightingOff()
-                self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
-            self._vtk_renderer.AddViewProp(actor)
+            if actor is not None:
+                self._actors[name] = actor
+                if self._render_mode == self.SILHOUETTE:
+                    property = actor.GetProperty()
+                    property.LightingOff()
+                    qclr = QtGui.QColor(255, 255, 255)
+                    self._setPropertyColor(property, qclr)
+                self._vtk_renderer.AddViewProp(actor)
+                self._actor_to_comp_name[actor] = name
 
             silhouette_actor = comp.getSilhouetteActor()
-            if self._render_mode == self.SHADED:
-                silhouette_actor.VisibilityOff()
-            self._silhouette_actors[name] = silhouette_actor
-            self._vtk_renderer.AddViewProp(silhouette_actor)
-            comp.setSilhouetteCamera(self._vtk_renderer.GetActiveCamera())
-            property = silhouette_actor.GetProperty()
-            property.SetColor([0, 0, 0])
-            property.SetLineWidth(2)
+            if silhouette_actor is not None:
+                if self._render_mode == self.SHADED:
+                    silhouette_actor.VisibilityOff()
+                self._silhouette_actors[name] = silhouette_actor
+                self._vtk_renderer.AddViewProp(silhouette_actor)
+                comp.setSilhouetteCamera(self._vtk_renderer.GetActiveCamera())
+                property = silhouette_actor.GetProperty()
+                property.SetColor([0, 0, 0])
+                property.SetLineWidth(2)
 
             caption_actor = comp.getCaptionActor()
-            caption_actor.SetVisibility(self._show_captions)
-            caption_actor.GetProperty().SetColor([0, 0, 0])
-            self._caption_actors[name] = caption_actor
-            text_actor = caption_actor.GetTextActor()
-            text_actor.SetTextScaleModeToViewport()
+            if caption_actor is not None:
+                caption_actor.SetVisibility(self._show_captions)
+                caption_actor.GetProperty().SetColor([0, 0, 0])
+                self._caption_actors[name] = caption_actor
+                text_actor = caption_actor.GetTextActor()
+                text_actor.SetTextScaleModeToViewport()
 
-            property = caption_actor.GetCaptionTextProperty()
-            property.SetColor([0, 0, 0])
-            property.BoldOff()
-            property.ItalicOff()
-            property.SetFontSize(3)
-            property.ShadowOff()
-            caption_actor.SetCaptionTextProperty(property)
-            self._vtk_renderer.AddViewProp(caption_actor)
-
-            self._actor_to_comp_name[actor] = name
+                property = caption_actor.GetCaptionTextProperty()
+                property.SetColor([0, 0, 0])
+                property.BoldOff()
+                property.ItalicOff()
+                property.SetFontSize(3)
+                property.ShadowOff()
+                caption_actor.SetCaptionTextProperty(property)
+                self._vtk_renderer.AddViewProp(caption_actor)
 
         bnds = self._computeBounds()
         self.boundsChanged.emit(bnds)
@@ -174,7 +177,8 @@ class ModelWindow(QtWidgets.QMainWindow):
     def _computeBounds(self):
         for comp in self._components.values():
             bounds = self._getComponentBounds(comp)
-            self._component_bounds[comp.name] = bounds
+            if bounds is not None:
+                self._component_bounds[comp.name] = bounds
 
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
@@ -212,15 +216,17 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._ori_marker.SetInteractive(False)
 
     def onComponentVisibilityChanged(self, component_name, visible):
+        actor = self._getComponentActor(component_name)
+        if actor is None:
+            return
+
         if visible:
-            actor = self._getComponentActor(component_name)
             actor.VisibilityOn()
 
             if self._render_mode == self.SILHOUETTE:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOn()
         else:
-            actor = self._getComponentActor(component_name)
             actor.VisibilityOff()
 
             if self._render_mode == self.SILHOUETTE:
@@ -234,9 +240,10 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         if self._render_mode == self.SHADED:
             actor = self._getComponentActor(component_name)
-            property = actor.GetProperty()
-            self._setPropertyColor(property, qcolor)
-            self._vtk_render_window.Render()
+            if actor is not None:
+                property = actor.GetProperty()
+                self._setPropertyColor(property, qcolor)
+                self._vtk_render_window.Render()
 
     def _setPropertyColor(self, property, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
@@ -246,13 +253,16 @@ class ModelWindow(QtWidgets.QMainWindow):
         glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         glob_max = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
         actor = self._getComponentActor(comp.name)
-        bnd = actor.GetBounds()
-        bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
-        bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-        glob_min = common.point_min(bnd_min, glob_min)
-        glob_max = common.point_max(bnd_max, glob_max)
+        if actor is None:
+            return None
+        else:
+            bnd = actor.GetBounds()
+            bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
+            bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
+            glob_min = common.point_min(bnd_min, glob_min)
+            glob_max = common.point_max(bnd_max, glob_max)
 
-        return (glob_min, glob_max)
+            return (glob_min, glob_max)
 
     def onCubeAxisVisibilityChanged(self, visible):
         if visible:
