@@ -1,5 +1,7 @@
 *.pyc
 *.egg-info/
+*.so
+*.dSYM
 
 
 # py2app
