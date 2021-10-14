@@ -48,6 +48,9 @@ class Junction(Component):
         self._silhouette_actor = vtk.vtkActor()
         self._silhouette_actor.SetMapper(self._silhouette_mapper)
 
+        self._caption_actor = self._createCaptionActor()
+        self._caption_actor.SetAttachmentPoint(center)
+
     def __computeCenter(self, connections):
         center = [0, 0, 0]
         n = len(connections)

@@ -1,4 +1,5 @@
 import re
+import vtk
 
 
 class Component(object):
@@ -17,6 +18,7 @@ class Component(object):
         self._params = params
         self._reader._components[name] = self
         self._color = None
+        self._caption_actor = None
 
     @staticmethod
     def toArray(str_in):
@@ -69,3 +71,18 @@ class Component(object):
     def getSilhouetteActor(self):
         raise NotImplementedError("""The getSilhouetteActor method must be
             overridden to return vtkActor object for silhouette.""")
+
+    def getCaptionActor(self):
+        return self._caption_actor
+
+    def _createCaptionActor(self):
+        actor = vtk.vtkCaptionActor2D()
+        actor.SetCaption(self._name)
+        actor.SetPosition(75., 75.)
+        actor.SetWidth(0.5)
+        actor.SetHeight(0.05)
+        actor.SetVisibility(False)
+        actor.BorderOff()
+        actor.ThreeDimensionalLeaderOff()
+        actor.LeaderOn()
+        return actor

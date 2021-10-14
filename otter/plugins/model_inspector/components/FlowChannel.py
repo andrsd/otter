@@ -82,6 +82,9 @@ class FlowChannel(Component):
         self._silhouette_actor.SetPosition(self._position)
         self._silhouette_actor.SetOrientation(self._vtk_orientation)
 
+        self._caption_actor = self._createCaptionActor()
+        self._caption_actor.SetAttachmentPoint(self._position)
+
     def getActor(self):
         return self._actor
 

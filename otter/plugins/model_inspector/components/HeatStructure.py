@@ -90,6 +90,9 @@ class HeatStructure(Component):
         self._silhouette_actor.RotateY(0)
         self._silhouette_actor.RotateZ(0)
 
+        self._caption_actor = self._createCaptionActor()
+        self._caption_actor.SetAttachmentPoint(self._position)
+
     def getActor(self):
         return self._actor
 

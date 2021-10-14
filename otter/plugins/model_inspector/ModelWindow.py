@@ -43,6 +43,8 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._component_bounds = {}
         self._actors = {}
         self._silhouette_actors = {}
+        self._caption_actors = {}
+        self._show_captions = False
         self._actor_to_comp_name = {}
         self._render_mode = self.SHADED
 
@@ -139,6 +141,22 @@ class ModelWindow(QtWidgets.QMainWindow):
             property = silhouette_actor.GetProperty()
             property.SetColor([0, 0, 0])
             property.SetLineWidth(2)
+
+            caption_actor = comp.getCaptionActor()
+            caption_actor.SetVisibility(self._show_captions)
+            caption_actor.GetProperty().SetColor([0, 0, 0])
+            self._caption_actors[name] = caption_actor
+            text_actor = caption_actor.GetTextActor()
+            text_actor.SetTextScaleModeToViewport()
+
+            property = caption_actor.GetCaptionTextProperty()
+            property.SetColor([0, 0, 0])
+            property.BoldOff()
+            property.ItalicOff()
+            property.SetFontSize(3)
+            property.ShadowOff()
+            caption_actor.SetCaptionTextProperty(property)
+            self._vtk_renderer.AddViewProp(caption_actor)
 
             self._actor_to_comp_name[actor] = name
 
@@ -331,3 +349,9 @@ class ModelWindow(QtWidgets.QMainWindow):
             actor.GetLabelTextProperty(axis).SetColor(color)
 
         return actor
+
+    def onShowLabels(self, state):
+        self._show_captions = state
+        for actor in self._caption_actors.values():
+            actor.SetVisibility(state)
+        self._vtk_render_window.Render()
