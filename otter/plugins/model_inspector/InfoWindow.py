@@ -23,11 +23,14 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.plugin = plugin
 
         self._colors = [
-            [0, 141, 223],
-            [121, 199, 44],
-            [255, 146, 0],
-            [94, 61, 212],
-            [192, 60, 40]
+            [156, 207, 237],
+            [165, 165, 165],
+            [60, 97, 180],
+            [234, 234, 234],
+            [197, 226, 243],
+            [247, 135, 3],
+            [247, 135, 3],
+            [250, 182, 0]
         ]
 
         self._layout = QtWidgets.QVBoxLayout(self)
