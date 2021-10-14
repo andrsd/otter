@@ -144,13 +144,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         bnds = self._computeBounds()
         self.boundsChanged.emit(bnds)
-        self._cube_axes_actor = vtk.vtkCubeAxesActor()
-        self._cube_axes_actor.SetBounds(*bnds)
-        self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
-        self._cube_axes_actor.SetGridLineLocation(
-            vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
-        self._cube_axes_actor.SetFlyMode(
-            vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
+        self._cube_axes_actor = self._setupCubeAxisActor(bnds)
 
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
@@ -311,3 +305,29 @@ class ModelWindow(QtWidgets.QMainWindow):
                 property.SetLineWidth(3)
 
         self._vtk_render_window.Render()
+
+    def _setupCubeAxisActor(self, bnds):
+        actor = vtk.vtkCubeAxesActor()
+        actor.SetBounds(*bnds)
+        actor.SetCamera(self._vtk_renderer.GetActiveCamera())
+        actor.SetGridLineLocation(vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
+        actor.SetFlyMode(vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
+
+        color = [0, 0, 0]
+
+        prop = vtk.vtkProperty()
+        prop.SetColor(color)
+
+        actor.SetXAxesLinesProperty(prop)
+        actor.SetYAxesLinesProperty(prop)
+        actor.SetZAxesLinesProperty(prop)
+
+        actor.SetXAxesGridlinesProperty(prop)
+        actor.SetYAxesGridlinesProperty(prop)
+        actor.SetZAxesGridlinesProperty(prop)
+
+        for axis in [0, 1, 2]:
+            actor.GetTitleTextProperty(axis).SetColor(color)
+            actor.GetLabelTextProperty(axis).SetColor(color)
+
+        return actor
