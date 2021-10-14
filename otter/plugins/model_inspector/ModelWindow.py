@@ -218,6 +218,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         actor = self._getComponentActor(component_name)
         property = actor.GetProperty()
         self._setPropertyColor(property, qcolor)
+        self._vtk_render_window.Render()
 
     def _setPropertyColor(self, property, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]

@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from model_inspector.ModelWindow import ModelWindow
+from common.ColorPicker import ColorPicker
 
 
 class InfoWindow(QtWidgets.QScrollArea):
@@ -52,9 +53,20 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._components.setColumnWidth(0, 180)
         self._components.setColumnWidth(1, 20)
         self._components.setColumnWidth(2, 70)
+        self._components.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self._components.customContextMenuRequested.connect(
+            self.onComponentCustomContextMenu)
         sel_model = self._components.selectionModel()
         sel_model.currentChanged.connect(self.onComponentCurrentChanged)
         self._layout.addWidget(self._components)
+
+        self._color_picker_widget = ColorPicker(self)
+
+        self._color_picker_menu = QtWidgets.QMenu()
+        self._color_picker_menu.addAction(self._color_picker_widget)
+
+        self._color_picker_widget._color_group.buttonClicked.connect(
+            self._color_picker_menu.hide)
 
         self._render_mode = QtWidgets.QComboBox()
         self._render_mode.addItem("Shaded",
@@ -119,6 +131,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             rgb = self._colors[clr_idx]
             color = QtGui.QColor(rgb[0], rgb[1], rgb[2])
             si_clr.setForeground(QtGui.QBrush(color))
+            si_clr.setData(clr_idx)
             self._component_model.setItem(row, self.IDX_COLOR, si_clr)
 
             si_type = QtGui.QStandardItem()
@@ -173,3 +186,21 @@ class InfoWindow(QtWidgets.QScrollArea):
     def onRenderModeChanged(self, index):
         data = self._render_mode.itemData(index)
         self.renderModeChanged.emit(data)
+
+    def onComponentCustomContextMenu(self, point):
+        index = self._components.indexAt(point)
+        if index.isValid() and index.column() == self.IDX_COLOR:
+            item = self._component_model.itemFromIndex(index)
+            clr_idx = item.data()
+
+            self._color_picker_widget.setColorIndex(clr_idx)
+            self._color_picker_menu.exec(
+                self._components.viewport().mapToGlobal(point))
+
+            clr_idx = self._color_picker_widget.colorIndex()
+            qcolor = self._color_picker_widget.color()
+            item.setForeground(QtGui.QBrush(qcolor))
+            item.setData(clr_idx)
+
+    def onColorPicked(self, id):
+        pass
