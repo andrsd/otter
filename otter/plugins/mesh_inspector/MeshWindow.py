@@ -278,7 +278,12 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
 
-        self.fileLoaded.emit(block_info)
+        params = {
+            'block_info': block_info,
+            'total_elems': reader.GetTotalNumberOfElements(),
+            'total_nodes': reader.GetTotalNumberOfNodes()
+        }
+        self.fileLoaded.emit(params)
         self.boundsChanged.emit(bnds)
 
         self._vtk_render_window.Render()
