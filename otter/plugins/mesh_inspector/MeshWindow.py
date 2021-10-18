@@ -304,6 +304,19 @@ class MeshWindow(QtWidgets.QMainWindow):
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
+        # center the mesh
+        com = [
+            -(gmin.x() + gmax.x()) / 2,
+            -(gmin.y() + gmax.y()) / 2,
+            -(gmin.z() + gmax.z()) / 2
+        ]
+        for actor in self._block_actors.values():
+            actor.SetPosition(com)
+        for actor in self._sideset_actors.values():
+            actor.SetPosition(com)
+        for actor in self._nodeset_actors.values():
+            actor.SetPosition(com)
+
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
         self._cube_axes_actor.SetBounds(*bnds)
         self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
