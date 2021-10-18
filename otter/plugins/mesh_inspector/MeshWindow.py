@@ -97,7 +97,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.updateWindowTitle()
 
         self.setAcceptDrops(True)
-        self.setCentralWidget(self._frame)
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -135,8 +134,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.show()
 
     def setupWidgets(self):
-        self._frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
+        frame = QtWidgets.QFrame()
+        self._vtk_widget = QVTKRenderWindowInteractor(frame)
 
         self._vtk_renderer = vtk.vtkRenderer()
         self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
@@ -145,7 +144,39 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.addWidget(self._vtk_widget)
 
-        self._frame.setLayout(self._layout)
+        frame.setLayout(self._layout)
+
+        # control layer
+        self._view_menu = QtWidgets.QMenu()
+        self._shaded_action = self._view_menu.addAction("Shaded")
+        self._shaded_action.setCheckable(True)
+        self._shaded_w_edges_action = self._view_menu.addAction(
+            "Shaded with edges")
+        self._shaded_w_edges_action.setCheckable(True)
+        self._shaded_w_edges_action.setChecked(True)
+
+        self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
+        self._visual_repr.addAction(self._shaded_action)
+        self._visual_repr.addAction(self._shaded_w_edges_action)
+        self._visual_repr.setExclusive(True)
+
+        self._view_menu.addSeparator()
+        self._perspective_action = self._view_menu.addAction("Perspective")
+        self._perspective_action.setCheckable(True)
+        self._perspective_action.setChecked(True)
+
+        self._shaded_action.triggered.connect(self.onShadedTriggered)
+        self._shaded_w_edges_action.triggered.connect(
+            self.onShadedWithEdgesTriggered)
+        self._perspective_action.toggled.connect(self.onPerspectiveToggled)
+
+        self._view_mode = QtWidgets.QPushButton(frame)
+        self._view_mode.setText("View")
+        self._view_mode.setMenu(self._view_menu)
+        self._view_mode.setGeometry(10, 10, 80, 25)
+        self._view_mode.show()
+
+        self.setCentralWidget(frame)
 
     def setupMenuBar(self):
         self._menubar = QtWidgets.QMenuBar(self)
@@ -165,6 +196,10 @@ class MeshWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         event.accept()
+
+    def resizeEvent(self, event):
+        len = 80
+        self._view_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
 
     def onStartInteraction(self, obj, event):
         pass
@@ -448,3 +483,27 @@ class MeshWindow(QtWidgets.QMainWindow):
         else:
             self.setWindowTitle("Mesh Inspector \u2014 {}".format(
                 os.path.basename(self._file_name)))
+
+    def onShadedTriggered(self, checked):
+        for actor in self._block_actors.values():
+            property = actor.GetProperty()
+            property.SetEdgeVisibility(False)
+        for actor in self._sideset_actors.values():
+            property = actor.GetProperty()
+            property.SetEdgeVisibility(False)
+
+    def onShadedWithEdgesTriggered(self, checked):
+        for actor in self._block_actors.values():
+            property = actor.GetProperty()
+            property.SetEdgeVisibility(True)
+        for actor in self._sideset_actors.values():
+            property = actor.GetProperty()
+            property.SetEdgeVisibility(True)
+
+    def onPerspectiveToggled(self, checked):
+        if checked:
+            camera = self._vtk_renderer.GetActiveCamera()
+            camera.ParallelProjectionOff()
+        else:
+            camera = self._vtk_renderer.GetActiveCamera()
+            camera.ParallelProjectionOn()
