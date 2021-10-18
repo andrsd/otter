@@ -1,3 +1,4 @@
+import os
 import collections
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -73,6 +74,9 @@ class LoadThread(QtCore.QThread):
     def getBlockInfo(self):
         return self._block_info
 
+    def getFileName(self):
+        return self._file_name
+
 
 class MeshWindow(QtWidgets.QMainWindow):
     """
@@ -86,13 +90,14 @@ class MeshWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
+        self._file_name = None
 
         self.setupWidgets()
         self.setupMenuBar()
+        self.updateWindowTitle()
 
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
-        self.setWindowTitle("Mesh")
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -320,6 +325,9 @@ class MeshWindow(QtWidgets.QMainWindow):
 
         self._vtk_render_window.Render()
 
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
 
@@ -418,3 +426,12 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.fileLoaded.emit(None)
         self.boundsChanged.emit([])
         self._vtk_render_window.Render()
+        self._file_name = None
+        self.updateWindowTitle()
+
+    def updateWindowTitle(self):
+        if self._file_name is None:
+            self.setWindowTitle("Mesh Inspector")
+        else:
+            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+                os.path.basename(self._file_name)))
