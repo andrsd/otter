@@ -147,6 +147,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.setMenuBar(self._menubar)
 
         file_menu = self._menubar.addMenu("File")
+        self._new_action = file_menu.addAction(
+            "New", self.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
 
@@ -410,3 +412,9 @@ class MeshWindow(QtWidgets.QMainWindow):
             "ExodusII files (*.e *.exo)")
         if file_name:
             self.loadFile(file_name)
+
+    def onNewFile(self):
+        self.clear()
+        self.fileLoaded.emit(None)
+        self.boundsChanged.emit([])
+        self._vtk_render_window.Render()
