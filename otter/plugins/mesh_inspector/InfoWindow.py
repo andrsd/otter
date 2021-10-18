@@ -62,7 +62,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         ])
         self._block_model.itemChanged.connect(self.onBlockChanged)
         self._blocks = QtWidgets.QTreeView()
-        self._blocks.setFixedHeight(300)
+        self._blocks.setFixedHeight(250)
         self._blocks.setRootIsDecorated(False)
         self._blocks.setModel(self._block_model)
         self._blocks.setEditTriggers(
@@ -80,7 +80,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         ])
         self._sideset_model.itemChanged.connect(self.onSidesetChanged)
         self._sidesets = QtWidgets.QTreeView()
-        self._sidesets.setFixedHeight(200)
+        self._sidesets.setFixedHeight(150)
         self._sidesets.setRootIsDecorated(False)
         self._sidesets.setModel(self._sideset_model)
         self._sidesets.setEditTriggers(
@@ -98,7 +98,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             "Name", "", "ID"
         ])
         self._nodeset_model.itemChanged.connect(self.onNodesetChanged)
-        self._nodesets.setFixedHeight(200)
+        self._nodesets.setFixedHeight(150)
         self._nodesets.setRootIsDecorated(False)
         self._nodesets.setModel(self._nodeset_model)
         self._nodesets.setEditTriggers(
