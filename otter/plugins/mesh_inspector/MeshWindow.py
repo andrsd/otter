@@ -91,17 +91,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._nodeset_actors = {}
         self._block_bounds = {}
 
-        self._frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
-
-        self._vtk_renderer = vtk.vtkRenderer()
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        self._frame.setLayout(self._layout)
+        self.setupWidgets()
 
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
@@ -140,6 +130,19 @@ class MeshWindow(QtWidgets.QMainWindow):
                 self.resize(default_size)
 
         self.show()
+
+    def setupWidgets(self):
+        self._frame = QtWidgets.QFrame(self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
+
+        self._vtk_renderer = vtk.vtkRenderer()
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._vtk_widget)
+
+        self._frame.setLayout(self._layout)
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
