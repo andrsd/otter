@@ -1,4 +1,3 @@
-from PyQt5 import QtCore
 from otter.assets import Assets
 from Plugin import Plugin
 from mesh_inspector.MeshWindow import MeshWindow
@@ -44,24 +43,3 @@ class MeshInspectorPlugin(Plugin):
             self.mesh_window.onCubeAxisVisibilityChanged)
         self.info_window.orientationMarkerStateChanged.connect(
             self.mesh_window.onOrientationmarkerVisibilityChanged)
-
-        settings = QtCore.QSettings()
-        settings.beginGroup(self.name())
-        geom = settings.value("mesh_wnd_geometry")
-        if geom is None:
-            self.mesh_window.resize(700, 500)
-        else:
-            self.mesh_window.restoreGeometry(geom)
-        geom = settings.value("info_wnd_geometry")
-        if geom is None:
-            self.info_window.resize(350, 700)
-        else:
-            self.info_window.restoreGeometry(geom)
-        settings.endGroup()
-
-    def onClose(self):
-        settings = QtCore.QSettings()
-        settings.beginGroup(self.name())
-        settings.setValue("mesh_wnd_geometry", self.mesh_window.saveGeometry())
-        settings.setValue("info_wnd_geometry", self.info_window.saveGeometry())
-        settings.endGroup()

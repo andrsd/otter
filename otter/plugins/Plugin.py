@@ -2,7 +2,7 @@
 Plugin.py
 """
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 
 class Plugin:
@@ -17,8 +17,13 @@ class Plugin:
         self.menus = []
         self.actions = []
         self._show_window = {}
-        self.menubar = parent.menubar
+        if parent is not None:
+            self.parent_menubar = parent.menubar
+        else:
+            self.parent_menubar = None
         self._menu_map = {}
+
+        self._settings = QtCore.QSettings("Otter", self.name())
 
     @staticmethod
     def name():
@@ -33,6 +38,10 @@ class Plugin:
         Return the icon for this plugin (as QIcon)
         """
         return None
+
+    @property
+    def settings(self):
+        return self._settings
 
     def getFileName(self):
         """
@@ -71,7 +80,6 @@ class Plugin:
         """
         Create the plugin
         """
-        self.showMenu(True)
         self.onCreate()
         self.showWindow()
 
@@ -137,13 +145,13 @@ class Plugin:
         self.updateMenuBar()
 
     def getMenu(self, name):
-        if hasattr(self.menubar, 'menus'):
-            return self.menubar.menus[name]
+        if hasattr(self.parent_menubar, 'menus'):
+            return self.parent_menubar.menus[name]
         else:
             if name in self._menu_map:
                 return self._menu_map[name]
             else:
-                menu = self.menubar.addMenu(name)
+                menu = self.parent_menubar.addMenu(name)
                 self._menu_map[name] = menu
                 return menu
 

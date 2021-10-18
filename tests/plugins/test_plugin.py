@@ -50,7 +50,6 @@ def test_register_window(main_window):
 def test_create(show_window_mock, on_create_mock, show_menu_mock, main_window):
     plugin = Plugin(main_window)
     plugin.create()
-    show_menu_mock.assert_called_once_with(True)
     on_create_mock.assert_called_once_with()
     show_window_mock.assert_called_once_with()
 

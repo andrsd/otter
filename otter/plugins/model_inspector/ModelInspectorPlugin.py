@@ -1,4 +1,3 @@
-from PyQt5 import QtCore
 from otter.assets import Assets
 from Plugin import Plugin
 from model_inspector.ModelWindow import ModelWindow
@@ -46,26 +45,3 @@ class ModelInspectorPlugin(Plugin):
             self.model_window.onRenderModeChanged)
         self.info_window.showLabels.connect(
             self.model_window.onShowLabels)
-
-        settings = QtCore.QSettings()
-        settings.beginGroup(self.name())
-        geom = settings.value("mesh_wnd_geometry")
-        if geom is None:
-            self.model_window.resize(700, 500)
-        else:
-            self.model_window.restoreGeometry(geom)
-        geom = settings.value("info_wnd_geometry")
-        if geom is None:
-            self.info_window.resize(350, 700)
-        else:
-            self.info_window.restoreGeometry(geom)
-        settings.endGroup()
-
-    def onClose(self):
-        settings = QtCore.QSettings()
-        settings.beginGroup(self.name())
-        settings.setValue("mesh_wnd_geometry",
-                          self.model_window.saveGeometry())
-        settings.setValue("info_wnd_geometry",
-                          self.info_window.saveGeometry())
-        settings.endGroup()

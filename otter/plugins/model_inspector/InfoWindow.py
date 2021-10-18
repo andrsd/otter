@@ -36,6 +36,27 @@ class InfoWindow(QtWidgets.QScrollArea):
             [250, 182, 0]
         ]
 
+        self.setupWidgets()
+
+        w = QtWidgets.QWidget()
+        w.setLayout(self._layout)
+        self.setWidget(w)
+        self.setWindowTitle("Info")
+        self.setMinimumWidth(350)
+        self.setWidgetResizable(True)
+        self.setWindowFlags(QtCore.Qt.Tool)
+
+        geom = self.plugin.settings.value("info/geometry")
+        default_size = QtCore.QSize(350, 700)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
+        self.show()
+
+    def setupWidgets(self):
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 10)
 
@@ -110,19 +131,14 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self._layout.addStretch()
 
-        w = QtWidgets.QWidget()
-        w.setLayout(self._layout)
-        self.setWidget(w)
-        self.setWindowTitle("Info")
-        self.setMinimumWidth(350)
-        self.setWidgetResizable(True)
-        self.setWindowFlags(QtCore.Qt.Tool)
-        self.show()
-
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("info/geometry", self.saveGeometry())
+        event.accept()
 
     def _loadComponents(self, comps):
         self._component_model.removeRows(0, self._component_model.rowCount())

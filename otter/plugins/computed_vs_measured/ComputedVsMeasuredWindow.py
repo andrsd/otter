@@ -7,7 +7,7 @@ import csv
 from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
 
 
-class ComputedVsMeasuredWindow(QtWidgets.QWidget):
+class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
     """
     Main window of the computed vs measured data plug-in
     """
@@ -27,9 +27,34 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.smax = 1
         self.s = []
 
-        self.main_layout = QtWidgets.QHBoxLayout()
-        self.main_layout.setSpacing(0)
-        self.main_layout.setContentsMargins(8, 8, 0, 8)
+        self.setupWidgets()
+
+        # connect signals
+        self.relative_error.toggled.connect(self.onRelativeError)
+        self.relative_error_amount.textChanged.connect(
+            self.onRelativeErrorAmountChanged)
+        self.absolute_error.toggled.connect(self.onAbsoluteError)
+        self.absolute_error_amount.textChanged.connect(
+            self.onAbsoluteErrorAmountChanged)
+        self.file_list.itemChanged.connect(self.onFileListItemChanged)
+        self.add_button.clicked.connect(self.onAddFiles)
+
+        self.relative_error.setChecked(True)
+        self.updateControls()
+
+        self.setAcceptDrops(True)
+        self.setWindowTitle("Computed vs. Measured")
+
+        geom = self.plugin.settings.value("window/geometry")
+        default_size = QtCore.QSize(1000, 700)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
+    def setupWidgets(self):
+        self.setContentsMargins(8, 8, 0, 8)
 
         self.left_layout = QtWidgets.QVBoxLayout()
         self.left_layout.setSpacing(10)
@@ -151,25 +176,16 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         self.vsplitter.addWidget(self.left_pane)
         self.vsplitter.addWidget(self.right_pane)
         self.vsplitter.setCollapsible(0, False)
-        self.main_layout.addWidget(self.vsplitter)
 
-        self.setLayout(self.main_layout)
+        self.setCentralWidget(self.vsplitter)
 
-        # connect signals
-        self.relative_error.toggled.connect(self.onRelativeError)
-        self.relative_error_amount.textChanged.connect(
-            self.onRelativeErrorAmountChanged)
-        self.absolute_error.toggled.connect(self.onAbsoluteError)
-        self.absolute_error_amount.textChanged.connect(
-            self.onAbsoluteErrorAmountChanged)
-        self.file_list.itemChanged.connect(self.onFileListItemChanged)
-        self.add_button.clicked.connect(self.onAddFiles)
+    def setupMenuBar(self):
+        self._menubar = QtWidgets.QMenuBar()
+        self.setMenuBar(self._menubar)
 
-        self.relative_error.setChecked(True)
-        self.updateControls()
-
-        self.setAcceptDrops(True)
-        self.setWindowTitle("Computed vs. Measured")
+    @property
+    def menubar(self):
+        return self._menubar
 
     def updateControls(self):
         """
@@ -445,3 +461,7 @@ class ComputedVsMeasuredWindow(QtWidgets.QWidget):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        event.accept()

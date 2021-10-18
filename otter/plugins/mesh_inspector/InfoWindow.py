@@ -30,6 +30,27 @@ class InfoWindow(QtWidgets.QScrollArea):
             [192, 60, 40]
         ]
 
+        self.setupWidgets()
+
+        w = QtWidgets.QWidget()
+        w.setLayout(self._layout)
+        self.setWidget(w)
+        self.setWindowTitle("Info")
+        self.setMinimumWidth(350)
+        self.setWidgetResizable(True)
+        self.setWindowFlags(QtCore.Qt.Tool)
+
+        geom = self.plugin.settings.value("info/geometry")
+        default_size = QtCore.QSize(350, 700)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
+        self.show()
+
+    def setupWidgets(self):
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 10)
 
@@ -91,9 +112,9 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._totals.setFixedHeight(60)
         self._totals.setIndentation(0)
         self._totals.setHeaderLabels(["Total", "Count"])
-        self._total_elements = QtWidgets.QTreeWidgetItem(["Elements", "0"])
+        self._total_elements = QtWidgets.QTreeWidgetItem(["Elements", ""])
         self._totals.addTopLevelItem(self._total_elements)
-        self._total_nodes = QtWidgets.QTreeWidgetItem(["Nodes", "0"])
+        self._total_nodes = QtWidgets.QTreeWidgetItem(["Nodes", ""])
         self._totals.addTopLevelItem(self._total_nodes)
         self._layout.addWidget(self._totals)
 
@@ -104,11 +125,11 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._range.setFixedHeight(80)
         self._range.setIndentation(0)
         self._range.setHeaderLabels(["Direction", "Range"])
-        self._x_range = QtWidgets.QTreeWidgetItem(["X", "0"])
+        self._x_range = QtWidgets.QTreeWidgetItem(["X", ""])
         self._range.addTopLevelItem(self._x_range)
-        self._y_range = QtWidgets.QTreeWidgetItem(["Y", "0"])
+        self._y_range = QtWidgets.QTreeWidgetItem(["Y", ""])
         self._range.addTopLevelItem(self._y_range)
-        self._z_range = QtWidgets.QTreeWidgetItem(["Z", "0"])
+        self._z_range = QtWidgets.QTreeWidgetItem(["Z", ""])
         self._range.addTopLevelItem(self._z_range)
         self._layout.addWidget(self._range)
 
@@ -123,19 +144,14 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self._layout.addStretch()
 
-        w = QtWidgets.QWidget()
-        w.setLayout(self._layout)
-        self.setWidget(w)
-        self.setWindowTitle("Info")
-        self.setMinimumWidth(350)
-        self.setWidgetResizable(True)
-        self.setWindowFlags(QtCore.Qt.Tool)
-        self.show()
-
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("info/geometry", self.saveGeometry())
+        event.accept()
 
     def _loadBlocks(self, blocks):
         self._block_model.removeRows(0, self._block_model.rowCount())
@@ -192,18 +208,21 @@ class InfoWindow(QtWidgets.QScrollArea):
             self._nodeset_model.setItem(row, self.IDX_ID, si_id)
 
     def onFileLoaded(self, params):
-        block_info = params['block_info']
-        block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
-        self._loadBlocks(block_info[block_type].values())
-        block_type = vtk.vtkExodusIIReader.SIDE_SET
-        self._loadSideSets(block_info[block_type].values())
-        block_type = vtk.vtkExodusIIReader.NODE_SET
-        self._loadNodeSets(block_info[block_type].values())
+        if params is None:
+            self.clear()
+        else:
+            block_info = params['block_info']
+            block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
+            self._loadBlocks(block_info[block_type].values())
+            block_type = vtk.vtkExodusIIReader.SIDE_SET
+            self._loadSideSets(block_info[block_type].values())
+            block_type = vtk.vtkExodusIIReader.NODE_SET
+            self._loadNodeSets(block_info[block_type].values())
 
-        total_elems = params['total_elems']
-        self._total_elements.setText(1, "{:,}".format(total_elems))
-        total_nodes = params['total_nodes']
-        self._total_nodes.setText(1, "{:,}".format(total_nodes))
+            total_elems = params['total_elems']
+            self._total_elements.setText(1, "{:,}".format(total_elems))
+            total_nodes = params['total_nodes']
+            self._total_nodes.setText(1, "{:,}".format(total_nodes))
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
@@ -233,12 +252,25 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
 
     def onBoundsChanged(self, bnds):
-        x_range = "{:.5f} to {:.5f}".format(bnds[0], bnds[1])
-        self._x_range.setText(1, x_range)
-        y_range = "{:.5f} to {:.5f}".format(bnds[2], bnds[3])
-        self._y_range.setText(1, y_range)
-        z_range = "{:.5f} to {:.5f}".format(bnds[4], bnds[5])
-        self._z_range.setText(1, z_range)
+        if len(bnds) == 6:
+            x_range = "{:.5f} to {:.5f}".format(bnds[0], bnds[1])
+            self._x_range.setText(1, x_range)
+            y_range = "{:.5f} to {:.5f}".format(bnds[2], bnds[3])
+            self._y_range.setText(1, y_range)
+            z_range = "{:.5f} to {:.5f}".format(bnds[4], bnds[5])
+            self._z_range.setText(1, z_range)
+        else:
+            self._x_range.setText(1, "")
+            self._y_range.setText(1, "")
+            self._z_range.setText(1, "")
 
     def onOriMarkerStateChanged(self, state):
         self.orientationMarkerStateChanged.emit(state == QtCore.Qt.Checked)
+
+    def clear(self):
+        self._block_model.removeRows(0, self._block_model.rowCount())
+        self._sideset_model.removeRows(0, self._sideset_model.rowCount())
+        self._nodeset_model.removeRows(0, self._nodeset_model.rowCount())
+
+        self._total_elements.setText(1, "")
+        self._total_nodes.setText(1, "")

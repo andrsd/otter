@@ -1,3 +1,4 @@
+import os
 import collections
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -73,6 +74,9 @@ class LoadThread(QtCore.QThread):
     def getBlockInfo(self):
         return self._block_info
 
+    def getFileName(self):
+        return self._file_name
+
 
 class MeshWindow(QtWidgets.QMainWindow):
     """
@@ -86,26 +90,14 @@ class MeshWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
-        self._block_actors = {}
-        self._sideset_actors = {}
-        self._nodeset_actors = {}
-        self._block_bounds = {}
+        self._file_name = None
 
-        self._frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
-
-        self._vtk_renderer = vtk.vtkRenderer()
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        self._frame.setLayout(self._layout)
+        self.setupWidgets()
+        self.setupMenuBar()
+        self.updateWindowTitle()
 
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
-        self.setWindowTitle("Mesh")
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -131,12 +123,48 @@ class MeshWindow(QtWidgets.QMainWindow):
 
         self._setupOrientationMarker()
 
+        geom = self.plugin.settings.value("window/geometry")
+        default_size = QtCore.QSize(700, 500)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
+        self.clear()
         self.show()
+
+    def setupWidgets(self):
+        self._frame = QtWidgets.QFrame(self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
+
+        self._vtk_renderer = vtk.vtkRenderer()
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._vtk_widget)
+
+        self._frame.setLayout(self._layout)
+
+    def setupMenuBar(self):
+        self._menubar = QtWidgets.QMenuBar(self)
+        self.setMenuBar(self._menubar)
+
+        file_menu = self._menubar.addMenu("File")
+        self._new_action = file_menu.addAction(
+            "New", self.onNewFile, "Ctrl+N")
+        self._open_action = file_menu.addAction(
+            "Open", self.onOpenFile, "Ctrl+O")
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        event.accept()
 
     def onStartInteraction(self, obj, event):
         pass
@@ -163,7 +191,16 @@ class MeshWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    def clear(self):
+        self._block_actors = {}
+        self._sideset_actors = {}
+        self._nodeset_actors = {}
+        self._block_bounds = {}
+        self._vtk_renderer.RemoveAllViewProps()
+
     def loadFile(self, file_name):
+        self.clear()
+
         self._load_thread = LoadThread(file_name)
         self._load_thread.finished.connect(self.onLoadFinished)
         self._load_thread.start()
@@ -288,6 +325,9 @@ class MeshWindow(QtWidgets.QMainWindow):
 
         self._vtk_render_window.Render()
 
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
 
@@ -371,3 +411,27 @@ class MeshWindow(QtWidgets.QMainWindow):
         else:
             self._ori_marker.EnabledOff()
         self._vtk_render_window.Render()
+
+    def onOpenFile(self):
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            "",
+            "ExodusII files (*.e *.exo)")
+        if file_name:
+            self.loadFile(file_name)
+
+    def onNewFile(self):
+        self.clear()
+        self.fileLoaded.emit(None)
+        self.boundsChanged.emit([])
+        self._vtk_render_window.Render()
+        self._file_name = None
+        self.updateWindowTitle()
+
+    def updateWindowTitle(self):
+        if self._file_name is None:
+            self.setWindowTitle("Mesh Inspector")
+        else:
+            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+                os.path.basename(self._file_name)))

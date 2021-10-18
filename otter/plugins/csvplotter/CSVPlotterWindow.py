@@ -9,7 +9,7 @@ from csvplotter.ChartSetupWidget import ChartSetupWidget
 from csvplotter.ChartWidget import ChartWidget
 
 
-class CSVPlotterWindow(QtWidgets.QWidget):
+class CSVPlotterWindow(QtWidgets.QMainWindow):
     """
     Main window of the CSV plotter plug-in
     """
@@ -22,46 +22,16 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         self.setAcceptDrops(True)
         self.setWindowTitle("CVS Plotter")
 
-        # The layouts for this widget
-        self.main_layout = QtWidgets.QHBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(20)
-        self.setLayout(self.main_layout)
+        self.setupWidgets()
+        self.setupMenuBar()
 
-        self.left = QtWidgets.QWidget()
-        self.left_layout = QtWidgets.QVBoxLayout()
-        self.left_layout.setContentsMargins(15, 15, 5, 15)
-        self.left.setLayout(self.left_layout)
-
-        self.right = QtWidgets.QWidget()
-        self.right_layout = QtWidgets.QVBoxLayout()
-        self.right_layout.setContentsMargins(5, 15, 15, 15)
-        self.right.setLayout(self.right_layout)
-
-        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
-        self.splitter.setHandleWidth(5)
-        self.splitter.setStyleSheet("""
-            QSplitter::handle {
-                background-image: none;
-            }""")
-        self.splitter.addWidget(self.left)
-        self.splitter.addWidget(self.right)
-
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setStretchFactor(0, 0)
-        self.splitter.setCollapsible(1, False)
-        self.splitter.setStretchFactor(1, 1)
-
-        self.files_widget = FilesWidget(self)
-        self.left_layout.addWidget(self.files_widget)
-
-        self.chart_setup_widget = ChartSetupWidget(self)
-        self.left_layout.addWidget(self.chart_setup_widget)
-
-        self.chart_widget = ChartWidget(self)
-        self.right_layout.addWidget(self.chart_widget)
-
-        self.main_layout.addWidget(self.splitter)
+        geom = self.plugin.settings.value("window/geometry")
+        default_size = QtCore.QSize(1000, 700)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
 
         self.files_widget.loadFile.connect(self.onLoadFile)
         self.files_widget.loadFile.connect(self.chart_setup_widget.onLoadFile)
@@ -108,6 +78,61 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.onUpdateTimer)
 
+    def setupWidgets(self):
+        self.setContentsMargins(0, 0, 0, 0)
+
+        self.left = QtWidgets.QWidget()
+        self.left_layout = QtWidgets.QVBoxLayout()
+        self.left_layout.setContentsMargins(15, 15, 5, 15)
+        self.left.setLayout(self.left_layout)
+
+        self.right = QtWidgets.QWidget()
+        self.right_layout = QtWidgets.QVBoxLayout()
+        self.right_layout.setContentsMargins(5, 15, 15, 15)
+        self.right.setLayout(self.right_layout)
+
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
+        self.splitter.setHandleWidth(5)
+        self.splitter.setStyleSheet("""
+            QSplitter::handle {
+                background-image: none;
+            }""")
+        self.splitter.addWidget(self.left)
+        self.splitter.addWidget(self.right)
+
+        self.splitter.setCollapsible(0, False)
+        self.splitter.setStretchFactor(0, 0)
+        self.splitter.setCollapsible(1, False)
+        self.splitter.setStretchFactor(1, 1)
+
+        self.files_widget = FilesWidget(self)
+        self.left_layout.addWidget(self.files_widget)
+
+        self.chart_setup_widget = ChartSetupWidget(self)
+        self.left_layout.addWidget(self.chart_setup_widget)
+
+        self.chart_widget = ChartWidget(self)
+        self.right_layout.addWidget(self.chart_widget)
+
+        self.setCentralWidget(self.splitter)
+
+    def setupMenuBar(self):
+        self._menubar = QtWidgets.QMenuBar()
+        self.setMenuBar(self._menubar)
+
+        file_menu = self._menubar.addMenu("File")
+        self._export_menu = file_menu.addMenu("Export")
+        self._export_png = self._export_menu.addAction(
+            "PNG...", self.onExportPng)
+        self._export_pdf = self._export_menu.addAction(
+            "PDF...", self.onExportPdf)
+        self._export_gnuplot = self._export_menu.addAction(
+            "gnuplot...", self.onExportGnuplot)
+
+    @property
+    def menubar(self):
+        return self._menubar
+
     def onLoadFile(self, file_name):
         """
         Load file handler
@@ -124,6 +149,15 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         if last_updated != self.last_updated:
             self.last_updated = last_updated
             self.chart_setup_widget.updateFile()
+
+    def onExportPdf(self):
+        self.onExport("pdf")
+
+    def onExportPng(self):
+        self.onExport("png")
+
+    def onExportGnuplot(self):
+        self.onExport("gnuplot")
 
     def onExport(self, file_format):
         """
@@ -201,3 +235,7 @@ class CSVPlotterWindow(QtWidgets.QWidget):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        event.accept()
