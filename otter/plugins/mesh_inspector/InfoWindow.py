@@ -87,15 +87,30 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._nodesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._nodesets)
 
+        self._totals = QtWidgets.QTreeWidget()
+        self._totals.setFixedHeight(60)
+        self._totals.setIndentation(0)
+        self._totals.setHeaderLabels(["Total", "Count"])
+        self._total_elements = QtWidgets.QTreeWidgetItem(["Elements", "0"])
+        self._totals.addTopLevelItem(self._total_elements)
+        self._total_nodes = QtWidgets.QTreeWidgetItem(["Nodes", "0"])
+        self._totals.addTopLevelItem(self._total_nodes)
+        self._layout.addWidget(self._totals)
+
         self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
         self._layout.addWidget(self._lbl_dimensions)
 
-        self._x_range = QtWidgets.QLabel("x-range:")
-        self._layout.addWidget(self._x_range)
-        self._y_range = QtWidgets.QLabel("y-range:")
-        self._layout.addWidget(self._y_range)
-        self._z_range = QtWidgets.QLabel("z-range:")
-        self._layout.addWidget(self._z_range)
+        self._range = QtWidgets.QTreeWidget()
+        self._range.setFixedHeight(80)
+        self._range.setIndentation(0)
+        self._range.setHeaderLabels(["Direction", "Range"])
+        self._x_range = QtWidgets.QTreeWidgetItem(["X", "0"])
+        self._range.addTopLevelItem(self._x_range)
+        self._y_range = QtWidgets.QTreeWidgetItem(["Y", "0"])
+        self._range.addTopLevelItem(self._y_range)
+        self._z_range = QtWidgets.QTreeWidgetItem(["Z", "0"])
+        self._range.addTopLevelItem(self._z_range)
+        self._layout.addWidget(self._range)
 
         self._dimensions = QtWidgets.QCheckBox("Show dimensions")
         self._dimensions.stateChanged.connect(self.onDimensionsStateChanged)
@@ -176,13 +191,19 @@ class InfoWindow(QtWidgets.QScrollArea):
             si_id.setText(str(ns.number))
             self._nodeset_model.setItem(row, self.IDX_ID, si_id)
 
-    def onFileLoaded(self, block_info):
+    def onFileLoaded(self, params):
+        block_info = params['block_info']
         block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
         self._loadBlocks(block_info[block_type].values())
         block_type = vtk.vtkExodusIIReader.SIDE_SET
         self._loadSideSets(block_info[block_type].values())
         block_type = vtk.vtkExodusIIReader.NODE_SET
         self._loadNodeSets(block_info[block_type].values())
+
+        total_elems = params['total_elems']
+        self._total_elements.setText(1, "{:,}".format(total_elems))
+        total_nodes = params['total_nodes']
+        self._total_nodes.setText(1, "{:,}".format(total_nodes))
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
@@ -212,12 +233,12 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
 
     def onBoundsChanged(self, bnds):
-        self._x_range.setText(
-            "x-range: {:.5f} to {:.5f}".format(bnds[0], bnds[1]))
-        self._y_range.setText(
-            "y-range: {:.5f} to {:.5f}".format(bnds[2], bnds[3]))
-        self._z_range.setText(
-            "z-range: {:.5f} to {:.5f}".format(bnds[4], bnds[5]))
+        x_range = "{:.5f} to {:.5f}".format(bnds[0], bnds[1])
+        self._x_range.setText(1, x_range)
+        y_range = "{:.5f} to {:.5f}".format(bnds[2], bnds[3])
+        self._y_range.setText(1, y_range)
+        z_range = "{:.5f} to {:.5f}".format(bnds[4], bnds[5])
+        self._z_range.setText(1, z_range)
 
     def onOriMarkerStateChanged(self, state):
         self.orientationMarkerStateChanged.emit(state == QtCore.Qt.Checked)
