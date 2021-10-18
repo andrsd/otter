@@ -21,18 +21,6 @@ def handle_sigint(signum, frame):
     QtWidgets.QApplication.quit()
 
 
-class MainWindow(QtWidgets.QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-        self.menubar = QtWidgets.QMenuBar(self)
-        self.plugin = None
-
-    def closeEvent(self, event):
-        self.plugin.close()
-        event.accept()
-
-
 def main():
     QtCore.QCoreApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -43,9 +31,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
 
-    window = MainWindow()
-    plugin = MeshInspectorPlugin(window)
-    window.plugin = plugin
+    plugin = MeshInspectorPlugin(None)
     plugin.create()
     # Repeatedly run python-noop to give the interpreter time to
     # handle signals

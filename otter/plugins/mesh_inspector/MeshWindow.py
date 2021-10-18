@@ -131,12 +131,24 @@ class MeshWindow(QtWidgets.QMainWindow):
 
         self._setupOrientationMarker()
 
+        geom = self.plugin.settings.value("window/geometry")
+        default_size = QtCore.QSize(700, 500)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
         self.show()
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        event.accept()
 
     def onStartInteraction(self, obj, event):
         pass

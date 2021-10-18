@@ -85,6 +85,14 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self._setupOrientationMarker()
 
+        geom = self.plugin.settings.value("window/geometry")
+        default_size = QtCore.QSize(700, 500)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
+
         self.show()
 
     def setRenderMode(self, mode):
@@ -94,6 +102,10 @@ class ModelWindow(QtWidgets.QMainWindow):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.plugin.updateMenuBar()
         return super().event(event)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        event.accept()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
