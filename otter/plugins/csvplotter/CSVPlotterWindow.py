@@ -4,9 +4,9 @@ CSVPlotterWindow.py
 
 import os
 from PyQt5 import QtWidgets, QtCore
-from csvplotter.FilesWidget import FilesWidget
-from csvplotter.ChartSetupWidget import ChartSetupWidget
-from csvplotter.ChartWidget import ChartWidget
+from otter.plugins.csvplotter.FilesWidget import FilesWidget
+from otter.plugins.csvplotter.ChartSetupWidget import ChartSetupWidget
+from otter.plugins.csvplotter.ChartWidget import ChartWidget
 
 
 class CSVPlotterWindow(QtWidgets.QMainWindow):
