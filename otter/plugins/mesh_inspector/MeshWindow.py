@@ -86,10 +86,15 @@ class MeshWindow(QtWidgets.QMainWindow):
     fileLoaded = QtCore.pyqtSignal(object)
     boundsChanged = QtCore.pyqtSignal(list)
 
+    SIDESET_CLR = [0.85, 0.85, 0.85]
+    SIDESET_EDGE_CLR = [0.1, 0.1, 0.4]
+    NODESET_CLR = [0.1, 0.1, 0.1]
+
     def __init__(self, plugin):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
+        self._progress = None
         self._file_name = None
 
         self.setupWidgets()
@@ -134,7 +139,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.show()
 
     def setupWidgets(self):
-        frame = QtWidgets.QFrame()
+        frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
 
         self._vtk_renderer = vtk.vtkRenderer()
@@ -236,9 +241,16 @@ class MeshWindow(QtWidgets.QMainWindow):
     def loadFile(self, file_name):
         self.clear()
 
+        self._progress = QtWidgets.QProgressDialog(
+            "Loading {}...".format(os.path.basename(file_name)),
+            None, 0, 0, self)
+        self._progress.setWindowModality(QtCore.Qt.WindowModal)
+        self._progress.setMinimumDuration(0)
+        self._progress.show()
+
         self._load_thread = LoadThread(file_name)
         self._load_thread.finished.connect(self.onLoadFinished)
-        self._load_thread.start()
+        self._load_thread.start(QtCore.QThread.IdlePriority)
 
     def onLoadFinished(self):
         reader = self._load_thread.getReader()
@@ -265,13 +277,14 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.VisibilityOn()
+            self._vtk_renderer.AddViewProp(actor)
 
             property = actor.GetProperty()
             property.SetRepresentationToSurface()
-            property.SetColor([0.8, 0.8, 0.8])
             property.SetEdgeVisibility(True)
             # FIXME: set color from preferences/templates
-            property.SetEdgeColor([0.1, 0.1, 0.4])
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
 
             self._block_actors[binfo.number] = actor
 
@@ -293,13 +306,15 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.VisibilityOff()
+            self._vtk_renderer.AddViewProp(actor)
 
             property = actor.GetProperty()
             property.SetRepresentationToSurface()
-            property.SetColor([0.85, 0.85, 0.85])
+            property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(True)
             # FIXME: set color from preferences/templates
-            property.SetEdgeColor([0.1, 0.1, 0.4])
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
 
             self._sideset_actors[finfo.number] = actor
 
@@ -321,13 +336,15 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.VisibilityOff()
+            self._vtk_renderer.AddViewProp(actor)
 
             property = actor.GetProperty()
             property.SetRepresentationToPoints()
             property.SetRenderPointsAsSpheres(True)
             property.SetVertexVisibility(True)
             property.SetPointSize(10)
-            property.SetColor([0.1, 0.1, 0.1])
+            property.SetColor(self.NODESET_CLR)
 
             self._nodeset_actors[ninfo.number] = actor
 
@@ -376,6 +393,9 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._file_name = self._load_thread.getFileName()
         self.updateWindowTitle()
 
+        self._progress.hide()
+        self._progress = None
+
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
 
@@ -397,9 +417,9 @@ class MeshWindow(QtWidgets.QMainWindow):
     def onBlockVisibilityChanged(self, block_id, visible):
         actor = self._getBlockActor(block_id)
         if visible:
-            self._vtk_renderer.AddViewProp(actor)
+            actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(actor)
+            actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def onBlockColorChanged(self, block_id, qcolor):
@@ -411,17 +431,17 @@ class MeshWindow(QtWidgets.QMainWindow):
     def onSidesetVisibilityChanged(self, sideset_id, visible):
         actor = self._getSidesetActor(sideset_id)
         if visible:
-            self._vtk_renderer.AddViewProp(actor)
+            actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(actor)
+            actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def onNodesetVisibilityChanged(self, nodeset_id, visible):
         actor = self._getNodesetActor(nodeset_id)
         if visible:
-            self._vtk_renderer.AddViewProp(actor)
+            actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(actor)
+            actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def _getBlocksBounds(self, extract_block):
@@ -491,6 +511,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         for actor in self._sideset_actors.values():
             property = actor.GetProperty()
             property.SetEdgeVisibility(False)
+            property.SetColor(self.SIDESET_CLR)
 
     def onShadedWithEdgesTriggered(self, checked):
         for actor in self._block_actors.values():
@@ -499,6 +520,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         for actor in self._sideset_actors.values():
             property = actor.GetProperty()
             property.SetEdgeVisibility(True)
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
 
     def onPerspectiveToggled(self, checked):
         if checked:
