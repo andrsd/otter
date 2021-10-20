@@ -2,9 +2,10 @@
 CSVPlotterPlugin.py
 """
 
-from Plugin import Plugin
+# from Plugin import Plugin
+from otter.plugins.Plugin import Plugin
 from otter.assets import Assets
-from csvplotter.CSVPlotterWindow import CSVPlotterWindow
+from otter.plugins.csvplotter.CSVPlotterWindow import CSVPlotterWindow
 
 
 class CSVPlotterPlugin(Plugin):

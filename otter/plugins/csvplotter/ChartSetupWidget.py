@@ -3,7 +3,7 @@ ChartSetupWidget.py
 """
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from csvplotter.PostprocessorReader import PostprocessorReader
+from otter.plugins.csvplotter.PostprocessorReader import PostprocessorReader
 
 
 class VariablesParamDelegate(QtWidgets.QStyledItemDelegate):
