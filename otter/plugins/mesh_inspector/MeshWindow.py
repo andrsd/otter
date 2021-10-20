@@ -90,6 +90,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.plugin = plugin
         self._load_thread = None
+        self._progress = None
         self._file_name = None
 
         self.setupWidgets()
@@ -236,9 +237,16 @@ class MeshWindow(QtWidgets.QMainWindow):
     def loadFile(self, file_name):
         self.clear()
 
+        self._progress = QtWidgets.QProgressDialog(
+            "Loading {}...".format(os.path.basename(file_name)),
+            None, 0, 0, self)
+        self._progress.setWindowModality(QtCore.Qt.WindowModal)
+        self._progress.setMinimumDuration(0)
+        self._progress.show()
+
         self._load_thread = LoadThread(file_name)
         self._load_thread.finished.connect(self.onLoadFinished)
-        self._load_thread.start()
+        self._load_thread.start(QtCore.QThread.IdlePriority)
 
     def onLoadFinished(self):
         reader = self._load_thread.getReader()
@@ -375,6 +383,9 @@ class MeshWindow(QtWidgets.QMainWindow):
 
         self._file_name = self._load_thread.getFileName()
         self.updateWindowTitle()
+
+        self._progress.hide()
+        self._progress = None
 
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
