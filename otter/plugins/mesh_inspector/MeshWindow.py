@@ -134,7 +134,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.show()
 
     def setupWidgets(self):
-        frame = QtWidgets.QFrame()
+        frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
 
         self._vtk_renderer = vtk.vtkRenderer()
