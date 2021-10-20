@@ -1,7 +1,7 @@
 from otter.assets import Assets
-from Plugin import Plugin
-from model_inspector.ModelWindow import ModelWindow
-from model_inspector.InfoWindow import InfoWindow
+from otter.plugins.Plugin import Plugin
+from otter.plugins.model_inspector.ModelWindow import ModelWindow
+from otter.plugins.model_inspector.InfoWindow import InfoWindow
 
 
 class ModelInspectorPlugin(Plugin):
@@ -23,9 +23,12 @@ class ModelInspectorPlugin(Plugin):
 
     def onCreate(self):
         self.info_window = InfoWindow(self)
-        self.registerWindow(self.info_window)
         self.model_window = ModelWindow(self)
         self.registerWindow(self.model_window)
+
+        if self.parent is not None and hasattr(self.parent, 'window_menu'):
+            if hasattr(self.model_window, 'menuBar'):
+                self.model_window.menuBar().addMenu(self.parent.window_menu)
 
         self.model_window.fileLoaded.connect(self.info_window.onFileLoaded)
         self.model_window.boundsChanged.connect(
@@ -45,3 +48,7 @@ class ModelInspectorPlugin(Plugin):
             self.model_window.onRenderModeChanged)
         self.info_window.showLabels.connect(
             self.model_window.onShowLabels)
+
+    def onClose(self):
+        self.info_window.close()
+        self.model_window.close()

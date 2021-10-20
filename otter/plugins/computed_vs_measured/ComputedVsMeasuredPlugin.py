@@ -2,9 +2,9 @@
 ComputedVsMeasuredPlugin.py
 """
 
-from Plugin import Plugin
+from otter.plugins.Plugin import Plugin
 from otter.assets import Assets
-from computed_vs_measured.ComputedVsMeasuredWindow \
+from otter.plugins.computed_vs_measured.ComputedVsMeasuredWindow \
     import ComputedVsMeasuredWindow
 
 
@@ -19,21 +19,18 @@ class ComputedVsMeasuredPlugin(Plugin):
 
     @staticmethod
     def name():
-        """
-        Name of the plug-in
-        """
         return "Computed vs. Measured"
 
     @staticmethod
     def icon():
-        """
-        Icon of the plug-in
-        """
         return Assets().icons['graph']
 
     def onCreate(self):
-        """
-        Create handler
-        """
         self.window = ComputedVsMeasuredWindow(self)
+        if self.parent is not None and hasattr(self.parent, 'window_menu'):
+            if hasattr(self.window, 'menuBar'):
+                self.window.menuBar().addMenu(self.parent.window_menu)
         self.registerWindow(self.window)
+
+    def onClose(self):
+        self.window.close()

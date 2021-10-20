@@ -3,7 +3,7 @@ import collections
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-import common
+import otter.plugins.common as common
 
 
 BlockInformation = collections.namedtuple(
@@ -192,6 +192,9 @@ class MeshWindow(QtWidgets.QMainWindow):
             "New", self.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
+        file_menu.addSeparator()
+        self._close_action = file_menu.addAction(
+            "Close", self.onClose, "Ctrl+W")
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
@@ -530,3 +533,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         else:
             camera = self._vtk_renderer.GetActiveCamera()
             camera.ParallelProjectionOn()
+
+    def onClose(self):
+        self.plugin.close()

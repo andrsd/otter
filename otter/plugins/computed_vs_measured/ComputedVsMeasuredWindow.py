@@ -28,6 +28,7 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         self.s = []
 
         self.setupWidgets()
+        self.setupMenuBar()
 
         # connect signals
         self.relative_error.toggled.connect(self.onRelativeError)
@@ -182,6 +183,10 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
     def setupMenuBar(self):
         self._menubar = QtWidgets.QMenuBar()
         self.setMenuBar(self._menubar)
+
+        file_menu = self._menubar.addMenu("File")
+        self._close_action = file_menu.addAction(
+            "Close", self.onClose, "Ctrl+W")
 
     @property
     def menubar(self):
@@ -465,3 +470,6 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         event.accept()
+
+    def onClose(self):
+        self.plugin.close()

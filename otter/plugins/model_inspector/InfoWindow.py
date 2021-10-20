@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from model_inspector.ModelWindow import ModelWindow
-from common.ColorPicker import ColorPicker
-from model_inspector import components
+from otter.plugins.model_inspector.ModelWindow import ModelWindow
+from otter.plugins.common.ColorPicker import ColorPicker
+from otter.plugins.model_inspector import components
 
 
 class InfoWindow(QtWidgets.QScrollArea):

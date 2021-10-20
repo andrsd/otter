@@ -16,7 +16,6 @@ def test_ctor():
     plugin = Plugin(parent)
     assert plugin.file_name is None
     assert len(plugin.windows) == 0
-    assert len(plugin.menus) == 0
     assert len(plugin.actions) == 0
     assert len(plugin._show_window.keys()) == 0
     assert len(plugin._menu_map.keys()) == 0
@@ -44,24 +43,13 @@ def test_register_window(main_window):
     assert window in plugin._show_window
 
 
-@patch('otter.plugins.Plugin.Plugin.showMenu')
 @patch('otter.plugins.Plugin.Plugin.onCreate')
 @patch('otter.plugins.Plugin.Plugin.showWindow')
-def test_create(show_window_mock, on_create_mock, show_menu_mock, main_window):
+def test_create(show_window_mock, on_create_mock, main_window):
     plugin = Plugin(main_window)
     plugin.create()
     on_create_mock.assert_called_once_with()
     show_window_mock.assert_called_once_with()
-
-
-def test_show_menu(main_window):
-    plugin = Plugin(main_window)
-    plugin.menus = [MagicMock()]
-    plugin.actions = [MagicMock()]
-    plugin.showMenu(True)
-
-    plugin.menus[0].menuAction().setVisible.assert_called_once_with(True)
-    plugin.actions[0].setVisible.assert_called_once_with(True)
 
 
 def test_close():
@@ -72,7 +60,6 @@ def test_close():
     plugin._show_window = {window: action}
     plugin.close()
 
-    window.close.assert_called_once()
     parent.action_group_windows.removeAction.assert_called_once_with(action)
     assert len(plugin.windows) == 0
     assert len(plugin._show_window.keys()) == 0
@@ -114,12 +101,9 @@ def test_set_window_visible():
     window = MagicMock()
     action = MagicMock()
     plugin._show_window = {window: action}
-    menu = MagicMock()
-    plugin.menus = [menu]
     plugin.setWindowVisible(True)
 
     action.setVisible.assert_called_once_with(True)
-    menu.menuAction().setVisible.assert_called_once_with(True)
 
 
 @patch('otter.plugins.Plugin.Plugin.updateMenuBar')
@@ -158,43 +142,6 @@ def test_get_menu_without_menubar_2():
     parent = Mock(menubar=MB())
     plugin = Plugin(parent)
     assert plugin.getMenu('file') == 'menu'
-
-
-def test_add_menu():
-    parent = MagicMock()
-    plugin = Plugin(parent)
-
-    menu = MagicMock()
-    new_menu = plugin.addMenu(menu, 'text')
-
-    assert plugin.menus.index(new_menu) == 0
-    new_menu.menuAction().setVisible.assert_called_once_with(False)
-
-
-def test_add_separator():
-    parent = MagicMock()
-    plugin = Plugin(parent)
-
-    menu = MagicMock()
-    action = plugin.addMenuSeparator(menu)
-
-    assert plugin.actions.index(action) == 0
-
-
-def test_add_menu_action():
-    def method(a):
-        pass
-
-    parent = MagicMock()
-    plugin = Plugin(parent)
-
-    menu = MagicMock()
-    menu.addAction.return_value = MagicMock()
-    action = plugin.addMenuAction(menu, 'str', method, 1234)
-
-    menu.addAction.assert_called_once_with('str', method, 1234)
-    action.setVisible.assert_called_once_with(False)
-    assert plugin.actions.index(action) == 0
 
 
 @patch('PyQt5.QtWidgets.QApplication.activeWindow')

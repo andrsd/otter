@@ -1,7 +1,7 @@
 from otter.assets import Assets
-from Plugin import Plugin
-from mesh_inspector.MeshWindow import MeshWindow
-from mesh_inspector.InfoWindow import InfoWindow
+from otter.plugins.Plugin import Plugin
+from otter.plugins.mesh_inspector.MeshWindow import MeshWindow
+from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 
 
 class MeshInspectorPlugin(Plugin):
@@ -24,9 +24,12 @@ class MeshInspectorPlugin(Plugin):
 
     def onCreate(self):
         self.info_window = InfoWindow(self)
-        self.registerWindow(self.info_window)
         self.mesh_window = MeshWindow(self)
         self.registerWindow(self.mesh_window)
+
+        if self.parent is not None and hasattr(self.parent, 'window_menu'):
+            if hasattr(self.mesh_window, 'menuBar'):
+                self.mesh_window.menuBar().addMenu(self.parent.window_menu)
 
         self.mesh_window.fileLoaded.connect(self.info_window.onFileLoaded)
         self.mesh_window.boundsChanged.connect(
@@ -43,3 +46,7 @@ class MeshInspectorPlugin(Plugin):
             self.mesh_window.onCubeAxisVisibilityChanged)
         self.info_window.orientationMarkerStateChanged.connect(
             self.mesh_window.onOrientationmarkerVisibilityChanged)
+
+    def onClose(self):
+        self.info_window.close()
+        self.mesh_window.close()

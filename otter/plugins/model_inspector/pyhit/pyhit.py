@@ -11,8 +11,8 @@
 """Wrapper for hit parser."""
 import os
 import subprocess
-import model_inspector.moosetree
-import model_inspector.hit
+import otter.plugins.model_inspector.moosetree
+import otter.plugins.model_inspector.hit
 
 class Node(model_inspector.moosetree.Node):
     """

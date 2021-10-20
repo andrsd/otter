@@ -42,6 +42,9 @@ class ResultWindow(QtWidgets.QMainWindow):
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
         file_menu.addSeparator()
+        self._close_action = file_menu.addAction(
+            "Close", self.onClose, "Ctrl+W")
+        file_menu.addSeparator()
         self._render_action = file_menu.addAction(
             "Render", self.onRender, "Ctrl+Shift+R")
 
@@ -70,3 +73,6 @@ class ResultWindow(QtWidgets.QMainWindow):
 
     def onRender(self):
         pass
+
+    def onClose(self):
+        self.plugin.close()

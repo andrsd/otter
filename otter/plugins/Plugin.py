@@ -1,7 +1,3 @@
-"""
-Plugin.py
-"""
-
 from PyQt5 import QtWidgets, QtCore
 
 
@@ -14,7 +10,6 @@ class Plugin:
         self.parent = parent
         self.file_name = None
         self.windows = []
-        self.menus = []
         self.actions = []
         self._show_window = {}
         if parent is not None:
@@ -83,26 +78,18 @@ class Plugin:
         self.onCreate()
         self.showWindow()
 
-    def showMenu(self, state):
-        """
-        Show menu
-        @param state[bool] True to show enabled, False for disabled
-        """
-        for mnu in self.menus:
-            mnu.menuAction().setVisible(state)
-        for act in self.actions:
-            act.setVisible(state)
-
     def close(self):
         """
         Close the plugin
         """
         self.onClose()
         for (window, action) in self._show_window.items():
-            window.close()
             self.parent.action_group_windows.removeAction(action)
         self.windows = []
         self._show_window = {}
+
+        if self.parent is not None:
+            self.parent.closePlugin(self)
 
     def minimize(self):
         """
@@ -131,8 +118,6 @@ class Plugin:
         """
         for (unused_window, action) in self._show_window.items():
             action.setVisible(visible)
-        for mnu in self.menus:
-            mnu.menuAction().setVisible(visible)
 
     def onShowWindow(self, window):
         """
@@ -154,35 +139,6 @@ class Plugin:
                 menu = self.parent_menubar.addMenu(name)
                 self._menu_map[name] = menu
                 return menu
-
-    def addMenu(self, menu, text):
-        """
-        Add plugin-specific menu
-        @param menu
-        @param text
-        """
-        new_menu = menu.addMenu(text)
-        new_menu.menuAction().setVisible(False)
-        self.menus.append(new_menu)
-        return new_menu
-
-    def addMenuSeparator(self, menu):
-        """
-        Add separator to plugin-specific menu
-        """
-        action = menu.addSeparator()
-        action.setVisible(False)
-        self.actions.append(action)
-        return action
-
-    def addMenuAction(self, menu, string, method, keysequece=0):
-        """
-        Add action to plugin-specific menu
-        """
-        action = menu.addAction(string, method, keysequece)
-        action.setVisible(False)
-        self.actions.append(action)
-        return action
 
     def updateMenuBar(self):
         """
