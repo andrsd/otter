@@ -134,13 +134,6 @@ class MainWindow(QtWidgets.QMainWindow):
             "Open", self.onOpenFile, "Ctrl+O")
         self._recent_menu = file_menu.addMenu("Open Recent")
         self.buildRecentFilesMenu()
-        file_menu.addSeparator()
-        self._close_action = file_menu.addAction(
-            "Close", self.onCloseFile, "Ctrl+W")
-        self._save_action = file_menu.addAction(
-            "Save", self.onSaveFile, "Ctrl+S")
-        self._save_as_action = file_menu.addAction(
-            "Save As...", self.onSaveFileAs, "Ctrl+Shift+S")
 
         # The "About" item is fine here, since we assume Mac and that will
         # place the item into different submenu but this will need to be fixed
@@ -179,11 +172,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plugin.updateMenuBar()
             self.plugin.setWindowVisible(True)
 
-        self._show_main_window.setVisible(not have_file)
-        self._save_action.setEnabled(have_file)
-        self._save_as_action.setEnabled(have_file)
-        self._close_action.setEnabled(have_file)
-
     def openFile(self, file_name):
         """
         Open menu bar
@@ -218,7 +206,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plugin = self.project_type_dlg.plugin
             self.plugin.create()
             self.hide()
-            self.updateMenuBar()
 
     def onOpenFile(self):
         """
@@ -228,45 +215,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if file_name[0]:
             self.openFile(file_name[0])
 
-    def onCloseFile(self):
-        """
-        Called when FileClose action is triggered
-        """
-        if self.plugin is not None:
-            self.plugin.close()
-            self.plugin.showMenu(False)
-            self.show()
-            self.plugin = None
-
+    def closePlugin(self, plugin):
         self.updateMenuBar()
-
-    def onSaveFile(self):
-        """
-        Called when FileSave action is triggered
-        """
-        if self.plugin is None:
-            return
-
-        if self.plugin.getFileName() is None:
-            file_name = QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Save File')
-            if file_name[0]:
-                self.writeYml(file_name[0])
-            else:
-                return
-        else:
-            self.writeYml(self.plugin.getFileName())
-
-    def onSaveFileAs(self):
-        """
-        Called when FileSaveAs action is triggered
-        """
-        if self.plugin is None:
-            return
-
-        file_name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File As')
-        if file_name[0]:
-            self.writeYml(file_name[0])
+        self.show()
 
     def onAbout(self):
         """

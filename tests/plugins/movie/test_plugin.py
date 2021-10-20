@@ -19,4 +19,4 @@ def test_icon():
 @patch('otter.plugins.Plugin.Plugin.registerWindow')
 def test_on_create(reg_wnd, movie_plugin):
     movie_plugin.onCreate()
-    assert reg_wnd.call_count == 2
+    assert reg_wnd.call_count == 1

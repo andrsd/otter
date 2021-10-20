@@ -14,6 +14,3 @@ except ImportError:
     except ImportError:
         subprocess.run(['make', 'hit.so'], cwd=hit_dir)
         import hit
-
-from hit import TokenType, Token
-from .pyhit import Node, load, write, parse, tokenize

@@ -1,9 +1,9 @@
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from model_inspector.InputReader import InputReader
-import common
-from common.OtterInteractorStyle import OtterInteractorStyle
+from otter.plugins.model_inspector.InputReader import InputReader
+import otter.plugins.common as common
+from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
 
 
 class LoadThread(QtCore.QThread):
@@ -63,6 +63,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self._frame.setLayout(self._layout)
 
+        self.setupMenuBar()
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
         self.setWindowTitle("Model")
@@ -94,6 +95,14 @@ class ModelWindow(QtWidgets.QMainWindow):
                 self.resize(default_size)
 
         self.show()
+
+    def setupMenuBar(self):
+        self._menubar = QtWidgets.QMenuBar()
+        self.setMenuBar(self._menubar)
+
+        file_menu = self._menubar.addMenu("File")
+        self._close_action = file_menu.addAction(
+            "Close", self.onClose, "Ctrl+W")
 
     def setRenderMode(self, mode):
         self._render_mode = mode
@@ -377,3 +386,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         for actor in self._caption_actors.values():
             actor.SetVisibility(state)
         self._vtk_render_window.Render()
+
+    def onClose(self):
+        self.plugin.close()

@@ -128,6 +128,9 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
             "PDF...", self.onExportPdf)
         self._export_gnuplot = self._export_menu.addAction(
             "gnuplot...", self.onExportGnuplot)
+        file_menu.addSeparator()
+        self._close_action = file_menu.addAction(
+            "Close", self.onClose, "Ctrl+W")
 
     @property
     def menubar(self):
@@ -239,3 +242,6 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         event.accept()
+
+    def onClose(self):
+        self.plugin.close()

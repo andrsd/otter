@@ -1,12 +1,6 @@
 import os
-import sys
-from model_inspector import components
-
-try:
-    from model_inspector.pyhit import hit
-except ImportError:
-    print("failed to import hit", file=sys.stderr)
-    sys.exit(1)
+from otter.plugins.model_inspector import components
+from otter.plugins.model_inspector.pyhit import hit
 
 
 class InputReader:
