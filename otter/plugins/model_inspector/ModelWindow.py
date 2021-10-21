@@ -118,9 +118,15 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._visual_repr.addAction(self._hidden_edges_removed_action)
         self._visual_repr.setExclusive(True)
 
+        self._view_menu.addSeparator()
+        self._perspective_action = self._view_menu.addAction("Perspective")
+        self._perspective_action.setCheckable(True)
+        self._perspective_action.setChecked(True)
+
         self._shaded_action.triggered.connect(self.onShadedTriggered)
         self._hidden_edges_removed_action.triggered.connect(
             self.onHiddenEdgesRemovedTriggered)
+        self._perspective_action.toggled.connect(self.onPerspectiveToggled)
 
         self._view_mode = QtWidgets.QPushButton(self._frame)
         self._view_mode.setFixedSize(60, 32)
@@ -449,6 +455,14 @@ class ModelWindow(QtWidgets.QMainWindow):
             property.SetLineWidth(3)
 
         self._vtk_render_window.Render()
+
+    def onPerspectiveToggled(self, checked):
+        if checked:
+            camera = self._vtk_renderer.GetActiveCamera()
+            camera.ParallelProjectionOff()
+        else:
+            camera = self._vtk_renderer.GetActiveCamera()
+            camera.ParallelProjectionOn()
 
     def updateWindowTitle(self):
         if self._file_name is None:
