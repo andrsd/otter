@@ -51,18 +51,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
 
-        self._frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
-
-        self._vtk_renderer = vtk.vtkRenderer()
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        self._frame.setLayout(self._layout)
-
+        self.setupWidgets()
         self.setupMenuBar()
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
@@ -96,6 +85,26 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self.show()
 
+    def setupWidgets(self):
+        self._frame = QtWidgets.QFrame(self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
+
+        self._vtk_renderer = vtk.vtkRenderer()
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._vtk_widget)
+
+        self._frame.setLayout(self._layout)
+
+        self._render_mode = QtWidgets.QComboBox(self._frame)
+        self._render_mode.addItem("Shaded",
+                                  ModelWindow.SHADED)
+        self._render_mode.addItem("Hidden edges removed",
+                                  ModelWindow.SILHOUETTE)
+        self._render_mode.currentIndexChanged.connect(self.onRenderModeChanged)
+
     def setupMenuBar(self):
         self._menubar = QtWidgets.QMenuBar()
         self.setMenuBar(self._menubar)
@@ -103,9 +112,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         file_menu = self._menubar.addMenu("File")
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
-
-    def setRenderMode(self, mode):
-        self._render_mode = mode
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
@@ -115,6 +121,10 @@ class ModelWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         event.accept()
+
+    def resizeEvent(self, event):
+        len = 80
+        self._render_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -148,7 +158,7 @@ class ModelWindow(QtWidgets.QMainWindow):
             actor = comp.getActor()
             if actor is not None:
                 self._actors[name] = actor
-                if self._render_mode == self.SILHOUETTE:
+                if self.renderMode() == self.SILHOUETTE:
                     property = actor.GetProperty()
                     property.LightingOff()
                     qclr = QtGui.QColor(255, 255, 255)
@@ -158,7 +168,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
             silhouette_actor = comp.getSilhouetteActor()
             if silhouette_actor is not None:
-                if self._render_mode == self.SHADED:
+                if self.renderMode() == self.SHADED:
                     silhouette_actor.VisibilityOff()
                 self._silhouette_actors[name] = silhouette_actor
                 self._vtk_renderer.AddViewProp(silhouette_actor)
@@ -244,13 +254,13 @@ class ModelWindow(QtWidgets.QMainWindow):
         if visible:
             actor.VisibilityOn()
 
-            if self._render_mode == self.SILHOUETTE:
+            if self.renderMode() == self.SILHOUETTE:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOn()
         else:
             actor.VisibilityOff()
 
-            if self._render_mode == self.SILHOUETTE:
+            if self.renderMode() == self.SILHOUETTE:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOff()
 
@@ -259,7 +269,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     def onComponentColorChanged(self, component_name, qcolor):
         self._component_color[component_name] = qcolor
 
-        if self._render_mode == self.SHADED:
+        if self.renderMode() == self.SHADED:
             actor = self._getComponentActor(component_name)
             if actor is not None:
                 property = actor.GetProperty()
@@ -328,8 +338,8 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor
 
-    def onRenderModeChanged(self, mode):
-        self.setRenderMode(mode)
+    def onRenderModeChanged(self, index):
+        mode = self._render_mode.itemData(index)
 
         for actor in self._actors.values():
             actor.VisibilityOn()
@@ -389,3 +399,6 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def onClose(self):
         self.plugin.close()
+
+    def renderMode(self):
+        return self._render_mode.currentData()

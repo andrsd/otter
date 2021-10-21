@@ -18,7 +18,6 @@ class InfoWindow(QtWidgets.QScrollArea):
     componentSelected = QtCore.pyqtSignal(object)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
     orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
-    renderModeChanged = QtCore.pyqtSignal(int)
     showLabels = QtCore.pyqtSignal(bool)
 
     def __init__(self, plugin):
@@ -90,16 +89,6 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self._color_picker_widget._color_group.buttonClicked.connect(
             self._color_picker_menu.hide)
-
-        self._render_mode = QtWidgets.QComboBox()
-        self._render_mode.addItem("Shaded",
-                                  ModelWindow.SHADED)
-        self._render_mode.addItem("Hidden edges removed",
-                                  ModelWindow.SILHOUETTE)
-        self._render_mode.currentIndexChanged.connect(self.onRenderModeChanged)
-        self._layout.addWidget(self._render_mode)
-
-        self._layout.addSpacing(10)
 
         self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
         self._layout.addWidget(self._lbl_dimensions)
@@ -212,10 +201,6 @@ class InfoWindow(QtWidgets.QScrollArea):
         item = self._component_model.itemFromIndex(current)
         comp_name = item.text()
         self.componentSelected.emit(comp_name)
-
-    def onRenderModeChanged(self, index):
-        data = self._render_mode.itemData(index)
-        self.renderModeChanged.emit(data)
 
     def onComponentCustomContextMenu(self, point):
         index = self._components.indexAt(point)
