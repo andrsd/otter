@@ -44,8 +44,6 @@ class ModelInspectorPlugin(Plugin):
             self.model_window.onCubeAxisVisibilityChanged)
         self.info_window.orientationMarkerStateChanged.connect(
             self.model_window.onOrientationmarkerVisibilityChanged)
-        self.info_window.renderModeChanged.connect(
-            self.model_window.onRenderModeChanged)
         self.info_window.showLabels.connect(
             self.model_window.onShowLabels)
 

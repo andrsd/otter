@@ -1,3 +1,4 @@
+import os
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -21,6 +22,9 @@ class LoadThread(QtCore.QThread):
     def getComponents(self):
         return self._components
 
+    def getFileName(self):
+        return self._file_name
+
 
 class ModelWindow(QtWidgets.QMainWindow):
     """
@@ -37,6 +41,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     def __init__(self, plugin):
         super().__init__()
         self.plugin = plugin
+        self._file_name = None
         self._load_thread = None
         self._components = None
         self._component_color = {}
@@ -51,22 +56,11 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
 
-        self._frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
-
-        self._vtk_renderer = vtk.vtkRenderer()
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        self._frame.setLayout(self._layout)
-
+        self.setupWidgets()
         self.setupMenuBar()
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
-        self.setWindowTitle("Model")
+        self.updateWindowTitle()
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -96,6 +90,43 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self.show()
 
+    def setupWidgets(self):
+        self._frame = QtWidgets.QFrame(self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self._frame)
+
+        self._vtk_renderer = vtk.vtkRenderer()
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._vtk_widget)
+
+        self._frame.setLayout(self._layout)
+
+        self._view_menu = QtWidgets.QMenu()
+        self._shaded_action = self._view_menu.addAction("Shaded")
+        self._shaded_action.setCheckable(True)
+        self._hidden_edges_removed_action = self._view_menu.addAction(
+            "Hidden edges removed")
+        self._hidden_edges_removed_action.setCheckable(True)
+        self._shaded_action.setChecked(True)
+        self._render_mode = self.SHADED
+
+        self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
+        self._visual_repr.addAction(self._shaded_action)
+        self._visual_repr.addAction(self._hidden_edges_removed_action)
+        self._visual_repr.setExclusive(True)
+
+        self._shaded_action.triggered.connect(self.onShadedTriggered)
+        self._hidden_edges_removed_action.triggered.connect(
+            self.onHiddenEdgesRemovedTriggered)
+
+        self._view_mode = QtWidgets.QPushButton(self._frame)
+        self._view_mode.setText("View")
+        self._view_mode.setMenu(self._view_menu)
+        self._view_mode.setGeometry(10, 10, 80, 25)
+        self._view_mode.show()
+
     def setupMenuBar(self):
         self._menubar = QtWidgets.QMenuBar()
         self.setMenuBar(self._menubar)
@@ -103,9 +134,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         file_menu = self._menubar.addMenu("File")
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
-
-    def setRenderMode(self, mode):
-        self._render_mode = mode
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
@@ -115,6 +143,10 @@ class ModelWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         event.accept()
+
+    def resizeEvent(self, event):
+        len = 80
+        self._view_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -141,14 +173,18 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._load_thread.start()
 
     def onLoadFinished(self):
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
         self._components = self._load_thread.getComponents()
 
         self._actor_to_comp_name = {}
         for name, comp in self._components.items():
             actor = comp.getActor()
             if actor is not None:
+                actor.SetScale(0.99999)
                 self._actors[name] = actor
-                if self._render_mode == self.SILHOUETTE:
+                if self.renderMode() == self.SILHOUETTE:
                     property = actor.GetProperty()
                     property.LightingOff()
                     qclr = QtGui.QColor(255, 255, 255)
@@ -158,7 +194,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
             silhouette_actor = comp.getSilhouetteActor()
             if silhouette_actor is not None:
-                if self._render_mode == self.SHADED:
+                if self.renderMode() == self.SHADED:
                     silhouette_actor.VisibilityOff()
                 self._silhouette_actors[name] = silhouette_actor
                 self._vtk_renderer.AddViewProp(silhouette_actor)
@@ -244,13 +280,13 @@ class ModelWindow(QtWidgets.QMainWindow):
         if visible:
             actor.VisibilityOn()
 
-            if self._render_mode == self.SILHOUETTE:
+            if self.renderMode() == self.SILHOUETTE:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOn()
         else:
             actor.VisibilityOff()
 
-            if self._render_mode == self.SILHOUETTE:
+            if self.renderMode() == self.SILHOUETTE:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOff()
 
@@ -259,7 +295,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     def onComponentColorChanged(self, component_name, qcolor):
         self._component_color[component_name] = qcolor
 
-        if self._render_mode == self.SHADED:
+        if self.renderMode() == self.SHADED:
             actor = self._getComponentActor(component_name)
             if actor is not None:
                 property = actor.GetProperty()
@@ -328,33 +364,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor
 
-    def onRenderModeChanged(self, mode):
-        self.setRenderMode(mode)
-
-        for actor in self._actors.values():
-            actor.VisibilityOn()
-            if mode == self.SHADED:
-                property = actor.GetProperty()
-                property.LightingOn()
-                comp_name = self._actor_to_comp_name[actor]
-                qcolor = self._component_color[comp_name]
-                self._setPropertyColor(property, qcolor)
-            elif mode == self.SILHOUETTE:
-                property = actor.GetProperty()
-                property.LightingOff()
-                self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
-
-        for actor in self._silhouette_actors.values():
-            if mode == self.SHADED:
-                actor.VisibilityOff()
-            elif mode == self.SILHOUETTE:
-                actor.VisibilityOn()
-                property = actor.GetProperty()
-                self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
-                property.SetLineWidth(3)
-
-        self._vtk_render_window.Render()
-
     def _setupCubeAxisActor(self, bnds):
         actor = vtk.vtkCubeAxesActor()
         actor.SetBounds(*bnds)
@@ -389,3 +398,44 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def onClose(self):
         self.plugin.close()
+
+    def renderMode(self):
+        return self._render_mode
+
+    def onShadedTriggered(self, checked):
+        self._render_mode = self.SHADED
+
+        for actor in self._actors.values():
+            property = actor.GetProperty()
+            property.LightingOn()
+            comp_name = self._actor_to_comp_name[actor]
+            qcolor = self._component_color[comp_name]
+            self._setPropertyColor(property, qcolor)
+
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOff()
+
+        self._vtk_render_window.Render()
+
+    def onHiddenEdgesRemovedTriggered(self, checked):
+        self._render_mode = self.SILHOUETTE
+
+        for actor in self._actors.values():
+            property = actor.GetProperty()
+            property.LightingOff()
+            self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
+
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOn()
+            property = actor.GetProperty()
+            self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
+            property.SetLineWidth(3)
+
+        self._vtk_render_window.Render()
+
+    def updateWindowTitle(self):
+        if self._file_name is None:
+            self.setWindowTitle("Mesh Inspector")
+        else:
+            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+                os.path.basename(self._file_name)))

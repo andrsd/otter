@@ -86,9 +86,14 @@ class MeshWindow(QtWidgets.QMainWindow):
     fileLoaded = QtCore.pyqtSignal(object)
     boundsChanged = QtCore.pyqtSignal(list)
 
-    SIDESET_CLR = [0.85, 0.85, 0.85]
+    SIDESET_CLR = [247/255, 135/255, 3/255]
     SIDESET_EDGE_CLR = [0.1, 0.1, 0.4]
     NODESET_CLR = [0.1, 0.1, 0.1]
+
+    SHADED = 0
+    SHADED_WITH_EDGES = 1
+    HIDDEN_EDGES_REMOVED = 2
+    TRANSLUENT = 3
 
     def __init__(self, plugin):
         super().__init__()
@@ -158,11 +163,20 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._shaded_w_edges_action = self._view_menu.addAction(
             "Shaded with edges")
         self._shaded_w_edges_action.setCheckable(True)
+        self._hidden_edges_removed_action = self._view_menu.addAction(
+            "Hidden edges removed")
+        self._hidden_edges_removed_action.setCheckable(True)
+        self._transluent_action = self._view_menu.addAction(
+            "Transluent")
+        self._transluent_action.setCheckable(True)
         self._shaded_w_edges_action.setChecked(True)
+        self._render_mode = self.SHADED_WITH_EDGES
 
         self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
         self._visual_repr.addAction(self._shaded_action)
         self._visual_repr.addAction(self._shaded_w_edges_action)
+        self._visual_repr.addAction(self._hidden_edges_removed_action)
+        self._visual_repr.addAction(self._transluent_action)
         self._visual_repr.setExclusive(True)
 
         self._view_menu.addSeparator()
@@ -173,6 +187,9 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._shaded_action.triggered.connect(self.onShadedTriggered)
         self._shaded_w_edges_action.triggered.connect(
             self.onShadedWithEdgesTriggered)
+        self._hidden_edges_removed_action.triggered.connect(
+            self.onHiddenEdgesRemovedTriggered)
+        self._transluent_action.triggered.connect(self.onTransluentTriggered)
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
 
         self._view_mode = QtWidgets.QPushButton(frame)
@@ -236,6 +253,8 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def clear(self):
         self._block_actors = {}
+        self._block_color = {}
+        self._silhouette_actors = {}
         self._sideset_actors = {}
         self._nodeset_actors = {}
         self._block_bounds = {}
@@ -256,6 +275,45 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._load_thread.start(QtCore.QThread.IdlePriority)
 
     def onLoadFinished(self):
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
+
+        self._addBlockActors()
+        self._addSidesetActors()
+        self._addNodesetActors()
+
+        gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
+        gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
+        for bnd in self._block_bounds.values():
+            bmin, bmax = bnd
+            gmin = common.point_min(bmin, gmin)
+            gmax = common.point_max(bmax, gmax)
+        bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
+
+        self._setupCubeAxesActor(bnds)
+        self._centerMesh(bnds)
+
+        self._vtk_renderer.ResetCamera()
+        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
+
+        params = {
+            'block_info': block_info,
+            'total_elems': reader.GetTotalNumberOfElements(),
+            'total_nodes': reader.GetTotalNumberOfNodes()
+        }
+        self.fileLoaded.emit(params)
+        self.boundsChanged.emit(bnds)
+
+        self._vtk_render_window.Render()
+
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
+        self._progress.hide()
+        self._progress = None
+
+    def _addBlockActors(self):
+        camera = self._vtk_renderer.GetActiveCamera()
         reader = self._load_thread.getReader()
         block_info = self._load_thread.getBlockInfo()
 
@@ -280,16 +338,36 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.SetScale(0.99999)
             actor.VisibilityOn()
             self._vtk_renderer.AddViewProp(actor)
 
-            property = actor.GetProperty()
-            property.SetRepresentationToSurface()
-            property.SetEdgeVisibility(True)
-            # FIXME: set color from preferences/templates
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
-
+            self._block_color[binfo.number] = [1, 1, 1]
+            self._setBlockActorProperties(binfo.number, actor)
             self._block_actors[binfo.number] = actor
+
+            silhouette = vtk.vtkPolyDataSilhouette()
+            silhouette.SetInputData(mapper.GetInput())
+            silhouette.SetCamera(camera)
+
+            silhouette_mapper = vtk.vtkPolyDataMapper()
+            silhouette_mapper.SetInputConnection(silhouette.GetOutputPort())
+
+            silhouette_actor = vtk.vtkActor()
+            silhouette_actor.SetMapper(silhouette_mapper)
+            if (self.renderMode() == self.HIDDEN_EDGES_REMOVED or
+                    self.renderMode() == self.TRANSLUENT):
+                silhouette_actor.VisibilityOn()
+                self._setSilhouetteActorProperties(silhouette_actor)
+            else:
+                silhouette_actor.VisibilityOff()
+            self._vtk_renderer.AddViewProp(silhouette_actor)
+
+            self._silhouette_actors[binfo.number] = silhouette_actor
+
+    def _addSidesetActors(self):
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
 
         faces = block_info[vtk.vtkExodusIIReader.SIDE_SET].values()
         for index, finfo in enumerate(faces):
@@ -314,12 +392,13 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             property = actor.GetProperty()
             property.SetRepresentationToSurface()
-            property.SetColor(self.SIDESET_CLR)
-            property.SetEdgeVisibility(True)
-            # FIXME: set color from preferences/templates
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            self._setSideSetActorProperties(actor)
 
             self._sideset_actors[finfo.number] = actor
+
+    def _addNodesetActors(self):
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
 
         nodes = block_info[vtk.vtkExodusIIReader.NODE_SET].values()
         for index, ninfo in enumerate(nodes):
@@ -340,30 +419,16 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.VisibilityOff()
+            self._setNodeSetActorProperties(actor)
             self._vtk_renderer.AddViewProp(actor)
-
-            property = actor.GetProperty()
-            property.SetRepresentationToPoints()
-            property.SetRenderPointsAsSpheres(True)
-            property.SetVertexVisibility(True)
-            property.SetPointSize(10)
-            property.SetColor(self.NODESET_CLR)
 
             self._nodeset_actors[ninfo.number] = actor
 
-        gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
-        gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        for bnd in self._block_bounds.values():
-            bmin, bmax = bnd
-            gmin = common.point_min(bmin, gmin)
-            gmax = common.point_max(bmax, gmax)
-        bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
-
-        # center the mesh
+    def _centerMesh(self, bnds):
         com = [
-            -(gmin.x() + gmax.x()) / 2,
-            -(gmin.y() + gmax.y()) / 2,
-            -(gmin.z() + gmax.z()) / 2
+            -(bnds[0] + bnds[1]) / 2,
+            -(bnds[2] + bnds[3]) / 2,
+            -(bnds[4] + bnds[5]) / 2
         ]
         for actor in self._block_actors.values():
             actor.SetPosition(com)
@@ -371,33 +436,22 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.SetPosition(com)
         for actor in self._nodeset_actors.values():
             actor.SetPosition(com)
+        for actor in self._silhouette_actors.values():
+            actor.SetPosition(com)
+        # this should move the cubeaxes actor like it is moving the other ones,
+        # but is being ignored insode VTK. *sigh*
+        self._cube_axes_actor.SetPosition(com)
 
+    def _setupCubeAxesActor(self, bnds):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
+        self._cube_axes_actor.VisibilityOff()
         self._cube_axes_actor.SetBounds(*bnds)
         self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
         self._cube_axes_actor.SetGridLineLocation(
             vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
         self._cube_axes_actor.SetFlyMode(
             vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
-
-        self._vtk_renderer.ResetCamera()
-        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
-
-        params = {
-            'block_info': block_info,
-            'total_elems': reader.GetTotalNumberOfElements(),
-            'total_nodes': reader.GetTotalNumberOfNodes()
-        }
-        self.fileLoaded.emit(params)
-        self.boundsChanged.emit(bnds)
-
-        self._vtk_render_window.Render()
-
-        self._file_name = self._load_thread.getFileName()
-        self.updateWindowTitle()
-
-        self._progress.hide()
-        self._progress = None
+        self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
@@ -407,6 +461,12 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def _getNodesetActor(self, nodeset_id):
         return self._nodeset_actors[nodeset_id]
+
+    def _getSilhouetteActor(self, block_id):
+        return self._silhouette_actors[block_id]
+
+    def renderMode(self):
+        return self._render_mode
 
     def _setupOrientationMarker(self):
         axes = vtk.vtkAxesActor()
@@ -423,13 +483,25 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.VisibilityOn()
         else:
             actor.VisibilityOff()
+
+        if self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            actor = self._getSilhouetteActor(block_id)
+            if visible:
+                actor.VisibilityOn()
+            else:
+                actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def onBlockColorChanged(self, block_id, qcolor):
+        clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
+        self._block_color[block_id] = clr
+
         actor = self._getBlockActor(block_id)
         property = actor.GetProperty()
-        clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
-        property.SetColor(clr)
+        if self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            property.SetColor([1, 1, 1])
+        else:
+            property.SetColor(clr)
 
     def onSidesetVisibilityChanged(self, sideset_id, visible):
         actor = self._getSidesetActor(sideset_id)
@@ -471,9 +543,9 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def onCubeAxisVisibilityChanged(self, visible):
         if visible:
-            self._vtk_renderer.AddViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def onOrientationmarkerVisibilityChanged(self, visible):
@@ -508,23 +580,42 @@ class MeshWindow(QtWidgets.QMainWindow):
                 os.path.basename(self._file_name)))
 
     def onShadedTriggered(self, checked):
-        for actor in self._block_actors.values():
-            property = actor.GetProperty()
-            property.SetEdgeVisibility(False)
+        self._render_mode = self.SHADED
+        for block_id, actor in self._block_actors.items():
+            self._setBlockActorProperties(block_id, actor)
         for actor in self._sideset_actors.values():
-            property = actor.GetProperty()
-            property.SetEdgeVisibility(False)
-            property.SetColor(self.SIDESET_CLR)
+            self._setSideSetActorProperties(actor)
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOff()
 
     def onShadedWithEdgesTriggered(self, checked):
-        for actor in self._block_actors.values():
-            property = actor.GetProperty()
-            property.SetEdgeVisibility(True)
+        self._render_mode = self.SHADED_WITH_EDGES
+        for block_id, actor in self._block_actors.items():
+            self._setBlockActorProperties(block_id, actor)
         for actor in self._sideset_actors.values():
-            property = actor.GetProperty()
-            property.SetEdgeVisibility(True)
-            property.SetColor(self.SIDESET_CLR)
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            self._setSideSetActorProperties(actor)
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOff()
+
+    def onHiddenEdgesRemovedTriggered(self, checked):
+        self._render_mode = self.HIDDEN_EDGES_REMOVED
+        for block_id, actor in self._block_actors.items():
+            self._setBlockActorProperties(block_id, actor)
+        for actor in self._sideset_actors.values():
+            self._setSideSetActorProperties(actor)
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOn()
+            self._setSilhouetteActorProperties(actor)
+
+    def onTransluentTriggered(self, checked):
+        self._render_mode = self.TRANSLUENT
+        for block_id, actor in self._block_actors.items():
+            self._setBlockActorProperties(block_id, actor)
+        for actor in self._sideset_actors.values():
+            self._setSideSetActorProperties(actor)
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOn()
+            self._setSilhouetteActorProperties(actor)
 
     def onPerspectiveToggled(self, checked):
         if checked:
@@ -536,3 +627,56 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def onClose(self):
         self.plugin.close()
+
+    def _setBlockActorProperties(self, block_id, actor):
+        property = actor.GetProperty()
+        if self.renderMode() == self.SHADED:
+            property.SetColor(self._block_color[block_id])
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.SHADED_WITH_EDGES:
+            property.SetColor(self._block_color[block_id])
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(True)
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+        elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            property.SetColor([1, 1, 1])
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.TRANSLUENT:
+            property.SetColor(self._block_color[block_id])
+            property.SetOpacity(0.33)
+            property.SetEdgeVisibility(False)
+
+    def _setSideSetActorProperties(self, actor):
+        property = actor.GetProperty()
+        if self.renderMode() == self.SHADED:
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeVisibility(False)
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+        elif self.renderMode() == self.SHADED_WITH_EDGES:
+            property = actor.GetProperty()
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeVisibility(True)
+            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+        elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            property = actor.GetProperty()
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.TRANSLUENT:
+            property = actor.GetProperty()
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeVisibility(False)
+
+    def _setNodeSetActorProperties(self, actor):
+        property = actor.GetProperty()
+        property.SetRepresentationToPoints()
+        property.SetRenderPointsAsSpheres(True)
+        property.SetVertexVisibility(True)
+        property.SetPointSize(10)
+        property.SetColor(self.NODESET_CLR)
+
+    def _setSilhouetteActorProperties(self, actor):
+        property = actor.GetProperty()
+        property.SetColor([0, 0, 0])
+        property.SetLineWidth(3)
