@@ -57,10 +57,10 @@ class FlowChannel(Component):
         return "FlowChannel"
 
     def create(self):
-        source = vtk.vtkCylinderSource()
-        source.SetHeight(self._length)
-        source.SetResolution(FlowChannel.RESOLUTION)
-        source.SetRadius(FlowChannel.RADIUS)
+        source = vtk.vtkCubeSource()
+        source.SetXLength(1.5 * FlowChannel.RADIUS)
+        source.SetYLength(self._length)
+        source.SetZLength(1.5 * FlowChannel.RADIUS)
 
         self._mapper = vtk.vtkPolyDataMapper()
         self._mapper.SetInputConnection(source.GetOutputPort())
