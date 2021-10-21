@@ -93,6 +93,7 @@ class MeshWindow(QtWidgets.QMainWindow):
     SHADED = 0
     SHADED_WITH_EDGES = 1
     HIDDEN_EDGES_REMOVED = 2
+    TRANSLUENT = 3
 
     def __init__(self, plugin):
         super().__init__()
@@ -165,6 +166,9 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._hidden_edges_removed_action = self._view_menu.addAction(
             "Hidden edges removed")
         self._hidden_edges_removed_action.setCheckable(True)
+        self._transluent_action = self._view_menu.addAction(
+            "Transluent")
+        self._transluent_action.setCheckable(True)
         self._shaded_w_edges_action.setChecked(True)
         self._render_mode = self.SHADED_WITH_EDGES
 
@@ -172,6 +176,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._visual_repr.addAction(self._shaded_action)
         self._visual_repr.addAction(self._shaded_w_edges_action)
         self._visual_repr.addAction(self._hidden_edges_removed_action)
+        self._visual_repr.addAction(self._transluent_action)
         self._visual_repr.setExclusive(True)
 
         self._view_menu.addSeparator()
@@ -184,6 +189,7 @@ class MeshWindow(QtWidgets.QMainWindow):
             self.onShadedWithEdgesTriggered)
         self._hidden_edges_removed_action.triggered.connect(
             self.onHiddenEdgesRemovedTriggered)
+        self._transluent_action.triggered.connect(self.onTransluentTriggered)
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
 
         self._view_mode = QtWidgets.QPushButton(frame)
@@ -349,7 +355,8 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             silhouette_actor = vtk.vtkActor()
             silhouette_actor.SetMapper(silhouette_mapper)
-            if self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            if (self.renderMode() == self.HIDDEN_EDGES_REMOVED or
+                    self.renderMode() == self.TRANSLUENT):
                 silhouette_actor.VisibilityOn()
                 self._setSilhouetteActorProperties(silhouette_actor)
             else:
@@ -600,6 +607,16 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.VisibilityOn()
             self._setSilhouetteActorProperties(actor)
 
+    def onTransluentTriggered(self, checked):
+        self._render_mode = self.TRANSLUENT
+        for block_id, actor in self._block_actors.items():
+            self._setBlockActorProperties(block_id, actor)
+        for actor in self._sideset_actors.values():
+            self._setSideSetActorProperties(actor)
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOn()
+            self._setSilhouetteActorProperties(actor)
+
     def onPerspectiveToggled(self, checked):
         if checked:
             camera = self._vtk_renderer.GetActiveCamera()
@@ -615,13 +632,20 @@ class MeshWindow(QtWidgets.QMainWindow):
         property = actor.GetProperty()
         if self.renderMode() == self.SHADED:
             property.SetColor(self._block_color[block_id])
+            property.SetOpacity(1.0)
             property.SetEdgeVisibility(False)
         elif self.renderMode() == self.SHADED_WITH_EDGES:
             property.SetColor(self._block_color[block_id])
+            property.SetOpacity(1.0)
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property.SetColor([1, 1, 1])
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.TRANSLUENT:
+            property.SetColor(self._block_color[block_id])
+            property.SetOpacity(0.33)
             property.SetEdgeVisibility(False)
 
     def _setSideSetActorProperties(self, actor):
@@ -636,6 +660,10 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            property = actor.GetProperty()
+            property.SetColor(self.SIDESET_CLR)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.TRANSLUENT:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
