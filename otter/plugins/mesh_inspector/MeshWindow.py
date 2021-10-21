@@ -655,19 +655,23 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.LightingOff()
         elif self.renderMode() == self.SHADED_WITH_EDGES:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.LightingOff()
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
+            property.LightingOff()
         elif self.renderMode() == self.TRANSLUENT:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
+            property.LightingOff()
 
     def _setNodeSetActorProperties(self, actor):
         property = actor.GetProperty()
