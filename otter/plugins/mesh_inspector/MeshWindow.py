@@ -332,6 +332,7 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.SetScale(0.99999)
             actor.VisibilityOn()
             self._vtk_renderer.AddViewProp(actor)
 
