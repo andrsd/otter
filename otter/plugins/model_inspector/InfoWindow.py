@@ -1,5 +1,4 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from otter.plugins.model_inspector.ModelWindow import ModelWindow
 from otter.plugins.common.ColorPicker import ColorPicker
 from otter.plugins.model_inspector import components
 
