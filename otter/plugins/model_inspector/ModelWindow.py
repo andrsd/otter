@@ -136,6 +136,8 @@ class ModelWindow(QtWidgets.QMainWindow):
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
             "New", self.onNewFile, "Ctrl+N")
+        self._open_action = file_menu.addAction(
+            "Open", self.onOpenFile, "Ctrl+O")
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
@@ -462,3 +464,12 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_render_window.Render()
         self._file_name = None
         self.updateWindowTitle()
+
+    def onOpenFile(self):
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            "",
+            "THM input files (*.i)")
+        if file_name:
+            self.loadFile(file_name)
