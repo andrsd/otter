@@ -156,7 +156,10 @@ class InfoWindow(QtWidgets.QScrollArea):
             self._component_model.setItem(row, self.IDX_TYPE, si_type)
 
     def onFileLoaded(self, components):
-        self._loadComponents(components)
+        if components is None:
+            self.clear()
+        else:
+            self._loadComponents(components)
 
     def onComponentChanged(self, item):
         if item.column() == self.IDX_NAME:
@@ -174,15 +177,23 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
 
     def onBoundsChanged(self, bnds):
-        x_range = "{:.5f} to {:.5f}".format(bnds[0], bnds[1])
-        self._x_range.setText(1, x_range)
-        y_range = "{:.5f} to {:.5f}".format(bnds[2], bnds[3])
-        self._y_range.setText(1, y_range)
-        z_range = "{:.5f} to {:.5f}".format(bnds[4], bnds[5])
-        self._z_range.setText(1, z_range)
+        if len(bnds) == 6:
+            x_range = "{:.5f} to {:.5f}".format(bnds[0], bnds[1])
+            self._x_range.setText(1, x_range)
+            y_range = "{:.5f} to {:.5f}".format(bnds[2], bnds[3])
+            self._y_range.setText(1, y_range)
+            z_range = "{:.5f} to {:.5f}".format(bnds[4], bnds[5])
+            self._z_range.setText(1, z_range)
+        else:
+            self._x_range.setText(1, "")
+            self._y_range.setText(1, "")
+            self._z_range.setText(1, "")
 
     def onOriMarkerStateChanged(self, state):
         self.orientationMarkerStateChanged.emit(state == QtCore.Qt.Checked)
+
+    def clear(self):
+        self._component_model.removeRows(0, self._component_model.rowCount())
 
     def onComponentSelected(self, comp_name):
         self._components.blockSignals(True)

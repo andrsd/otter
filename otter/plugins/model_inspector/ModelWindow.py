@@ -134,6 +134,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self.setMenuBar(self._menubar)
 
         file_menu = self._menubar.addMenu("File")
+        self._new_action = file_menu.addAction(
+            "New", self.onNewFile, "Ctrl+N")
+        file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
 
@@ -169,7 +172,17 @@ class ModelWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    def clear(self):
+        self._components = {}
+        self._actor_to_comp_name = {}
+        self._actors = {}
+        self._silhouette_actors = {}
+        self._component_bounds = {}
+        self._vtk_renderer.RemoveAllViewProps()
+
     def loadFile(self, file_name):
+        self.clear()
+
         self._load_thread = LoadThread(file_name)
         self._load_thread.finished.connect(self.onLoadFinished)
         self._load_thread.start()
@@ -441,3 +454,11 @@ class ModelWindow(QtWidgets.QMainWindow):
         else:
             self.setWindowTitle("Model Inspector \u2014 {}".format(
                 os.path.basename(self._file_name)))
+
+    def onNewFile(self):
+        self.clear()
+        self.fileLoaded.emit(None)
+        self.boundsChanged.emit([])
+        self._vtk_render_window.Render()
+        self._file_name = None
+        self.updateWindowTitle()
