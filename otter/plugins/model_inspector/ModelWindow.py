@@ -98,12 +98,29 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self._frame.setLayout(self._layout)
 
-        self._render_mode = QtWidgets.QComboBox(self._frame)
-        self._render_mode.addItem("Shaded",
-                                  ModelWindow.SHADED)
-        self._render_mode.addItem("Hidden edges removed",
-                                  ModelWindow.SILHOUETTE)
-        self._render_mode.currentIndexChanged.connect(self.onRenderModeChanged)
+        self._view_menu = QtWidgets.QMenu()
+        self._shaded_action = self._view_menu.addAction("Shaded")
+        self._shaded_action.setCheckable(True)
+        self._hidden_edges_removed_action = self._view_menu.addAction(
+            "Hidden edges removed")
+        self._hidden_edges_removed_action.setCheckable(True)
+        self._shaded_action.setChecked(True)
+        self._render_mode = self.SHADED
+
+        self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
+        self._visual_repr.addAction(self._shaded_action)
+        self._visual_repr.addAction(self._hidden_edges_removed_action)
+        self._visual_repr.setExclusive(True)
+
+        self._shaded_action.triggered.connect(self.onShadedTriggered)
+        self._hidden_edges_removed_action.triggered.connect(
+            self.onHiddenEdgesRemovedTriggered)
+
+        self._view_mode = QtWidgets.QPushButton(self._frame)
+        self._view_mode.setText("View")
+        self._view_mode.setMenu(self._view_menu)
+        self._view_mode.setGeometry(10, 10, 80, 25)
+        self._view_mode.show()
 
     def setupMenuBar(self):
         self._menubar = QtWidgets.QMenuBar()
@@ -124,7 +141,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def resizeEvent(self, event):
         len = 80
-        self._render_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
+        self._view_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -338,33 +355,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor
 
-    def onRenderModeChanged(self, index):
-        mode = self._render_mode.itemData(index)
-
-        for actor in self._actors.values():
-            actor.VisibilityOn()
-            if mode == self.SHADED:
-                property = actor.GetProperty()
-                property.LightingOn()
-                comp_name = self._actor_to_comp_name[actor]
-                qcolor = self._component_color[comp_name]
-                self._setPropertyColor(property, qcolor)
-            elif mode == self.SILHOUETTE:
-                property = actor.GetProperty()
-                property.LightingOff()
-                self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
-
-        for actor in self._silhouette_actors.values():
-            if mode == self.SHADED:
-                actor.VisibilityOff()
-            elif mode == self.SILHOUETTE:
-                actor.VisibilityOn()
-                property = actor.GetProperty()
-                self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
-                property.SetLineWidth(3)
-
-        self._vtk_render_window.Render()
-
     def _setupCubeAxisActor(self, bnds):
         actor = vtk.vtkCubeAxesActor()
         actor.SetBounds(*bnds)
@@ -401,4 +391,35 @@ class ModelWindow(QtWidgets.QMainWindow):
         self.plugin.close()
 
     def renderMode(self):
-        return self._render_mode.currentData()
+        return self._render_mode
+
+    def onShadedTriggered(self, checked):
+        self._render_mode = self.SHADED
+
+        for actor in self._actors.values():
+            property = actor.GetProperty()
+            property.LightingOn()
+            comp_name = self._actor_to_comp_name[actor]
+            qcolor = self._component_color[comp_name]
+            self._setPropertyColor(property, qcolor)
+
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOff()
+
+        self._vtk_render_window.Render()
+
+    def onHiddenEdgesRemovedTriggered(self, checked):
+        self._render_mode = self.SILHOUETTE
+
+        for actor in self._actors.values():
+            property = actor.GetProperty()
+            property.LightingOff()
+            self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
+
+        for actor in self._silhouette_actors.values():
+            actor.VisibilityOn()
+            property = actor.GetProperty()
+            self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
+            property.SetLineWidth(3)
+
+        self._vtk_render_window.Render()
