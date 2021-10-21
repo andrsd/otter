@@ -284,8 +284,8 @@ class MeshWindow(QtWidgets.QMainWindow):
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
-        self._centerMesh(bnds)
         self._setupCubeAxesActor(bnds)
+        self._centerMesh(bnds)
 
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
@@ -430,15 +430,20 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.SetPosition(com)
         for actor in self._silhouette_actors.values():
             actor.SetPosition(com)
+        # this should move the cubeaxes actor like it is moving the other ones,
+        # but is being ignored insode VTK. *sigh*
+        self._cube_axes_actor.SetPosition(com)
 
     def _setupCubeAxesActor(self, bnds):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
+        self._cube_axes_actor.VisibilityOff()
         self._cube_axes_actor.SetBounds(*bnds)
         self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
         self._cube_axes_actor.SetGridLineLocation(
             vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
         self._cube_axes_actor.SetFlyMode(
             vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
+        self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
@@ -530,9 +535,9 @@ class MeshWindow(QtWidgets.QMainWindow):
 
     def onCubeAxisVisibilityChanged(self, visible):
         if visible:
-            self._vtk_renderer.AddViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOff()
         self._vtk_render_window.Render()
 
     def onOrientationmarkerVisibilityChanged(self, visible):
