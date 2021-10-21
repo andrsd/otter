@@ -437,7 +437,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def updateWindowTitle(self):
         if self._file_name is None:
-            self.setWindowTitle("Mesh Inspector")
+            self.setWindowTitle("Model Inspector")
         else:
-            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+            self.setWindowTitle("Model Inspector \u2014 {}".format(
                 os.path.basename(self._file_name)))
