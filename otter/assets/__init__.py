@@ -23,7 +23,8 @@ class Assets:
         icons = {
             'app': 'otter.svg',
             'graph': 'graph.svg',
-            'movie': 'movie.svg'
+            'movie': 'movie.svg',
+            'render-mode': 'render-mode.svg'
         }
         self.icons = {}
 

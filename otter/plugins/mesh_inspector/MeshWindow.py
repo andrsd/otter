@@ -4,6 +4,7 @@ import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import otter.plugins.common as common
+from otter.assets import Assets
 
 
 BlockInformation = collections.namedtuple(
@@ -193,7 +194,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
 
         self._view_mode = QtWidgets.QPushButton(frame)
-        self._view_mode.setText("View")
+        self._view_mode.setFixedSize(60, 32)
+        self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.setGeometry(10, 10, 80, 25)
         self._view_mode.show()
@@ -502,6 +504,7 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetColor([1, 1, 1])
         else:
             property.SetColor(clr)
+        self._vtk_render_window.Render()
 
     def onSidesetVisibilityChanged(self, sideset_id, visible):
         actor = self._getSidesetActor(sideset_id)
@@ -654,19 +657,23 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.LightingOff()
         elif self.renderMode() == self.SHADED_WITH_EDGES:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.LightingOff()
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
+            property.LightingOff()
         elif self.renderMode() == self.TRANSLUENT:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
             property.SetEdgeVisibility(False)
+            property.LightingOff()
 
     def _setNodeSetActorProperties(self, actor):
         property = actor.GetProperty()

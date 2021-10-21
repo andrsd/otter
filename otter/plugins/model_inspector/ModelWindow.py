@@ -5,6 +5,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.model_inspector.InputReader import InputReader
 import otter.plugins.common as common
 from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
+from otter.assets import Assets
 
 
 class LoadThread(QtCore.QThread):
@@ -122,7 +123,8 @@ class ModelWindow(QtWidgets.QMainWindow):
             self.onHiddenEdgesRemovedTriggered)
 
         self._view_mode = QtWidgets.QPushButton(self._frame)
-        self._view_mode.setText("View")
+        self._view_mode.setFixedSize(60, 32)
+        self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.setGeometry(10, 10, 80, 25)
         self._view_mode.show()
@@ -435,7 +437,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def updateWindowTitle(self):
         if self._file_name is None:
-            self.setWindowTitle("Mesh Inspector")
+            self.setWindowTitle("Model Inspector")
         else:
-            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+            self.setWindowTitle("Model Inspector \u2014 {}".format(
                 os.path.basename(self._file_name)))
