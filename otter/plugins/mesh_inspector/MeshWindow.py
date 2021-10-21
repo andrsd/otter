@@ -4,6 +4,7 @@ import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import otter.plugins.common as common
+from otter.assets import Assets
 
 
 BlockInformation = collections.namedtuple(
@@ -193,7 +194,8 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
 
         self._view_mode = QtWidgets.QPushButton(frame)
-        self._view_mode.setText("View")
+        self._view_mode.setFixedSize(60, 32)
+        self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.setGeometry(10, 10, 80, 25)
         self._view_mode.show()
