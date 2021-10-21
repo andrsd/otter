@@ -1,6 +1,7 @@
 import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
+from otter.assets import Assets
 from computed_vs_measured.ComputedVsMeasuredPlugin \
     import ComputedVsMeasuredPlugin
 
@@ -31,6 +32,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
+    app.setWindowIcon(Assets().icons['app'])
 
     plugin = ComputedVsMeasuredPlugin(None)
     plugin.create()

@@ -1,6 +1,7 @@
 import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
+from otter.assets import Assets
 from model_inspector.ModelInspectorPlugin import ModelInspectorPlugin
 
 
@@ -30,6 +31,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
+    app.setWindowIcon(Assets().icons['app'])
 
     plugin = ModelInspectorPlugin(None)
     plugin.create()
