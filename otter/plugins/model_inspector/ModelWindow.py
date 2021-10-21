@@ -1,3 +1,4 @@
+import os
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -21,6 +22,9 @@ class LoadThread(QtCore.QThread):
     def getComponents(self):
         return self._components
 
+    def getFileName(self):
+        return self._file_name
+
 
 class ModelWindow(QtWidgets.QMainWindow):
     """
@@ -37,6 +41,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     def __init__(self, plugin):
         super().__init__()
         self.plugin = plugin
+        self._file_name = None
         self._load_thread = None
         self._components = None
         self._component_color = {}
@@ -55,7 +60,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self.setupMenuBar()
         self.setAcceptDrops(True)
         self.setCentralWidget(self._frame)
-        self.setWindowTitle("Model")
+        self.updateWindowTitle()
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -168,12 +173,16 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._load_thread.start()
 
     def onLoadFinished(self):
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
         self._components = self._load_thread.getComponents()
 
         self._actor_to_comp_name = {}
         for name, comp in self._components.items():
             actor = comp.getActor()
             if actor is not None:
+                actor.SetScale(0.99999)
                 self._actors[name] = actor
                 if self.renderMode() == self.SILHOUETTE:
                     property = actor.GetProperty()
@@ -423,3 +432,10 @@ class ModelWindow(QtWidgets.QMainWindow):
             property.SetLineWidth(3)
 
         self._vtk_render_window.Render()
+
+    def updateWindowTitle(self):
+        if self._file_name is None:
+            self.setWindowTitle("Mesh Inspector")
+        else:
+            self.setWindowTitle("Mesh Inspector \u2014 {}".format(
+                os.path.basename(self._file_name)))
