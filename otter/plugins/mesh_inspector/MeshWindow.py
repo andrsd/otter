@@ -502,6 +502,7 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetColor([1, 1, 1])
         else:
             property.SetColor(clr)
+        self._vtk_render_window.Render()
 
     def onSidesetVisibilityChanged(self, sideset_id, visible):
         actor = self._getSidesetActor(sideset_id)

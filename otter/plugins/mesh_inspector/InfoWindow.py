@@ -1,5 +1,6 @@
 import vtk
 from PyQt5 import QtWidgets, QtCore, QtGui
+from otter.plugins.common.ColorPicker import ColorPicker
 
 
 class InfoWindow(QtWidgets.QScrollArea):
@@ -56,6 +57,14 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 10)
 
+        self._color_picker_widget = ColorPicker(self)
+
+        self._color_picker_menu = QtWidgets.QMenu()
+        self._color_picker_menu.addAction(self._color_picker_widget)
+
+        self._color_picker_widget._color_group.buttonClicked.connect(
+            self._color_picker_menu.hide)
+
         self._lbl_blocks = QtWidgets.QLabel("Blocks")
         self._layout.addWidget(self._lbl_blocks)
         self._block_model = QtGui.QStandardItemModel()
@@ -72,6 +81,9 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._blocks.setColumnWidth(0, 200)
         self._blocks.setColumnWidth(1, 20)
         self._blocks.setColumnWidth(2, 50)
+        self._blocks.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self._blocks.customContextMenuRequested.connect(
+            self.onBlockCustomContextMenu)
         self._layout.addWidget(self._blocks)
 
         self._lbl_sidesets = QtWidgets.QLabel("Side sets")
@@ -173,6 +185,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             rgb = self._colors[clr_idx]
             color = QtGui.QColor(rgb[0], rgb[1], rgb[2])
             si_clr.setForeground(QtGui.QBrush(color))
+            si_clr.setData(clr_idx)
             self._block_model.setItem(row, self.IDX_COLOR, si_clr)
 
             si_id = QtGui.QStandardItem()
@@ -237,6 +250,21 @@ class InfoWindow(QtWidgets.QScrollArea):
             name_index = index.siblingAtColumn(self.IDX_NAME)
             block_info = self._block_model.itemFromIndex(name_index).data()
             self.blockColorChanged.emit(block_info.number, color)
+
+    def onBlockCustomContextMenu(self, point):
+        index = self._blocks.indexAt(point)
+        if index.isValid() and index.column() == self.IDX_COLOR:
+            item = self._block_model.itemFromIndex(index)
+            clr_idx = item.data()
+
+            self._color_picker_widget.setColorIndex(clr_idx)
+            self._color_picker_menu.exec(
+                self._blocks.viewport().mapToGlobal(point))
+
+            clr_idx = self._color_picker_widget.colorIndex()
+            qcolor = self._color_picker_widget.color()
+            item.setForeground(QtGui.QBrush(qcolor))
+            item.setData(clr_idx)
 
     def onSidesetChanged(self, item):
         if item.column() == self.IDX_NAME:
