@@ -269,8 +269,45 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._load_thread.start(QtCore.QThread.IdlePriority)
 
     def onLoadFinished(self):
-        camera = self._vtk_renderer.GetActiveCamera()
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
 
+        self._addBlockActors()
+        self._addSidesetActors()
+        self._addNodesetActors()
+
+        gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
+        gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
+        for bnd in self._block_bounds.values():
+            bmin, bmax = bnd
+            gmin = common.point_min(bmin, gmin)
+            gmax = common.point_max(bmax, gmax)
+        bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
+
+        self._centerMesh(bnds)
+        self._setupCubeAxesActor(bnds)
+
+        self._vtk_renderer.ResetCamera()
+        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
+
+        params = {
+            'block_info': block_info,
+            'total_elems': reader.GetTotalNumberOfElements(),
+            'total_nodes': reader.GetTotalNumberOfNodes()
+        }
+        self.fileLoaded.emit(params)
+        self.boundsChanged.emit(bnds)
+
+        self._vtk_render_window.Render()
+
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+
+        self._progress.hide()
+        self._progress = None
+
+    def _addBlockActors(self):
+        camera = self._vtk_renderer.GetActiveCamera()
         reader = self._load_thread.getReader()
         block_info = self._load_thread.getBlockInfo()
 
@@ -320,6 +357,10 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             self._silhouette_actors[binfo.number] = silhouette_actor
 
+    def _addSidesetActors(self):
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
+
         faces = block_info[vtk.vtkExodusIIReader.SIDE_SET].values()
         for index, finfo in enumerate(faces):
             eb = vtk.vtkExtractBlock()
@@ -347,6 +388,10 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             self._sideset_actors[finfo.number] = actor
 
+    def _addNodesetActors(self):
+        reader = self._load_thread.getReader()
+        block_info = self._load_thread.getBlockInfo()
+
         nodes = block_info[vtk.vtkExodusIIReader.NODE_SET].values()
         for index, ninfo in enumerate(nodes):
             eb = vtk.vtkExtractBlock()
@@ -371,19 +416,11 @@ class MeshWindow(QtWidgets.QMainWindow):
 
             self._nodeset_actors[ninfo.number] = actor
 
-        gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
-        gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        for bnd in self._block_bounds.values():
-            bmin, bmax = bnd
-            gmin = common.point_min(bmin, gmin)
-            gmax = common.point_max(bmax, gmax)
-        bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
-
-        # center the mesh
+    def _centerMesh(self, bnds):
         com = [
-            -(gmin.x() + gmax.x()) / 2,
-            -(gmin.y() + gmax.y()) / 2,
-            -(gmin.z() + gmax.z()) / 2
+            -(bnds[0] + bnds[1]) / 2,
+            -(bnds[2] + bnds[3]) / 2,
+            -(bnds[4] + bnds[5]) / 2
         ]
         for actor in self._block_actors.values():
             actor.SetPosition(com)
@@ -394,6 +431,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         for actor in self._silhouette_actors.values():
             actor.SetPosition(com)
 
+    def _setupCubeAxesActor(self, bnds):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
         self._cube_axes_actor.SetBounds(*bnds)
         self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
@@ -401,25 +439,6 @@ class MeshWindow(QtWidgets.QMainWindow):
             vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
         self._cube_axes_actor.SetFlyMode(
             vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
-
-        self._vtk_renderer.ResetCamera()
-        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
-
-        params = {
-            'block_info': block_info,
-            'total_elems': reader.GetTotalNumberOfElements(),
-            'total_nodes': reader.GetTotalNumberOfNodes()
-        }
-        self.fileLoaded.emit(params)
-        self.boundsChanged.emit(bnds)
-
-        self._vtk_render_window.Render()
-
-        self._file_name = self._load_thread.getFileName()
-        self.updateWindowTitle()
-
-        self._progress.hide()
-        self._progress = None
 
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
