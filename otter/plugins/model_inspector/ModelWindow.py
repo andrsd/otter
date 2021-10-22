@@ -421,8 +421,12 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def onShowLabels(self, state):
         self._show_captions = state
-        for actor in self._caption_actors.values():
-            actor.SetVisibility(state)
+
+        for comp_name, actor in self._actors.items():
+            visible = actor.GetVisibility()
+            if visible:
+                caption_actor = self._caption_actors[comp_name]
+                caption_actor.SetVisibility(state)
         self._vtk_render_window.Render()
 
     def onClose(self):
