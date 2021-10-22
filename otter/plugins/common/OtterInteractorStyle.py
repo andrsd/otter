@@ -1,5 +1,5 @@
 import vtk
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 
 class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
@@ -13,6 +13,10 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         # self.AddObserver("LeftButtonPressEvent", self.onLeftButtonPress)
         # self.AddObserver("LeftButtonReleaseEvent", self.onLeftButtonRelease)
         # self.AddObserver("MouseMoveEvent", self.onMouseMove)
+        # self.AddObserver("KeyReleaseEvent", self.onKeyReleased, 1000)
+        self.AddObserver("KeyPressEvent", self.onKeyPress)
+        self.AddObserver("KeyReleaseEvent", self.onKeyRelease)
+        self.AddObserver("CharEvent", self.onChar)
 
     def onLeftButtonPress(self, interactor_style, event):
         self._left_button_down = True
@@ -39,3 +43,21 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             else:
                 # do rotate
                 pass
+
+    def onKeyPress(self, interactor_style, event):
+        interactor = interactor_style.GetInteractor()
+        key = interactor.GetKeyCode()
+        seq = QtGui.QKeySequence(key)
+        # FIXME: get the modifiers from interactor
+        mods = QtCore.Qt.NoModifier
+        if len(seq) > 0:
+            e = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, seq[0], mods)
+            QtCore.QCoreApplication.postEvent(self._widget, e)
+
+    def onKeyRelease(self, interactor_style, event):
+        # interactor = interactor_style.GetInteractor()
+        pass
+
+    def onChar(self, interactor_style, event):
+        # interactor = interactor_style.GetInteractor()
+        pass
