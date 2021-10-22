@@ -144,6 +144,10 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.clear()
         self.show()
 
+        self._update_timer = QtCore.QTimer()
+        self._update_timer.timeout.connect(self.onUpdateWindow)
+        self._update_timer.start(250)
+
     def setupWidgets(self):
         frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
@@ -305,8 +309,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         }
         self.fileLoaded.emit(params)
         self.boundsChanged.emit(bnds)
-
-        self._vtk_render_window.Render()
 
         self._file_name = self._load_thread.getFileName()
         self.updateWindowTitle()
@@ -492,7 +494,6 @@ class MeshWindow(QtWidgets.QMainWindow):
                 actor.VisibilityOn()
             else:
                 actor.VisibilityOff()
-        self._vtk_render_window.Render()
 
     def onBlockColorChanged(self, block_id, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
@@ -504,7 +505,6 @@ class MeshWindow(QtWidgets.QMainWindow):
             property.SetColor([1, 1, 1])
         else:
             property.SetColor(clr)
-        self._vtk_render_window.Render()
 
     def onSidesetVisibilityChanged(self, sideset_id, visible):
         actor = self._getSidesetActor(sideset_id)
@@ -512,7 +512,6 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.VisibilityOn()
         else:
             actor.VisibilityOff()
-        self._vtk_render_window.Render()
 
     def onNodesetVisibilityChanged(self, nodeset_id, visible):
         actor = self._getNodesetActor(nodeset_id)
@@ -520,7 +519,6 @@ class MeshWindow(QtWidgets.QMainWindow):
             actor.VisibilityOn()
         else:
             actor.VisibilityOff()
-        self._vtk_render_window.Render()
 
     def _getBlocksBounds(self, extract_block):
         glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
@@ -549,14 +547,12 @@ class MeshWindow(QtWidgets.QMainWindow):
             self._cube_axes_actor.VisibilityOn()
         else:
             self._cube_axes_actor.VisibilityOff()
-        self._vtk_render_window.Render()
 
     def onOrientationmarkerVisibilityChanged(self, visible):
         if visible:
             self._ori_marker.EnabledOn()
         else:
             self._ori_marker.EnabledOff()
-        self._vtk_render_window.Render()
 
     def onOpenFile(self):
         file_name, f = QtWidgets.QFileDialog.getOpenFileName(
@@ -571,7 +567,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.clear()
         self.fileLoaded.emit(None)
         self.boundsChanged.emit([])
-        self._vtk_render_window.Render()
         self._file_name = None
         self.updateWindowTitle()
 
@@ -687,3 +682,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         property = actor.GetProperty()
         property.SetColor([0, 0, 0])
         property.SetLineWidth(3)
+
+    def onUpdateWindow(self):
+        self._vtk_render_window.Render()

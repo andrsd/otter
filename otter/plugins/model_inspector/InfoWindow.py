@@ -208,8 +208,9 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     def onComponentCurrentChanged(self, current, previous):
         item = self._component_model.itemFromIndex(current)
-        comp_name = item.text()
-        self.componentSelected.emit(comp_name)
+        if item is not None:
+            comp_name = item.text()
+            self.componentSelected.emit(comp_name)
 
     def onComponentCustomContextMenu(self, point):
         index = self._components.indexAt(point)
