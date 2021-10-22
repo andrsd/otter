@@ -1,4 +1,6 @@
 import os
+import sys
+import importlib.util
 from otter.plugins.model_inspector import components
 from otter.plugins.model_inspector.pyhit import hit
 
@@ -13,59 +15,6 @@ class InputReader:
 
     # Maps input file "type" to the python component type to construct
     COMPONENT_TYPES = dict()
-    for c in ['FlowChannel',
-              'FlowChannel1Phase',
-              'FlowChannel2Phase']:
-        COMPONENT_TYPES[c] = components.FlowChannel
-    for c in ['HeatStructure',
-              'HeatStructurePlate',
-              'HeatStructureCylindrical',
-              'HeatStructureFromFile3D']:
-        COMPONENT_TYPES[c] = components.HeatStructure
-    for c in ['FreeBoundary',
-              'InletMassFlowRateTemperature1Phase',
-              'InletMassFlowRateTemperature2Phase',
-              'InletVelocityDensity1Phase',
-              'InletVelocityDensity2Phase',
-              'InletStagnationPressureTemperature1Phase',
-              'InletStagnationPressureTemperature2Phase',
-              'InletStagnationEnthalpyMomentum1Phase',
-              'InletStagnationEnthalpyMomentum2Phase',
-              'Outlet1Phase',
-              'Outlet2Phase',
-              'SolidWall',
-              'SolidWall1Phase',
-              'SolidWall2Phase']:
-        COMPONENT_TYPES[c] = components.Boundary
-    for c in ['Branch',
-              'FlowJunction',
-              'JunctionOneToOne',
-              'Pump1Phase',
-              'VolumeBranch',
-              'VolumeJunction1Phase',
-              'VolumeJunction2Phase',
-              'WetWell',
-              'WetWellStratified']:
-        COMPONENT_TYPES[c] = components.Junction
-    for c in ['FormLossFromExternalApp1Phase',
-              'FormLossFromFunction1Phase',
-              'FormLossFromFunction2Phase',
-              'HeatGeneration',
-              'HeatSourceFromTotalPower',
-              'HeatTransferFromExternalAppHeatFlux1Phase',
-              'HeatTransferFromExternalAppTemperature1Phase',
-              'HeatTransferFromExternalAppTemperature2Phase',
-              'HeatTransferFromHeatFlux1Phase',
-              'HeatTransferFromHeatFlux2Phase',
-              'HeatTransferFromHeatStructure1Phase',
-              'HeatTransferFromHeatStructure2Phase',
-              'HeatTransferFromSpecifiedTemperature1Phase',
-              'HeatTransferFromSpecifiedTemperature2Phase',
-              'PrescribedReactorPower',
-              'PointKineticsReactorPower',
-              'ReactivityFeedback',
-              'TotalPower']:
-        COMPONENT_TYPES[c] = components.InvisibleComponent
 
     def __init__(self):
         self._components = None
@@ -125,8 +74,22 @@ class InputReader:
                     params[child.path()] = child.param()
 
             ctype = params['type']
-            obj_type = self.COMPONENT_TYPES[ctype]
+            obj_type = getattr(components, self.COMPONENT_TYPES[ctype])
             obj = obj_type(self, node_name, params)
             return obj
         else:
             return None
+
+    @staticmethod
+    def loadSyntax(file_path):
+        directory, file_name = os.path.split(file_path)
+        module_name, ext = os.path.splitext(file_name)
+        sys.path.append(directory)
+        temp = importlib.import_module(module_name)
+        sys.path.remove(directory)
+
+        if hasattr(temp, 'component_types'):
+            comp_types = getattr(temp, 'component_types')
+            for str_type, comps in comp_types.items():
+                for c in comps:
+                    InputReader.COMPONENT_TYPES[c] = str_type
