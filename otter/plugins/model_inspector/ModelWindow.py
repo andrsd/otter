@@ -1,5 +1,6 @@
 import os
 import vtk
+import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.model_inspector.InputReader import InputReader
@@ -53,6 +54,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._show_captions = False
         self._actor_to_comp_name = {}
         self._render_mode = self.SHADED
+        self._bnds = None
 
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
@@ -67,7 +69,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
         self._style = OtterInteractorStyle(self)
-        self._style.SetDefaultRenderer(self._vtk_renderer)
         self._vtk_interactor.SetInteractorStyle(self._style)
 
         # TODO: set background from preferences/templates
@@ -186,6 +187,7 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._actors = {}
         self._silhouette_actors = {}
         self._component_bounds = {}
+        self._bnds = None
         self._vtk_renderer.RemoveAllViewProps()
 
     def loadFile(self, file_name):
@@ -243,9 +245,9 @@ class ModelWindow(QtWidgets.QMainWindow):
                 caption_actor.SetCaptionTextProperty(property)
                 self._vtk_renderer.AddViewProp(caption_actor)
 
-        bnds = self._computeBounds()
-        self.boundsChanged.emit(bnds)
-        self._cube_axes_actor = self._setupCubeAxisActor(bnds)
+        self._bnds = self._computeBounds()
+        self.boundsChanged.emit(self._bnds)
+        self._cube_axes_actor = self._setupCubeAxisActor(self._bnds)
 
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
@@ -487,3 +489,92 @@ class ModelWindow(QtWidgets.QMainWindow):
             "THM input files (*.i)")
         if file_name:
             self.loadFile(file_name)
+
+    def _setupCamera(self, focal_point, position, view_up):
+        camera = self._vtk_renderer.GetActiveCamera()
+        camera.SetFocalPoint(focal_point)
+        camera.SetPosition(position)
+        camera.SetViewUp(view_up)
+
+    def _cameraLocation(self, focal_point, distance, direction):
+        # normalize the direction
+        d = math.sqrt(direction[0] * direction[0] +
+                      direction[1] * direction[1] +
+                      direction[2] * direction[2])
+        direction = [i / d for i in direction]
+
+        vec = [distance * i for i in direction]
+        pos = [
+            focal_point[0] + vec[0],
+            focal_point[1] + vec[1],
+            focal_point[2] + vec[2]
+        ]
+        return pos
+
+    def _setCameraPostion(self, cam_pos):
+        camera = self._vtk_renderer.GetActiveCamera()
+        view_angle = camera.GetViewAngle() * math.pi / 180.
+
+        if self._bnds is None:
+            focal_pt = [0, 0, 0]
+            height_x = 1
+            height_y = 1
+            height_z = 1
+        else:
+            focal_pt = [
+                (self._bnds[0] + self._bnds[1]) / 2,
+                (self._bnds[2] + self._bnds[3]) / 2,
+                (self._bnds[4] + self._bnds[5]) / 2
+            ]
+            height_x = 1.05 * (self._bnds[1] - self._bnds[0])
+            height_y = 1.05 * (self._bnds[3] - self._bnds[2])
+            height_z = 1.05 * (self._bnds[5] - self._bnds[4])
+
+        if cam_pos == '-x':
+            distance = height_z / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [-1, 0, 0])
+            view_up = [0, 0, 1]
+            thickness = distance + height_x
+        elif cam_pos == '+x':
+            distance = height_z / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [1, 0, 0])
+            view_up = [0, 0, 1]
+            thickness = distance + height_x
+        elif cam_pos == '-y':
+            distance = height_z / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [0, -1, 0])
+            view_up = [0, 0, 1]
+            thickness = distance + height_y
+        elif cam_pos == '+y':
+            distance = height_z / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [0, 1, 0])
+            view_up = [0, 0, 1]
+            thickness = distance + height_y
+        elif cam_pos == '-z':
+            distance = height_y / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [0, 0, -1])
+            view_up = [0, 1, 0]
+            thickness = distance + height_z
+        elif cam_pos == '+z':
+            distance = height_y / view_angle
+            pos = self._cameraLocation(focal_pt, distance, [0, 0, 1])
+            view_up = [0, 1, 0]
+            thickness = distance + height_z
+
+        self._setupCamera(focal_pt, pos, view_up)
+        camera.SetThickness(thickness)
+        self._vtk_render_window.Render()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_1:
+            self._setCameraPostion("-x")
+        elif event.key() == QtCore.Qt.Key_2:
+            self._setCameraPostion("+x")
+        elif event.key() == QtCore.Qt.Key_3:
+            self._setCameraPostion("-y")
+        elif event.key() == QtCore.Qt.Key_4:
+            self._setCameraPostion("+y")
+        elif event.key() == QtCore.Qt.Key_5:
+            self._setCameraPostion("-z")
+        elif event.key() == QtCore.Qt.Key_6:
+            self._setCameraPostion("+z")
