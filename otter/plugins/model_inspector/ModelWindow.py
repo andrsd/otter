@@ -91,6 +91,9 @@ class ModelWindow(QtWidgets.QMainWindow):
                 self.resize(default_size)
 
         self.show()
+        self._update_timer = QtCore.QTimer()
+        self._update_timer.timeout.connect(self.onUpdateWindow)
+        self._update_timer.start(250)
 
     def setupWidgets(self):
         self._frame = QtWidgets.QFrame(self)
@@ -254,8 +257,6 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self.fileLoaded.emit(self._components.values())
 
-        self._vtk_render_window.Render()
-
     def _computeBounds(self):
         for comp in self._components.values():
             bounds = self._getComponentBounds(comp)
@@ -319,8 +320,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             actor = self._caption_actors[component_name]
             actor.SetVisibility(visible)
 
-        self._vtk_render_window.Render()
-
     def onComponentColorChanged(self, component_name, qcolor):
         self._component_color[component_name] = qcolor
 
@@ -329,7 +328,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             if actor is not None:
                 property = actor.GetProperty()
                 self._setPropertyColor(property, qcolor)
-                self._vtk_render_window.Render()
 
     def _setPropertyColor(self, property, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
@@ -355,14 +353,12 @@ class ModelWindow(QtWidgets.QMainWindow):
             self._vtk_renderer.AddViewProp(self._cube_axes_actor)
         else:
             self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
-        self._vtk_render_window.Render()
 
     def onOrientationmarkerVisibilityChanged(self, visible):
         if visible:
             self._ori_marker.EnabledOn()
         else:
             self._ori_marker.EnabledOff()
-        self._vtk_render_window.Render()
 
     def onClicked(self, pos):
         picker = vtk.vtkPicker()
@@ -390,7 +386,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             comp_name = self._actor_to_comp_name[picked_actor]
             self.componentSelected.emit(comp_name)
 
-        self._vtk_render_window.Render()
         self._last_picked_actor = picked_actor
 
     def _setupCubeAxisActor(self, bnds):
@@ -427,7 +422,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             if visible:
                 caption_actor = self._caption_actors[comp_name]
                 caption_actor.SetVisibility(state)
-        self._vtk_render_window.Render()
 
     def onClose(self):
         self.plugin.close()
@@ -448,8 +442,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         for actor in self._silhouette_actors.values():
             actor.VisibilityOff()
 
-        self._vtk_render_window.Render()
-
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.SILHOUETTE
 
@@ -465,8 +457,6 @@ class ModelWindow(QtWidgets.QMainWindow):
                 property = sil_actor.GetProperty()
                 self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
                 property.SetLineWidth(3)
-
-        self._vtk_render_window.Render()
 
     def onPerspectiveToggled(self, checked):
         if checked:
@@ -487,7 +477,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self.clear()
         self.fileLoaded.emit(None)
         self.boundsChanged.emit([])
-        self._vtk_render_window.Render()
         self._file_name = None
         self.updateWindowTitle()
 
@@ -573,7 +562,6 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self._setupCamera(focal_pt, pos, view_up)
         camera.SetThickness(thickness)
-        self._vtk_render_window.Render()
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_1:
@@ -588,3 +576,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             self._setCameraPostion("-z")
         elif event.key() == QtCore.Qt.Key_6:
             self._setCameraPostion("+z")
+
+    def onUpdateWindow(self):
+        self._vtk_render_window.Render()
