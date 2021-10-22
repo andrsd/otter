@@ -453,16 +453,18 @@ class ModelWindow(QtWidgets.QMainWindow):
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.SILHOUETTE
 
-        for actor in self._actors.values():
+        for comp_name, actor in self._actors.items():
             property = actor.GetProperty()
             property.LightingOff()
             self._setPropertyColor(property, QtGui.QColor(255, 255, 255))
 
-        for actor in self._silhouette_actors.values():
-            actor.VisibilityOn()
-            property = actor.GetProperty()
-            self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
-            property.SetLineWidth(3)
+            visible = actor.GetVisibility()
+            if visible:
+                sil_actor = self._getComponentSilhouetteActor(comp_name)
+                sil_actor.VisibilityOn()
+                property = sil_actor.GetProperty()
+                self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
+                property.SetLineWidth(3)
 
         self._vtk_render_window.Render()
 
