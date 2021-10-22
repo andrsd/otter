@@ -1,5 +1,7 @@
+import os
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
+from otter.plugins.model_inspector.InputReader import InputReader
 from otter.plugins.model_inspector.ModelWindow import ModelWindow
 from otter.plugins.model_inspector.InfoWindow import InfoWindow
 
@@ -12,6 +14,9 @@ class ModelInspectorPlugin(Plugin):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.model_window = None
+
+        here = os.path.dirname(os.path.realpath(__file__))
+        InputReader.loadSyntax(os.path.join(here, 'thm-components.py'))
 
     @staticmethod
     def name():
