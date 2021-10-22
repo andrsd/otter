@@ -315,6 +315,10 @@ class ModelWindow(QtWidgets.QMainWindow):
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOff()
 
+        if self._show_captions:
+            actor = self._caption_actors[component_name]
+            actor.SetVisibility(visible)
+
         self._vtk_render_window.Render()
 
     def onComponentColorChanged(self, component_name, qcolor):
