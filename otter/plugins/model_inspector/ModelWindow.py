@@ -135,7 +135,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._view_menu.addSeparator()
         self._perspective_action = self._view_menu.addAction("Perspective")
         self._perspective_action.setCheckable(True)
-        self._perspective_action.setChecked(True)
+        perspective = self.plugin.settings.value("window/perspective", True)
+        self._perspective_action.setChecked(perspective)
+        self.onPerspectiveToggled(perspective)
 
         self._shaded_action.triggered.connect(self.onShadedTriggered)
         self._shaded_with_edges_action.triggered.connect(
@@ -172,6 +174,8 @@ class ModelWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         self.plugin.settings.setValue("window/render_mode", self.renderMode())
+        self.plugin.settings.setValue(
+            "window/perspective", self._perspective_action.isChecked())
         event.accept()
 
     def resizeEvent(self, event):
