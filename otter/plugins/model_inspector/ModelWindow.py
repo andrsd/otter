@@ -38,6 +38,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     componentSelected = QtCore.pyqtSignal(object)
 
     SHADED = 0
+    SHADED_WITH_EDGES = 2
     SILHOUETTE = 1
 
     def __init__(self, plugin):
@@ -111,6 +112,9 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._view_menu = QtWidgets.QMenu()
         self._shaded_action = self._view_menu.addAction("Shaded")
         self._shaded_action.setCheckable(True)
+        self._shaded_with_edges_action = self._view_menu.addAction(
+            "Shaded with edges")
+        self._shaded_with_edges_action.setCheckable(True)
         self._hidden_edges_removed_action = self._view_menu.addAction(
             "Hidden edges removed")
         self._hidden_edges_removed_action.setCheckable(True)
@@ -119,6 +123,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
         self._visual_repr.addAction(self._shaded_action)
+        self._visual_repr.addAction(self._shaded_with_edges_action)
         self._visual_repr.addAction(self._hidden_edges_removed_action)
         self._visual_repr.setExclusive(True)
 
@@ -128,6 +133,8 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._perspective_action.setChecked(True)
 
         self._shaded_action.triggered.connect(self.onShadedTriggered)
+        self._shaded_with_edges_action.triggered.connect(
+            self.onShadedWithEdgesTriggered)
         self._hidden_edges_removed_action.triggered.connect(
             self.onHiddenEdgesRemovedTriggered)
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
@@ -209,10 +216,11 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._actor_to_comp_name = {}
         for name, comp in self._components.items():
             actor = comp.getActor()
+            render_mode = self.renderMode()
             if actor is not None:
                 actor.SetScale(0.99999)
                 self._actors[name] = actor
-                if self.renderMode() == self.SILHOUETTE:
+                if render_mode in [self.SILHOUETTE, self.SHADED_WITH_EDGES]:
                     property = actor.GetProperty()
                     property.LightingOff()
                     qclr = QtGui.QColor(255, 255, 255)
@@ -222,7 +230,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
             silhouette_actor = comp.getSilhouetteActor()
             if silhouette_actor is not None:
-                if self.renderMode() == self.SHADED:
+                if render_mode == self.SHADED:
                     silhouette_actor.VisibilityOff()
                 self._silhouette_actors[name] = silhouette_actor
                 self._vtk_renderer.AddViewProp(silhouette_actor)
@@ -306,13 +314,13 @@ class ModelWindow(QtWidgets.QMainWindow):
         if visible:
             actor.VisibilityOn()
 
-            if self.renderMode() == self.SILHOUETTE:
+            if self.renderMode() in [self.SILHOUETTE, self.SHADED_WITH_EDGES]:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOn()
         else:
             actor.VisibilityOff()
 
-            if self.renderMode() == self.SILHOUETTE:
+            if self.renderMode() in [self.SILHOUETTE, self.SHADED_WITH_EDGES]:
                 actor = self._getComponentSilhouetteActor(component_name)
                 actor.VisibilityOff()
 
@@ -323,7 +331,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     def onComponentColorChanged(self, component_name, qcolor):
         self._component_color[component_name] = qcolor
 
-        if self.renderMode() == self.SHADED:
+        if self.renderMode() in [self.SHADED, self.SHADED_WITH_EDGES]:
             actor = self._getComponentActor(component_name)
             if actor is not None:
                 property = actor.GetProperty()
@@ -441,6 +449,24 @@ class ModelWindow(QtWidgets.QMainWindow):
 
         for actor in self._silhouette_actors.values():
             actor.VisibilityOff()
+
+    def onShadedWithEdgesTriggered(self, checked):
+        self._render_mode = self.SHADED_WITH_EDGES
+
+        for actor in self._actors.values():
+            property = actor.GetProperty()
+            property.LightingOn()
+            comp_name = self._actor_to_comp_name[actor]
+            qcolor = self._component_color[comp_name]
+            self._setPropertyColor(property, qcolor)
+
+            visible = actor.GetVisibility()
+            if visible:
+                sil_actor = self._getComponentSilhouetteActor(comp_name)
+                sil_actor.VisibilityOn()
+                property = sil_actor.GetProperty()
+                self._setPropertyColor(property, QtGui.QColor(0, 0, 0))
+                property.SetLineWidth(3)
 
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.SILHOUETTE
