@@ -54,7 +54,8 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._caption_actors = {}
         self._show_captions = False
         self._actor_to_comp_name = {}
-        self._render_mode = self.SHADED
+        self._render_mode = self.plugin.settings.value(
+            "window/render_mode", self.SHADED)
         self._bnds = None
 
         self._last_picked_actor = None
@@ -118,8 +119,12 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._hidden_edges_removed_action = self._view_menu.addAction(
             "Hidden edges removed")
         self._hidden_edges_removed_action.setCheckable(True)
-        self._shaded_action.setChecked(True)
-        self._render_mode = self.SHADED
+        if self._render_mode == self.SHADED:
+            self._shaded_action.setChecked(True)
+        elif self._render_mode == self.SILHOUETTE:
+            self._hidden_edges_removed_action.setChecked(True)
+        else:
+            self._shaded_with_edges_action.setChecked(True)
 
         self._visual_repr = QtWidgets.QActionGroup(self._view_menu)
         self._visual_repr.addAction(self._shaded_action)
@@ -166,6 +171,7 @@ class ModelWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
+        self.plugin.settings.setValue("window/render_mode", self.renderMode())
         event.accept()
 
     def resizeEvent(self, event):
