@@ -251,9 +251,24 @@ class InfoWindow(QtWidgets.QScrollArea):
             block_info = self._block_model.itemFromIndex(name_index).data()
             self.blockColorChanged.emit(block_info.number, color)
 
+    def _onNameContextMenu(self, item, point):
+        menu = QtWidgets.QMenu()
+        if item.checkState() == QtCore.Qt.Checked:
+            menu.addAction("Hide", self.onHideBlock)
+            menu.addAction("Hide others", self.onHideOtherBlocks)
+            menu.addAction("Hide all", self.onHideAllBlocks)
+        else:
+            menu.addAction("Show", self.onShowBlock)
+            menu.addAction("Show all", self.onShowAllBlocks)
+        menu.exec(point)
+
     def onBlockCustomContextMenu(self, point):
         index = self._blocks.indexAt(point)
-        if index.isValid() and index.column() == self.IDX_COLOR:
+        if index.isValid() and index.column() == self.IDX_NAME:
+            item = self._block_model.itemFromIndex(index)
+            self._onNameContextMenu(
+                item, self._blocks.viewport().mapToGlobal(point))
+        elif index.isValid() and index.column() == self.IDX_COLOR:
             item = self._block_model.itemFromIndex(index)
             clr_idx = item.data()
 
@@ -304,3 +319,39 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self._total_elements.setText(1, "")
         self._total_nodes.setText(1, "")
+
+    def onHideBlock(self):
+        selection_model = self._blocks.selectionModel()
+        indexes = selection_model.selectedIndexes()
+        if len(indexes) > 0:
+            index = indexes[0]
+            item = self._block_model.itemFromIndex(index)
+            item.setCheckState(QtCore.Qt.Unchecked)
+
+    def onHideOtherBlocks(self):
+        selection_model = self._blocks.selectionModel()
+        indexes = selection_model.selectedIndexes()
+        if len(indexes) > 0:
+            index = indexes[0]
+            for row in range(self._block_model.rowCount()):
+                if row != index.row():
+                    item = self._block_model.item(row, 0)
+                    item.setCheckState(QtCore.Qt.Unchecked)
+
+    def onHideAllBlocks(self):
+        for row in range(self._block_model.rowCount()):
+            item = self._block_model.item(row, 0)
+            item.setCheckState(QtCore.Qt.Unchecked)
+
+    def onShowBlock(self):
+        selection_model = self._blocks.selectionModel()
+        indexes = selection_model.selectedIndexes()
+        if len(indexes) > 0:
+            index = indexes[0]
+            item = self._block_model.itemFromIndex(index)
+            item.setCheckState(QtCore.Qt.Checked)
+
+    def onShowAllBlocks(self):
+        for row in range(self._block_model.rowCount()):
+            item = self._block_model.item(row, 0)
+            item.setCheckState(QtCore.Qt.Checked)
