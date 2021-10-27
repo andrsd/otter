@@ -658,7 +658,7 @@ class MeshWindow(QtWidgets.QMainWindow):
         elif self.renderMode() == self.SHADED_WITH_EDGES:
             property = actor.GetProperty()
             property.SetColor(self.SIDESET_CLR)
-            property.SetEdgeVisibility(True)
+            property.SetEdgeVisibility(False)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
             property.SetLineWidth(self.SIDESET_EDGE_WIDTH)
             property.LightingOff()
