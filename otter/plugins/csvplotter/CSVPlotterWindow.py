@@ -4,19 +4,19 @@ CSVPlotterWindow.py
 
 import os
 from PyQt5 import QtWidgets, QtCore
+from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.csvplotter.FilesWidget import FilesWidget
 from otter.plugins.csvplotter.ChartSetupWidget import ChartSetupWidget
 from otter.plugins.csvplotter.ChartWidget import ChartWidget
 
 
-class CSVPlotterWindow(QtWidgets.QMainWindow):
+class CSVPlotterWindow(PluginWindowBase):
     """
     Main window of the CSV plotter plug-in
     """
 
     def __init__(self, plugin):
-        super().__init__()
-        self.plugin = plugin
+        super().__init__(plugin)
         self.last_updated = None
 
         self.setAcceptDrops(True)
@@ -24,14 +24,6 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
 
         self.setupWidgets()
         self.setupMenuBar()
-
-        geom = self.plugin.settings.value("window/geometry")
-        default_size = QtCore.QSize(1000, 700)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
         self.files_widget.loadFile.connect(self.onLoadFile)
         self.files_widget.loadFile.connect(self.chart_setup_widget.onLoadFile)
@@ -117,9 +109,6 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.splitter)
 
     def setupMenuBar(self):
-        self._menubar = QtWidgets.QMenuBar()
-        self.setMenuBar(self._menubar)
-
         file_menu = self._menubar.addMenu("File")
         self._export_menu = file_menu.addMenu("Export")
         self._export_png = self._export_menu.addAction(
@@ -131,10 +120,6 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
-
-    @property
-    def menubar(self):
-        return self._menubar
 
     def onLoadFile(self, file_name):
         """
@@ -230,18 +215,3 @@ class CSVPlotterWindow(QtWidgets.QMainWindow):
             self.files_widget.updateFileList(file_names)
         else:
             event.ignore()
-
-    def event(self, event):
-        """
-        Event handler
-        """
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
-    def closeEvent(self, event):
-        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
-        event.accept()
-
-    def onClose(self):
-        self.plugin.close()

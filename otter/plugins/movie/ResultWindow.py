@@ -1,15 +1,15 @@
 import os
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtWidgets
+from otter.plugins.PluginWindowBase import PluginWindowBase
 
 
-class ResultWindow(QtWidgets.QMainWindow):
+class ResultWindow(PluginWindowBase):
     """
     Window for displaying the result
     """
 
     def __init__(self, plugin):
-        super().__init__()
-        self.plugin = plugin
+        super().__init__(plugin)
         self._file_name = None
 
         self.frame = QtWidgets.QFrame()
@@ -21,21 +21,10 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.frame)
         self.updateWindowTitle()
 
-        geom = self.plugin.settings.value("window/geometry")
-        default_size = QtCore.QSize(700, 500)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
-
         self.setupMenuBar()
         self.show()
 
     def setupMenuBar(self):
-        self._menubar = QtWidgets.QMenuBar(self)
-        self.setMenuBar(self._menubar)
-
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
             "New", self.onNewFile, "Ctrl+N")
@@ -47,15 +36,6 @@ class ResultWindow(QtWidgets.QMainWindow):
         file_menu.addSeparator()
         self._render_action = file_menu.addAction(
             "Render", self.onRender, "Ctrl+Shift+R")
-
-    def event(self, event):
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
-    def closeEvent(self, event):
-        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
-        event.accept()
 
     def updateWindowTitle(self):
         title = "Result"
@@ -73,6 +53,3 @@ class ResultWindow(QtWidgets.QMainWindow):
 
     def onRender(self):
         pass
-
-    def onClose(self):
-        self.plugin.close()
