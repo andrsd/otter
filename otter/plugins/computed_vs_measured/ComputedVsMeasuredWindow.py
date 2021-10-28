@@ -16,6 +16,7 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.plugin = plugin
         self.last_updated = None
+        self.s = []
 
         self._icon_size = QtCore.QSize(32, 32)
         self.chart_corner_roundness = 4
@@ -23,12 +24,9 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         self.abs_err = 0.1
         self.rel_err = 10
 
-        self.smin = 0
-        self.smax = 1
-        self.s = []
-
         self.setupWidgets()
         self.setupMenuBar()
+        self.clear()
 
         # connect signals
         self.relative_error.toggled.connect(self.onRelativeError)
@@ -185,6 +183,8 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         self.setMenuBar(self._menubar)
 
         file_menu = self._menubar.addMenu("File")
+        self._new_action = file_menu.addAction(
+            "New", self.onNew, "Ctrl+N")
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
 
@@ -459,6 +459,19 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    def clear(self):
+        chart = self.chart_view.chart()
+        for series in self.s:
+            chart.removeSeries(series)
+        self.s = []
+
+        self.smin = 0
+        self.smax = 1
+        self.axis_x.setRange(self.smin, self.smax)
+        self.axis_y.setRange(self.smin, self.smax)
+
+        self.file_list.removeRows(0, self.file_list.rowCount())
+
     def event(self, event):
         """
         Event handler
@@ -473,3 +486,6 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
 
     def onClose(self):
         self.plugin.close()
+
+    def onNew(self):
+        self.clear()
