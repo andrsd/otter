@@ -278,9 +278,9 @@ class MeshWindow(PluginWindowBase):
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
+        self._calcCenterOfMass(bnds)
         self._cube_axes_actor.SetBounds(*bnds)
         self._vtk_renderer.AddViewProp(self._cube_axes_actor)
-        self._centerMesh(bnds)
 
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
@@ -411,23 +411,12 @@ class MeshWindow(PluginWindowBase):
 
             self._nodeset_actors[ninfo.number] = actor
 
-    def _centerMesh(self, bnds):
-        com = [
+    def _calcCenterOfMass(self, bnds):
+        self._com = [
             -(bnds[0] + bnds[1]) / 2,
             -(bnds[2] + bnds[3]) / 2,
             -(bnds[4] + bnds[5]) / 2
         ]
-        for actor in self._block_actors.values():
-            actor.SetPosition(com)
-        for actor in self._sideset_actors.values():
-            actor.SetPosition(com)
-        for actor in self._nodeset_actors.values():
-            actor.SetPosition(com)
-        for actor in self._silhouette_actors.values():
-            actor.SetPosition(com)
-        # this should move the cubeaxes actor like it is moving the other ones,
-        # but is being ignored insode VTK. *sigh*
-        self._cube_axes_actor.SetPosition(com)
 
     def _setupCubeAxesActor(self):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
