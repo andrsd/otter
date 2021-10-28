@@ -5,16 +5,16 @@ ComputedVsMeasuredWindow.py
 import os
 import csv
 from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
+from otter.plugins.PluginWindowBase import PluginWindowBase
 
 
-class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
+class ComputedVsMeasuredWindow(PluginWindowBase):
     """
     Main window of the computed vs measured data plug-in
     """
 
     def __init__(self, plugin):
-        super().__init__()
-        self.plugin = plugin
+        super().__init__(plugin)
         self.last_updated = None
         self.s = []
 
@@ -43,14 +43,6 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
 
         self.setAcceptDrops(True)
         self.setWindowTitle("Computed vs. Measured")
-
-        geom = self.plugin.settings.value("window/geometry")
-        default_size = QtCore.QSize(1000, 700)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
     def setupWidgets(self):
         self.setContentsMargins(8, 8, 0, 8)
@@ -179,18 +171,11 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.vsplitter)
 
     def setupMenuBar(self):
-        self._menubar = QtWidgets.QMenuBar()
-        self.setMenuBar(self._menubar)
-
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
             "New", self.onNew, "Ctrl+N")
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
-
-    @property
-    def menubar(self):
-        return self._menubar
 
     def updateControls(self):
         """
@@ -471,21 +456,6 @@ class ComputedVsMeasuredWindow(QtWidgets.QMainWindow):
         self.axis_y.setRange(self.smin, self.smax)
 
         self.file_list.removeRows(0, self.file_list.rowCount())
-
-    def event(self, event):
-        """
-        Event handler
-        """
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
-    def closeEvent(self, event):
-        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
-        event.accept()
-
-    def onClose(self):
-        self.plugin.close()
 
     def onNew(self):
         self.clear()

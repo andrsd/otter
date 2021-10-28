@@ -3,6 +3,7 @@ import collections
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from otter.plugins.PluginWindowBase import PluginWindowBase
 import otter.plugins.common as common
 from otter.assets import Assets
 
@@ -79,7 +80,7 @@ class LoadThread(QtCore.QThread):
         return self._file_name
 
 
-class MeshWindow(QtWidgets.QMainWindow):
+class MeshWindow(PluginWindowBase):
     """
     Window for displaying the mesh
     """
@@ -98,8 +99,7 @@ class MeshWindow(QtWidgets.QMainWindow):
     TRANSLUENT = 3
 
     def __init__(self, plugin):
-        super().__init__()
-        self.plugin = plugin
+        super().__init__(plugin)
         self._load_thread = None
         self._progress = None
         self._file_name = None
@@ -133,14 +133,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         self._vtk_interactor.Start()
 
         self._setupOrientationMarker()
-
-        geom = self.plugin.settings.value("window/geometry")
-        default_size = QtCore.QSize(700, 500)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
         self.clear()
         self.show()
@@ -208,9 +200,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(frame)
 
     def setupMenuBar(self):
-        self._menubar = QtWidgets.QMenuBar(self)
-        self.setMenuBar(self._menubar)
-
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
             "New", self.onNewFile, "Ctrl+N")
@@ -219,15 +208,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
-
-    def event(self, event):
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
-    def closeEvent(self, event):
-        self.plugin.settings.setValue("window/geometry", self.saveGeometry())
-        event.accept()
 
     def resizeEvent(self, event):
         len = 80
@@ -623,9 +603,6 @@ class MeshWindow(QtWidgets.QMainWindow):
         else:
             camera = self._vtk_renderer.GetActiveCamera()
             camera.ParallelProjectionOn()
-
-    def onClose(self):
-        self.plugin.close()
 
     def _setBlockActorProperties(self, block_id, actor):
         property = actor.GetProperty()

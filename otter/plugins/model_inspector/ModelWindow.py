@@ -3,6 +3,7 @@ import vtk
 import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.model_inspector.InputReader import InputReader
 import otter.plugins.common as common
 from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
@@ -28,7 +29,7 @@ class LoadThread(QtCore.QThread):
         return self._file_name
 
 
-class ModelWindow(QtWidgets.QMainWindow):
+class ModelWindow(PluginWindowBase):
     """
     Window for displaying the model
     """
@@ -42,8 +43,7 @@ class ModelWindow(QtWidgets.QMainWindow):
     SILHOUETTE = 1
 
     def __init__(self, plugin):
-        super().__init__()
-        self.plugin = plugin
+        super().__init__(plugin)
         self._file_name = None
         self._load_thread = None
         self._components = None
@@ -83,14 +83,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._vtk_interactor.Start()
 
         self._setupOrientationMarker()
-
-        geom = self.plugin.settings.value("window/geometry")
-        default_size = QtCore.QSize(700, 500)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
         self.show()
         self._update_timer = QtCore.QTimer()
@@ -154,9 +146,6 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._view_mode.show()
 
     def setupMenuBar(self):
-        self._menubar = QtWidgets.QMenuBar()
-        self.setMenuBar(self._menubar)
-
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
             "New", self.onNewFile, "Ctrl+N")
@@ -166,17 +155,12 @@ class ModelWindow(QtWidgets.QMainWindow):
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
 
-    def event(self, event):
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
     def closeEvent(self, event):
         self.plugin.settings.setValue("window/geometry", self.saveGeometry())
         self.plugin.settings.setValue("window/render_mode", self.renderMode())
         self.plugin.settings.setValue(
             "window/perspective", self._perspective_action.isChecked())
-        event.accept()
+        super().closeEvent()
 
     def resizeEvent(self, event):
         len = 80
@@ -440,9 +424,6 @@ class ModelWindow(QtWidgets.QMainWindow):
             if visible:
                 caption_actor = self._caption_actors[comp_name]
                 caption_actor.SetVisibility(state)
-
-    def onClose(self):
-        self.plugin.close()
 
     def renderMode(self):
         return self._render_mode
