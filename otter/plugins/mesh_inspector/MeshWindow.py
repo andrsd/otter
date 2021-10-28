@@ -426,7 +426,6 @@ class MeshWindow(PluginWindowBase):
             vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
         self._cube_axes_actor.SetFlyMode(
             vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
-        self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
