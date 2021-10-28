@@ -83,6 +83,7 @@ class ModelWindow(PluginWindowBase):
         self._vtk_interactor.Start()
 
         self._setupOrientationMarker()
+        self._setupCubeAxisActor()
 
         self.show()
         self._update_timer = QtCore.QTimer()
@@ -252,7 +253,9 @@ class ModelWindow(PluginWindowBase):
 
         self._bnds = self._computeBounds()
         self.boundsChanged.emit(self._bnds)
-        self._cube_axes_actor = self._setupCubeAxisActor(self._bnds)
+
+        self._cube_axes_actor.SetBounds(self._bnds)
+        self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
         self._vtk_renderer.ResetCamera()
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
@@ -352,9 +355,9 @@ class ModelWindow(PluginWindowBase):
 
     def onCubeAxisVisibilityChanged(self, visible):
         if visible:
-            self._vtk_renderer.AddViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOn()
         else:
-            self._vtk_renderer.RemoveViewProp(self._cube_axes_actor)
+            self._cube_axes_actor.VisibilityOff()
 
     def onOrientationmarkerVisibilityChanged(self, visible):
         if visible:
@@ -390,9 +393,9 @@ class ModelWindow(PluginWindowBase):
 
         self._last_picked_actor = picked_actor
 
-    def _setupCubeAxisActor(self, bnds):
+    def _setupCubeAxisActor(self):
         actor = vtk.vtkCubeAxesActor()
-        actor.SetBounds(*bnds)
+        actor.VisibilityOff()
         actor.SetCamera(self._vtk_renderer.GetActiveCamera())
         actor.SetGridLineLocation(vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
         actor.SetFlyMode(vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
@@ -414,7 +417,7 @@ class ModelWindow(PluginWindowBase):
             actor.GetTitleTextProperty(axis).SetColor(color)
             actor.GetLabelTextProperty(axis).SetColor(color)
 
-        return actor
+        self._cube_axes_actor = actor
 
     def onShowLabels(self, state):
         self._show_captions = state
