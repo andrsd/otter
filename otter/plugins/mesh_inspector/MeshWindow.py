@@ -133,6 +133,7 @@ class MeshWindow(PluginWindowBase):
         self._vtk_interactor.Start()
 
         self._setupOrientationMarker()
+        self._setupCubeAxesActor()
 
         self.clear()
         self.show()
@@ -277,7 +278,8 @@ class MeshWindow(PluginWindowBase):
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
-        self._setupCubeAxesActor(bnds)
+        self._cube_axes_actor.SetBounds(*bnds)
+        self._vtk_renderer.AddViewProp(self._cube_axes_actor)
         self._centerMesh(bnds)
 
         self._vtk_renderer.ResetCamera()
@@ -427,10 +429,9 @@ class MeshWindow(PluginWindowBase):
         # but is being ignored insode VTK. *sigh*
         self._cube_axes_actor.SetPosition(com)
 
-    def _setupCubeAxesActor(self, bnds):
+    def _setupCubeAxesActor(self):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
         self._cube_axes_actor.VisibilityOff()
-        self._cube_axes_actor.SetBounds(*bnds)
         self._cube_axes_actor.SetCamera(self._vtk_renderer.GetActiveCamera())
         self._cube_axes_actor.SetGridLineLocation(
             vtk.vtkCubeAxesActor.VTK_GRID_LINES_ALL)
