@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets
 from otter.plugins.PluginWindowBase import PluginWindowBase
 
 
-class ResultWindow(PluginWindowBase):
+class RenderWindow(PluginWindowBase):
     """
     Window for displaying the result
     """
