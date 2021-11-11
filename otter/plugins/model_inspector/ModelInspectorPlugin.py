@@ -1,6 +1,8 @@
 import os
+from PyQt5 import QtCore
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
+from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.model_inspector.InputReader import InputReader
 from otter.plugins.model_inspector.ModelWindow import ModelWindow
 from otter.plugins.model_inspector.InfoWindow import InfoWindow
@@ -55,3 +57,7 @@ class ModelInspectorPlugin(Plugin):
     def onClose(self):
         self.info_window.close()
         self.model_window.close()
+
+    def loadFile(self, file_name):
+        event = LoadFileEvent(file_name)
+        QtCore.QCoreApplication.postEvent(self.model_window, event)

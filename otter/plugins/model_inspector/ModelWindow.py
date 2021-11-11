@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.model_inspector.InputReader import InputReader
+from otter.plugins.common.LoadFileEvent import LoadFileEvent
 import otter.plugins.common as common
 from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
 from otter.assets import Assets
@@ -599,3 +600,10 @@ class ModelWindow(PluginWindowBase):
 
     def onUpdateWindow(self):
         self._vtk_render_window.Render()
+
+    def event(self, e):
+        if e.type() == LoadFileEvent.TYPE:
+            self.loadFile(e.fileName())
+            return True
+        else:
+            return super().event(e)

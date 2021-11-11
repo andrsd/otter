@@ -1,5 +1,7 @@
+from PyQt5 import QtCore
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
+from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.mesh_inspector.MeshWindow import MeshWindow
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 
@@ -50,3 +52,7 @@ class MeshInspectorPlugin(Plugin):
     def onClose(self):
         self.info_window.close()
         self.mesh_window.close()
+
+    def loadFile(self, file_name):
+        event = LoadFileEvent(file_name)
+        QtCore.QCoreApplication.postEvent(self.mesh_window, event)

@@ -1,8 +1,18 @@
 import sys
 import signal
+import argparse
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
 from mesh_inspector.MeshInspectorPlugin import MeshInspectorPlugin
+
+parser = argparse.ArgumentParser(description='Mesh inspector')
+parser.add_argument(
+    'mesh_file',
+    metavar='file',
+    type=str,
+    nargs='?',
+    help='Mesh file to display')
+args = parser.parse_args()
 
 
 def safe_timer(timeout, func, *args, **kwargs):
@@ -22,7 +32,7 @@ def handle_sigint(signum, frame):
     QtWidgets.QApplication.quit()
 
 
-def main():
+def main(args):
     QtCore.QCoreApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
@@ -39,10 +49,12 @@ def main():
     # handle signals
     safe_timer(50, lambda: None)
 
+    if args.mesh_file is not None:
+        plugin.loadFile(args.mesh_file)
     app.exec()
 
     del app
 
 
 if __name__ == '__main__':
-    main()
+    main(args)
