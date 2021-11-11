@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from PyQt5 import QtWidgets, QtCore
-from otter.plugins.movie.ResultWindow import ResultWindow
+from otter.plugins.viz.ResultWindow import ResultWindow
 
 
 @pytest.fixture

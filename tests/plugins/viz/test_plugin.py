@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from PyQt5 import QtGui
-from otter.plugins.movie.MoviePlugin import MoviePlugin
+from otter.plugins.viz.VizPlugin import VizPlugin
 
 
 def test_init(movie_plugin):
@@ -9,11 +9,11 @@ def test_init(movie_plugin):
 
 
 def test_name():
-    assert MoviePlugin.name() == "Movie"
+    assert VizPlugin.name() == "Movie"
 
 
 def test_icon():
-    assert isinstance(MoviePlugin.icon(), QtGui.QIcon)
+    assert isinstance(VizPlugin.icon(), QtGui.QIcon)
 
 
 @patch('otter.plugins.Plugin.Plugin.registerWindow')

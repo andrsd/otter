@@ -2,7 +2,7 @@ import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
-from movie.MoviePlugin import MoviePlugin
+from viz.VizPlugin import VizPlugin
 
 
 def safe_timer(timeout, func, *args, **kwargs):
@@ -33,7 +33,7 @@ def main():
     app.setQuitOnLastWindowClosed(True)
     app.setWindowIcon(Assets().icons['app'])
 
-    plugin = MoviePlugin(None)
+    plugin = VizPlugin(None)
     plugin.create()
     # Repeatedly run python-noop to give the interpreter time to
     # handle signals

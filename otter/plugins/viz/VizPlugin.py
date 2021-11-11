@@ -1,12 +1,12 @@
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
-from otter.plugins.movie.ResultWindow import ResultWindow
-from otter.plugins.movie.ParamsWindow import ParamsWindow
+from otter.plugins.viz.ResultWindow import ResultWindow
+from otter.plugins.viz.ParamsWindow import ParamsWindow
 
 
-class MoviePlugin(Plugin):
+class VizPlugin(Plugin):
     """
-    Plugin for rendering movies
+    Plugin for visualization
     """
 
     def __init__(self, parent):
@@ -16,7 +16,7 @@ class MoviePlugin(Plugin):
 
     @staticmethod
     def name():
-        return "Movie"
+        return "Viz"
 
     @staticmethod
     def icon():
