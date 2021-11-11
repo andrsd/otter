@@ -162,7 +162,7 @@ class ModelWindow(PluginWindowBase):
         self.plugin.settings.setValue("window/render_mode", self.renderMode())
         self.plugin.settings.setValue(
             "window/perspective", self._perspective_action.isChecked())
-        super().closeEvent()
+        event.accept()
 
     def resizeEvent(self, event):
         len = 80
