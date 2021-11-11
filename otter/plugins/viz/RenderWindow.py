@@ -1,5 +1,7 @@
 import os
-from PyQt5 import QtWidgets
+import vtk
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from PyQt5 import QtWidgets, QtCore
 from otter.plugins.PluginWindowBase import PluginWindowBase
 
 
@@ -12,17 +14,49 @@ class RenderWindow(PluginWindowBase):
         super().__init__(plugin)
         self._file_name = None
 
-        self.frame = QtWidgets.QFrame()
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        self.frame.setLayout(self.layout)
-
-        self.setCentralWidget(self.frame)
+        self.setupWidgets()
+        self.setupMenuBar()
         self.updateWindowTitle()
 
-        self.setupMenuBar()
+        self.setAcceptDrops(True)
+
+        self._vtk_render_window = self._vtk_widget.GetRenderWindow()
+        self._vtk_interactor = self._vtk_render_window.GetInteractor()
+
+        self._vtk_interactor.SetInteractorStyle(
+            vtk.vtkInteractorStyleTrackballCamera())
+
+        # set anti-aliasing on
+        self._vtk_renderer.SetUseFXAA(True)
+        self._vtk_render_window.SetMultiSamples(1)
+
+        self._vtk_interactor.Initialize()
+        self._vtk_interactor.Start()
+
+        self.clear()
         self.show()
+
+        self._update_timer = QtCore.QTimer()
+        self._update_timer.timeout.connect(self.onUpdateWindow)
+        self._update_timer.start(250)
+
+    def getVtkRenderer(self):
+        return self._vtk_renderer
+
+    def setupWidgets(self):
+        frame = QtWidgets.QFrame(self)
+        self._vtk_widget = QVTKRenderWindowInteractor(frame)
+
+        self._vtk_renderer = vtk.vtkRenderer()
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._vtk_widget)
+
+        frame.setLayout(self._layout)
+
+        self.setCentralWidget(frame)
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -45,11 +79,45 @@ class RenderWindow(PluginWindowBase):
             self.setWindowTitle("{} \u2014 {}".format(
                 title, os.path.basename(self._file_name)))
 
-    def onNewFile(self):
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+
+            file_names = []
+            for url in event.mimeData().urls():
+                file_names.append(url.toLocalFile())
+            if len(file_names) > 0:
+                self.loadFile(file_names[0])
+        else:
+            event.ignore()
+
+    def clear(self):
         pass
 
+    def loadFile(self, file_name):
+        self.clear()
+
+    def onNewFile(self):
+        self.clear()
+
     def onOpenFile(self):
-        pass
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            "",
+            "ExodusII files (*.e *.exo)")
+        if file_name:
+            self.loadFile(file_name)
 
     def onRender(self):
         pass
+
+    def onUpdateWindow(self):
+        self._vtk_render_window.Render()

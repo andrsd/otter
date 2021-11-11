@@ -23,8 +23,9 @@ class VizPlugin(Plugin):
         return Assets().icons['movie']
 
     def onCreate(self):
-        self._params_window = ParamsWindow(self)
         self._render_window = RenderWindow(self)
+        renderer = self._render_window.getVtkRenderer()
+        self._params_window = ParamsWindow(self, renderer)
         self.registerWindow(self._render_window)
 
         if self.parent is not None and hasattr(self.parent, 'window_menu'):
