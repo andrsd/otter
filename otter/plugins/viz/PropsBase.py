@@ -20,5 +20,8 @@ class PropsBase(QtWidgets.QWidget):
         self._title.setFont(font)
         self._layout.addWidget(self._title)
 
+    def setFocus(self):
+        pass
+
     def buildVtkActor(self):
         return self._actor

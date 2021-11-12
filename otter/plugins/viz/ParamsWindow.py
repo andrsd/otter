@@ -1,6 +1,23 @@
+import os
 from PyQt5 import QtWidgets, QtCore, QtGui
+from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.viz.RootProps import RootProps
+from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
+
+
+class LoadThread(QtCore.QThread):
+    """ Worker thread for loading ExodusII files """
+
+    def __init__(self, file_name):
+        super().__init__()
+        self._reader = ExodusIIReader(file_name)
+
+    def run(self):
+        self._reader.load()
+
+    def getReader(self):
+        return self._reader
 
 
 class ParamsWindow(QtWidgets.QScrollArea):
@@ -12,6 +29,10 @@ class ParamsWindow(QtWidgets.QScrollArea):
         super().__init__()
         self.plugin = plugin
         self._vtk_renderer = renderer
+        self._load_thread = None
+        self._progress = None
+
+        self.setAcceptDrops(True)
 
         layout = self.setupWidgets()
 
@@ -59,6 +80,7 @@ class ParamsWindow(QtWidgets.QScrollArea):
         self._button_layout.addWidget(self._add_button)
 
         self._add_menu = QtWidgets.QMenu()
+        self._add_file = self._add_menu.addAction("File", self.onAddFile)
         self._add_text = self._add_menu.addAction("Text", self.onAddText)
 
         self._add_button.setMenu(self._add_menu)
@@ -95,6 +117,25 @@ class ParamsWindow(QtWidgets.QScrollArea):
         self.plugin.settings.setValue("info/geometry", self.saveGeometry())
         event.accept()
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+
+            file_names = []
+            for url in event.mimeData().urls():
+                file_names.append(url.toLocalFile())
+            if len(file_names) > 0:
+                self.loadFile(file_names[0])
+        else:
+            event.ignore()
+
     def onPipelineSelectionChanged(self, selected, deselected):
         if len(selected) > 0:
             index = selected.indexes()[0]
@@ -102,23 +143,61 @@ class ParamsWindow(QtWidgets.QScrollArea):
             props = item.data()
             self._properties_stack.setCurrentWidget(props)
 
-    def onAddText(self):
-        text_props = TextProps()
-
-        actor = text_props.buildVtkActor()
-        if actor is not None:
-            self._vtk_renderer.AddViewProp(actor)
-
-        text_props.setFocus()
-        self._properties_stack.addWidget(text_props)
+    def _addPipelineItem(self, props, name):
+        props.setFocus()
+        self._properties_stack.addWidget(props)
 
         rows = self._root.rowCount()
         si = QtGui.QStandardItem()
-        si.setText("Text")
-        si.setData(text_props)
+        si.setText(name)
+        si.setData(props)
         self._root.insertRow(rows, si)
 
         index = self._pipeline_model.indexFromItem(si)
         sel_model = self._pipeline.selectionModel()
         sel_model.clearSelection()
         sel_model.setCurrentIndex(index, QtCore.QItemSelectionModel.Select)
+
+    def onAddText(self):
+        text_props = TextProps()
+        actor = text_props.buildVtkActor()
+        if actor is not None:
+            self._vtk_renderer.AddViewProp(actor)
+
+        self._addPipelineItem(text_props, "Text")
+
+    def onAddFile(self):
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            "",
+            "ExodusII files (*.e *.exo)")
+        if file_name:
+            self.loadFile(file_name)
+
+    def loadFile(self, file_name):
+        self._progress = QtWidgets.QProgressDialog(
+            "Loading {}...".format(os.path.basename(file_name)),
+            None, 0, 0, self)
+        self._progress.setWindowModality(QtCore.Qt.WindowModal)
+        self._progress.setMinimumDuration(0)
+        self._progress.show()
+
+        self._load_thread = LoadThread(file_name)
+        self._load_thread.finished.connect(self.onFileLoadFinished)
+        self._load_thread.start(QtCore.QThread.IdlePriority)
+
+    def onFileLoadFinished(self):
+        reader = self._load_thread.getReader()
+
+        file_props = FileProps(reader)
+        actors = file_props.buildVtkActor()
+        if isinstance(actors, list):
+            for act in actors:
+                self._vtk_renderer.AddViewProp(act)
+
+        file_name = os.path.basename(reader.getFileName())
+        self._addPipelineItem(file_props, file_name)
+
+        self._progress.hide()
+        self._progress = None
