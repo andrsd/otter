@@ -63,13 +63,13 @@ class RenderWindow(PluginWindowBase):
         self._new_action = file_menu.addAction(
             "New", self.plugin.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
-            "Open", self.onOpenFile, "Ctrl+O")
+            "Open", self.plugin.onOpenFile, "Ctrl+O")
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
-            "Close", self.onClose, "Ctrl+W")
+            "Close", self.plugin.onClose, "Ctrl+W")
         file_menu.addSeparator()
         self._render_action = file_menu.addAction(
-            "Render", self.onRender, "Ctrl+Shift+R")
+            "Render", self.plugin.onRender, "Ctrl+Shift+R")
 
     def updateWindowTitle(self):
         title = "Result"
@@ -94,26 +94,11 @@ class RenderWindow(PluginWindowBase):
             for url in event.mimeData().urls():
                 file_names.append(url.toLocalFile())
             if len(file_names) > 0:
-                self.loadFile(file_names[0])
+                self.plugin.loadFile(file_names[0])
         else:
             event.ignore()
 
     def clear(self):
-        pass
-
-    def loadFile(self, file_name):
-        self.clear()
-
-    def onOpenFile(self):
-        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
-            self,
-            'Open File',
-            "",
-            "ExodusII files (*.e *.exo)")
-        if file_name:
-            self.loadFile(file_name)
-
-    def onRender(self):
         pass
 
     def onUpdateWindow(self):

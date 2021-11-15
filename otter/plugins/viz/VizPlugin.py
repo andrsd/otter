@@ -1,3 +1,4 @@
+from PyQt5 import QtWidgets
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
 from otter.plugins.viz.RenderWindow import RenderWindow
@@ -39,3 +40,18 @@ class VizPlugin(Plugin):
     def onNewFile(self):
         self._render_window.clear()
         self._params_window.clear()
+
+    def onOpenFile(self):
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self._render_window,
+            'Open File',
+            "",
+            "ExodusII files (*.e *.exo)")
+        if file_name:
+            self.loadFile(file_name)
+
+    def loadFile(self, file_name):
+        self._params_window.loadFile(file_name)
+
+    def onRender(self):
+        pass
