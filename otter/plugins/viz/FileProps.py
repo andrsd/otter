@@ -34,8 +34,20 @@ class FileProps(PropsBase):
         self._file_name = QtWidgets.QLineEdit(self._reader.getFileName())
         self._file_name.setReadOnly(True)
         self._layout.addWidget(self._file_name)
+        self._setupVariableWidget()
         self._setupBlocksWidget()
         self._layout.addStretch()
+
+        self._variable.currentIndexChanged.connect(self.onVariableChanged)
+
+    def _setupVariableWidget(self):
+        var_info = self._reader.getVariableInfo()
+
+        self._variable = QtWidgets.QComboBox()
+        self._variable.addItem("Block colors", None)
+        for vi in var_info:
+            self._variable.addItem(vi.name, vi)
+        self._layout.addWidget(self._variable)
 
     def _setupBlocksWidget(self):
         self._lbl_blocks = QtWidgets.QLabel("Blocks")
@@ -87,7 +99,6 @@ class FileProps(PropsBase):
 
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputConnection(geometry.GetOutputPort())
-        mapper.SetScalarModeToUsePointFieldData()
         mapper.InterpolateScalarsBeforeMappingOn()
 
         actor = vtk.vtkActor()
@@ -126,3 +137,21 @@ class FileProps(PropsBase):
             binfo = item.data()
             actor = self._block_actors[binfo.number]
             actor.SetVisibility(visible)
+
+    def onVariableChanged(self, index):
+        vinfo = self._variable.itemData(index)
+        if vinfo is None:
+            for bnum, actor in self._block_actors.items():
+                mapper = actor.GetMapper()
+                mapper.ScalarVisibilityOff()
+        else:
+            for actor in self._block_actors.values():
+                mapper = actor.GetMapper()
+                mapper.ScalarVisibilityOn()
+                mapper.SelectColorArray(vinfo.name)
+                mapper.UseLookupTableScalarRangeOn()
+                if vinfo.object_type == vtk.vtkExodusIIReader.NODAL:
+                    mapper.SetScalarModeToUsePointFieldData()
+                elif vinfo.object_type == vtk.vtkExodusIIReader.ELEM_BLOCK:
+                    mapper.SetScalarModeToUseCellFieldData()
+                mapper.InterpolateScalarsBeforeMappingOn()

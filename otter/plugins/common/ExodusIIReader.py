@@ -8,6 +8,11 @@ BlockInformation = collections.namedtuple(
         'name', 'object_type', 'object_index', 'number', 'multiblock_index'
     ])
 
+VariableInformation = collections.namedtuple(
+    'VariableInformation', [
+        'name', 'object_type', 'num_components'
+    ])
+
 
 class ExodusIIReader:
     """
@@ -19,13 +24,20 @@ class ExodusIIReader:
         self._reader = None
         # BlockInformation objects
         self._block_info = dict()
+        self._variable_info = dict()
+        self._times = None
 
     def load(self):
         self._reader = vtk.vtkExodusIIReader()
 
         with common.lock_file(self._file_name):
+            self._readTimeInfo()
+
             self._reader.SetFileName(self._file_name)
+            if self._times is not None:
+                self._reader.SetTimeStep(self._time_steps[-1])
             self._reader.UpdateInformation()
+            self._reader.SetAllArrayStatus(vtk.vtkExodusIIReader.NODAL, 1)
             self._reader.Update()
 
             self._readBlockInfo()
@@ -33,6 +45,7 @@ class ExodusIIReader:
                 for info in data.values():
                     self._reader.SetObjectStatus(
                         info.object_type, info.object_index, 1)
+            self._readVariableInfo()
 
     def _readBlockInfo(self):
         object_types = [
@@ -66,6 +79,40 @@ class ExodusIIReader:
                                          multiblock_index=index)
                 self._block_info[obj_type][vtkid] = binfo
 
+    def _readVariableInfo(self):
+        var_type = [
+            vtk.vtkExodusIIReader.NODAL,
+            vtk.vtkExodusIIReader.ELEM_BLOCK
+        ]
+
+        for variable_type in var_type:
+            for i in range(self._reader.GetNumberOfObjectArrays(
+                    variable_type)):
+                var_name = self._reader.GetObjectArrayName(variable_type, i)
+                if var_name is not None:
+                    num = self._reader.GetNumberOfObjectArrayComponents(
+                        variable_type, i)
+                    vinfo = VariableInformation(name=var_name,
+                                                object_type=variable_type,
+                                                num_components=num)
+                    self._variable_info[var_name] = vinfo
+
+    def _readTimeInfo(self):
+        self._reader.SetFileName(self._file_name)
+        self._reader.Modified()
+        self._reader.UpdateInformation()
+        vtkinfo = self._reader.GetExecutive().GetOutputInformation(0)
+        steps = range(self._reader.GetNumberOfTimeSteps())
+        key = vtk.vtkStreamingDemandDrivenPipeline.TIME_STEPS()
+        times = [vtkinfo.Get(key, i) for i in steps]
+
+        if not times:
+            self._times = None
+            self._time_steps = None
+        else:
+            self._times = times
+            self._time_steps = steps
+
     def getReader(self):
         return self._reader
 
@@ -83,3 +130,6 @@ class ExodusIIReader:
 
     def getFileName(self):
         return self._file_name
+
+    def getVariableInfo(self):
+        return self._variable_info.values()
