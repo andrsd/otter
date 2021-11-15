@@ -160,7 +160,7 @@ class ParamsWindow(QtWidgets.QScrollArea):
 
     def onAddText(self):
         text_props = TextProps()
-        actor = text_props.buildVtkActor()
+        actor = text_props.getVtkActor()
         if actor is not None:
             self._vtk_renderer.AddViewProp(actor)
 
@@ -191,7 +191,7 @@ class ParamsWindow(QtWidgets.QScrollArea):
         reader = self._load_thread.getReader()
 
         file_props = FileProps(reader)
-        actors = file_props.buildVtkActor()
+        actors = file_props.getVtkActor()
         if isinstance(actors, list):
             for act in actors:
                 self._vtk_renderer.AddViewProp(act)
@@ -201,3 +201,17 @@ class ParamsWindow(QtWidgets.QScrollArea):
 
         self._progress.hide()
         self._progress = None
+
+    def clear(self):
+        for i in range(self._root.rowCount()):
+            child = self._root.child(i)
+            data = child.data()
+            actor = data.getVtkActor()
+            if actor is None:
+                pass
+            elif isinstance(actor, list):
+                for act in actor:
+                    self._vtk_renderer.RemoveViewProp(act)
+            else:
+                self._vtk_renderer.RemoveViewProp(actor)
+        self._root.removeRows(0, self._root.rowCount())

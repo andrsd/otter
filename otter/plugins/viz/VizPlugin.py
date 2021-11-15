@@ -35,3 +35,7 @@ class VizPlugin(Plugin):
     def onClose(self):
         self._params_window.close()
         self._render_window.close()
+
+    def onNewFile(self):
+        self._render_window.clear()
+        self._params_window.clear()

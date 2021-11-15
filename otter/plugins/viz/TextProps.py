@@ -15,6 +15,10 @@ class TextProps(PropsBase):
         super().__init__(parent)
         self._title.setText("Text properties")
         self.setupWidgets()
+        self.buildVtkActor()
+
+    def getVtkActor(self):
+        return self._actor
 
     def setupWidgets(self):
         self._text = QtWidgets.QLineEdit("Text")
@@ -66,7 +70,6 @@ class TextProps(PropsBase):
         self._text_property.SetColor(clr)
         self._color_btn.setColor(qcolor)
         self._font_props.setVtkTextProperty(self._text_property)
-        return self._actor
 
     def setFocus(self):
         QtCore.QTimer.singleShot(100, self._text.setFocus)

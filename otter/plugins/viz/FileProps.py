@@ -29,6 +29,10 @@ class FileProps(PropsBase):
         ]
 
         self.setupWidgets()
+        self.buildVtkActor()
+
+    def getVtkActor(self):
+        return list(self._block_actors.values())
 
     def setupWidgets(self):
         self._file_name = QtWidgets.QLineEdit(self._reader.getFileName())
@@ -128,8 +132,6 @@ class FileProps(PropsBase):
 
             row = self._block_model.rowCount()
             self._addBlock(row, binfo, clr_idx)
-
-        return actors
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:

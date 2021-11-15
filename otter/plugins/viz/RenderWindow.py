@@ -61,7 +61,7 @@ class RenderWindow(PluginWindowBase):
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
-            "New", self.onNewFile, "Ctrl+N")
+            "New", self.plugin.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
         file_menu.addSeparator()
@@ -102,9 +102,6 @@ class RenderWindow(PluginWindowBase):
         pass
 
     def loadFile(self, file_name):
-        self.clear()
-
-    def onNewFile(self):
         self.clear()
 
     def onOpenFile(self):
