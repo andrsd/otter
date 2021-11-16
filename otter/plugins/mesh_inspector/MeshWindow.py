@@ -22,6 +22,7 @@ class LoadThread(QtCore.QThread):
     def getReader(self):
         return self._reader
 
+
 class MeshWindow(PluginWindowBase):
     """
     Window for displaying the mesh
@@ -532,6 +533,8 @@ class MeshWindow(PluginWindowBase):
 
     def _setBlockActorProperties(self, block_id, actor):
         property = actor.GetProperty()
+        property.SetAmbient(0.4)
+        property.SetDiffuse(0.6)
         if self.renderMode() == self.SHADED:
             property.SetColor(self._block_color[block_id])
             property.SetOpacity(1.0)
