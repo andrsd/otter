@@ -1,4 +1,3 @@
-import vtk
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.common.ColorPicker import ColorPicker
 
@@ -226,14 +225,9 @@ class InfoWindow(QtWidgets.QScrollArea):
         if params is None:
             self.clear()
         else:
-            block_info = params['block_info']
-            block_type = vtk.vtkExodusIIReader.ELEM_BLOCK
-            self._loadBlocks(block_info[block_type].values())
-            block_type = vtk.vtkExodusIIReader.SIDE_SET
-            self._loadSideSets(block_info[block_type].values())
-            block_type = vtk.vtkExodusIIReader.NODE_SET
-            self._loadNodeSets(block_info[block_type].values())
-
+            self._loadBlocks(params['blocks'])
+            self._loadSideSets(params['sidesets'])
+            self._loadNodeSets(params['nodesets'])
             total_elems = params['total_elems']
             self._total_elements.setText(1, "{:,}".format(total_elems))
             total_nodes = params['total_nodes']

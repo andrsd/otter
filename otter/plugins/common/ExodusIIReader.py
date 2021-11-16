@@ -133,3 +133,9 @@ class ExodusIIReader:
 
     def getVariableInfo(self):
         return self._variable_info.values()
+
+    def getTotalNumberOfElements(self):
+        return self._reader.GetTotalNumberOfElements()
+
+    def getTotalNumberOfNodes(self):
+        return self._reader.GetTotalNumberOfNodes()

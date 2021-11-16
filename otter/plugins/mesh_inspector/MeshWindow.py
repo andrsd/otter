@@ -1,18 +1,12 @@
 import os
-import collections
 import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
+from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 import otter.plugins.common as common
 from otter.assets import Assets
-
-
-BlockInformation = collections.namedtuple(
-    'BlockInformation', [
-        'name', 'object_type', 'object_index', 'number', 'multiblock_index'
-    ])
 
 
 class LoadThread(QtCore.QThread):
@@ -20,66 +14,13 @@ class LoadThread(QtCore.QThread):
 
     def __init__(self, file_name):
         super().__init__()
-        self._file_name = file_name
-        self._reader = None
-        # BlockInformation objects
-        self._block_info = dict()
+        self._reader = ExodusIIReader(file_name)
 
     def run(self):
-        self._reader = vtk.vtkExodusIIReader()
-
-        with common.lock_file(self._file_name):
-            self._reader.SetFileName(self._file_name)
-            self._reader.UpdateInformation()
-            self._reader.Update()
-
-            self._readBlockInfo()
-            for obj_type, data in self._block_info.items():
-                for info in data.values():
-                    self._reader.SetObjectStatus(
-                        info.object_type, info.object_index, 1)
-
-    def _readBlockInfo(self):
-        object_types = [
-            vtk.vtkExodusIIReader.ELEM_BLOCK,
-            vtk.vtkExodusIIReader.FACE_BLOCK,
-            vtk.vtkExodusIIReader.EDGE_BLOCK,
-            vtk.vtkExodusIIReader.ELEM_SET,
-            vtk.vtkExodusIIReader.SIDE_SET,
-            vtk.vtkExodusIIReader.FACE_SET,
-            vtk.vtkExodusIIReader.EDGE_SET,
-            vtk.vtkExodusIIReader.NODE_SET
-        ]
-
-        # Index to be used with the vtkExtractBlock::AddIndex method
-        index = 0
-        # Loop over all blocks of the vtk.MultiBlockDataSet
-        for obj_type in object_types:
-            index += 1
-            self._block_info[obj_type] = dict()
-            for j in range(self._reader.GetNumberOfObjects(obj_type)):
-                index += 1
-                name = self._reader.GetObjectName(obj_type, j)
-                vtkid = self._reader.GetObjectId(obj_type, j)
-                if name.startswith('Unnamed'):
-                    name = str(vtkid)
-
-                binfo = BlockInformation(object_type=obj_type,
-                                         name=name,
-                                         number=vtkid,
-                                         object_index=j,
-                                         multiblock_index=index)
-                self._block_info[obj_type][vtkid] = binfo
+        self._reader.load()
 
     def getReader(self):
         return self._reader
-
-    def getBlockInfo(self):
-        return self._block_info
-
-    def getFileName(self):
-        return self._file_name
-
 
 class MeshWindow(PluginWindowBase):
     """
@@ -265,7 +206,6 @@ class MeshWindow(PluginWindowBase):
 
     def onLoadFinished(self):
         reader = self._load_thread.getReader()
-        block_info = self._load_thread.getBlockInfo()
 
         self._addBlockActors()
         self._addSidesetActors()
@@ -287,14 +227,16 @@ class MeshWindow(PluginWindowBase):
         self._vtk_renderer.GetActiveCamera().Zoom(1.5)
 
         params = {
-            'block_info': block_info,
-            'total_elems': reader.GetTotalNumberOfElements(),
-            'total_nodes': reader.GetTotalNumberOfNodes()
+            'blocks': reader.getBlocks(),
+            'sidesets': reader.getSideSets(),
+            'nodesets': reader.getNodeSets(),
+            'total_elems': reader.getTotalNumberOfElements(),
+            'total_nodes': reader.getTotalNumberOfNodes()
         }
         self.fileLoaded.emit(params)
         self.boundsChanged.emit(bnds)
 
-        self._file_name = self._load_thread.getFileName()
+        self._file_name = reader.getFileName()
         self.updateWindowTitle()
 
         self._progress.hide()
@@ -303,12 +245,10 @@ class MeshWindow(PluginWindowBase):
     def _addBlockActors(self):
         camera = self._vtk_renderer.GetActiveCamera()
         reader = self._load_thread.getReader()
-        block_info = self._load_thread.getBlockInfo()
 
-        blocks = block_info[vtk.vtkExodusIIReader.ELEM_BLOCK].values()
-        for index, binfo in enumerate(blocks):
+        for index, binfo in enumerate(reader.getBlocks()):
             eb = vtk.vtkExtractBlock()
-            eb.SetInputConnection(reader.GetOutputPort(0))
+            eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(binfo.multiblock_index)
             eb.Update()
 
@@ -355,12 +295,10 @@ class MeshWindow(PluginWindowBase):
 
     def _addSidesetActors(self):
         reader = self._load_thread.getReader()
-        block_info = self._load_thread.getBlockInfo()
 
-        faces = block_info[vtk.vtkExodusIIReader.SIDE_SET].values()
-        for index, finfo in enumerate(faces):
+        for index, finfo in enumerate(reader.getSideSets()):
             eb = vtk.vtkExtractBlock()
-            eb.SetInputConnection(reader.GetOutputPort())
+            eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(finfo.multiblock_index)
             eb.Update()
 
@@ -386,12 +324,10 @@ class MeshWindow(PluginWindowBase):
 
     def _addNodesetActors(self):
         reader = self._load_thread.getReader()
-        block_info = self._load_thread.getBlockInfo()
 
-        nodes = block_info[vtk.vtkExodusIIReader.NODE_SET].values()
-        for index, ninfo in enumerate(nodes):
+        for index, ninfo in enumerate(reader.getNodeSets()):
             eb = vtk.vtkExtractBlock()
-            eb.SetInputConnection(reader.GetOutputPort())
+            eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(ninfo.multiblock_index)
             eb.Update()
 
