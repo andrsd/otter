@@ -78,7 +78,7 @@ class Component(object):
     def _createCaptionActor(self):
         actor = vtk.vtkCaptionActor2D()
         actor.SetCaption(self._name)
-        actor.SetPosition(75., 75.)
+        actor.SetPosition(25., 25.)
         actor.SetWidth(0.5)
         actor.SetHeight(0.05)
         actor.SetVisibility(False)

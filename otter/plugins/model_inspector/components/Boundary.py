@@ -12,6 +12,7 @@ class Boundary(Component):
 
     def __init__(self, reader, name, params):
         super().__init__(reader, name, params)
+        self._center = None
         self._mapper = None
         self._actor = None
         self._silhouette_actor = None
@@ -27,18 +28,18 @@ class Boundary(Component):
         pos = comp.getPoint(self._connection['type'])
         ori = comp.getOrientation(self._connection['type'])
         if self._connection['type'] == 'in':
-            center = [pos[0] - ori[0] * 0.5 * Boundary.SIZE,
-                      pos[1] - ori[1] * 0.5 * Boundary.SIZE,
-                      pos[2] - ori[2] * 0.5 * Boundary.SIZE]
+            self._center = [pos[0] - ori[0] * 0.5 * Boundary.SIZE,
+                            pos[1] - ori[1] * 0.5 * Boundary.SIZE,
+                            pos[2] - ori[2] * 0.5 * Boundary.SIZE]
         elif self._connection['type'] == 'out':
-            center = [pos[0] + ori[0] * 0.5 * Boundary.SIZE,
-                      pos[1] + ori[1] * 0.5 * Boundary.SIZE,
-                      pos[2] + ori[2] * 0.5 * Boundary.SIZE]
+            self._center = [pos[0] + ori[0] * 0.5 * Boundary.SIZE,
+                            pos[1] + ori[1] * 0.5 * Boundary.SIZE,
+                            pos[2] + ori[2] * 0.5 * Boundary.SIZE]
         else:
-            center = pos
+            self._center = pos
 
         source = vtk.vtkCubeSource()
-        source.SetCenter(center)
+        source.SetCenter(self._center)
         source.SetXLength(Boundary.SIZE)
         source.SetYLength(Boundary.SIZE)
         source.SetZLength(Boundary.SIZE)
@@ -60,7 +61,7 @@ class Boundary(Component):
         self._silhouette_actor.SetMapper(self._silhouette_mapper)
 
         self._caption_actor = self._createCaptionActor()
-        self._caption_actor.SetAttachmentPoint(center)
+        self._caption_actor.SetAttachmentPoint(self._center)
 
     def getActor(self):
         return self._actor
@@ -70,3 +71,6 @@ class Boundary(Component):
 
     def setSilhouetteCamera(self, camera):
         self._silhouette.SetCamera(camera)
+
+    def getPoint(self):
+        return self._center

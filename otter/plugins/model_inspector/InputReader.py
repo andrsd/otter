@@ -18,9 +18,13 @@ class InputReader:
 
     def __init__(self):
         self._components = None
+        self._pps = None
+        self._ent_3d_map = None
 
     def load(self, file_name):
         self._components = dict()
+        self._pps = dict()
+        self._ent_3d_map = dict()
         if file_name:
             if not os.path.isfile(file_name):
                 raise IOError("""The supplied input file '{}' does
@@ -36,8 +40,14 @@ class InputReader:
             self.__traverse(root)
             for c in self._components.values():
                 c.create()
+            self._createMapTo3DSpace()
+            self._mapPPSToPoints()
 
+    def getComponents(self):
         return self._components
+
+    def getPPS(self):
+        return self._pps
 
     def getComponent(self, name):
         if name in self._components:
@@ -54,6 +64,11 @@ class InputReader:
                 obj = self.__buildComponent(child)
                 if obj is not None:
                     self._components[obj.name] = obj
+        elif node.type() == 'Section' and node.path() == 'Postprocessors':
+            for child in node.children():
+                pps = self.__buildPPS(child)
+                if pps is not None:
+                    self._pps[pps['name']] = pps
         else:
             for child in node.children():
                 self.__traverse(child)
@@ -86,6 +101,54 @@ class InputReader:
                         self._components[obj.name] = obj
         else:
             return None
+
+    def __buildPPS(self, node):
+        """
+        Build the PPS
+        """
+        if node.type() == 'Section':
+            node_name = node.fullpath().split("Postprocessors/", 1)[1]
+            # build a dictionary with parameters
+            params = {}
+            for child in node.children():
+                if child.type() == 'Field':
+                    params[child.path()] = child.param()
+
+            if 'type' in params:
+                if params['type'] == 'PointValue':
+                    obj = {
+                        'name': node_name,
+                        'point': components.Component.toArray(params['point'])
+                    }
+                    return obj
+                elif params['type'] == 'SideAverageValue':
+                    obj = {
+                        'name': node_name,
+                        'boundary': params['boundary']
+                    }
+                    return obj
+
+        return None
+
+    def _createMapTo3DSpace(self):
+        """
+        Map boundaries, junctions and flow channel ends to physical points
+        """
+        self._ent_3d_map = {}
+        for obj in self._components.values():
+            if isinstance(obj, components.Boundary):
+                self._ent_3d_map[obj.name] = obj.getPoint()
+            elif isinstance(obj, components.Junction):
+                self._ent_3d_map[obj.name] = obj.getPoint()
+            elif isinstance(obj, components.FlowChannel):
+                self._ent_3d_map[obj.name + ':in'] = obj.getPoint('in')
+                self._ent_3d_map[obj.name + ':out'] = obj.getPoint('out')
+
+    def _mapPPSToPoints(self):
+        for obj in self._pps.values():
+            if 'boundary' in obj:
+                pt = self._ent_3d_map[obj['boundary']]
+                obj['point'] = pt
 
     @staticmethod
     def loadSyntax(file_path):

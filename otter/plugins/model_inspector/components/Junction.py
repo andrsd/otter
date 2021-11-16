@@ -13,6 +13,7 @@ class Junction(Component):
     def __init__(self, reader, name, params):
         super().__init__(reader, name, params)
 
+        self._center = None
         self._source = None
         self.__connections = []
 
@@ -25,11 +26,11 @@ class Junction(Component):
         return "Junction"
 
     def create(self):
-        center = self.__computeCenter(self.__connections)
-        bounds = self.__computeBounds(center)
+        self._center = self.__computeCenter(self.__connections)
+        bounds = self.__computeBounds(self._center)
 
         source = vtk.vtkCubeSource()
-        source.SetCenter(center)
+        source.SetCenter(self._center)
         source.SetBounds(bounds)
 
         self._mapper = vtk.vtkPolyDataMapper()
@@ -49,7 +50,7 @@ class Junction(Component):
         self._silhouette_actor.SetMapper(self._silhouette_mapper)
 
         self._caption_actor = self._createCaptionActor()
-        self._caption_actor.SetAttachmentPoint(center)
+        self._caption_actor.SetAttachmentPoint(self._center)
 
     def getActor(self):
         return self._actor
@@ -97,3 +98,6 @@ class Junction(Component):
             if pt[2] + Junction.SIZE > zmax:
                 zmax = pt[2] + Junction.SIZE
         return [xmin, xmax, ymin, ymax, zmin, zmax]
+
+    def getPoint(self):
+        return self._center

@@ -17,14 +17,16 @@ class LoadThread(QtCore.QThread):
     def __init__(self, file_name):
         super().__init__()
         self._file_name = file_name
-        self._components = None
+        self._reader = InputReader()
 
     def run(self):
-        reader = InputReader()
-        self._components = reader.load(self._file_name)
+        self._reader.load(self._file_name)
 
     def getComponents(self):
-        return self._components
+        return self._reader.getComponents()
+
+    def getPPS(self):
+        return self._reader.getPPS()
 
     def getFileName(self):
         return self._file_name
@@ -58,6 +60,8 @@ class ModelWindow(PluginWindowBase):
         self._render_mode = self.plugin.settings.value(
             "window/render_mode", self.SHADED)
         self._bnds = None
+        self._pps_actors = {}
+        self._pps_caption_actors = {}
 
         self._last_picked_actor = None
         self._last_picked_property = vtk.vtkProperty()
@@ -203,10 +207,7 @@ class ModelWindow(PluginWindowBase):
         self._load_thread.finished.connect(self.onLoadFinished)
         self._load_thread.start()
 
-    def onLoadFinished(self):
-        self._file_name = self._load_thread.getFileName()
-        self.updateWindowTitle()
-
+    def __buildComponents(self):
         self._components = self._load_thread.getComponents()
 
         self._actor_to_comp_name = {}
@@ -251,6 +252,66 @@ class ModelWindow(PluginWindowBase):
                 property.ShadowOff()
                 caption_actor.SetCaptionTextProperty(property)
                 self._vtk_renderer.AddViewProp(caption_actor)
+
+    def __buildPPS(self):
+        self._pps_actors = {}
+        self._pps_caption_actors = {}
+        pps_list = self._load_thread.getPPS()
+        for name, pps in pps_list.items():
+            src = vtk.vtkSphereSource()
+            pt = pps['point']
+            src.SetCenter(pt)
+            src.SetRadius(0.02)
+            src.SetPhiResolution(16)
+            src.SetThetaResolution(16)
+
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(src.GetOutputPort())
+
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            actor.VisibilityOff()
+
+            property = actor.GetProperty()
+            property.SetColor([1, 0, 1])
+            property.SetAmbient(0.4)
+            property.SetDiffuse(0.6)
+
+            self._pps_actors[name] = actor
+            self._vtk_renderer.AddViewProp(actor)
+
+            caption_actor = vtk.vtkCaptionActor2D()
+            caption_actor.SetAttachmentPoint(pt)
+            caption_actor.SetCaption(name)
+            caption_actor.SetPosition(25., 75.)
+            caption_actor.SetWidth(0.5)
+            caption_actor.SetHeight(0.05)
+            caption_actor.SetVisibility(False)
+            caption_actor.BorderOff()
+            caption_actor.ThreeDimensionalLeaderOff()
+            caption_actor.LeaderOn()
+
+            property = caption_actor.GetProperty()
+            property.SetColor([0, 0, 0])
+
+            text_actor = caption_actor.GetTextActor()
+            text_actor.SetTextScaleModeToViewport()
+
+            property = caption_actor.GetCaptionTextProperty()
+            property.SetColor([0, 0, 0])
+            property.BoldOff()
+            property.ItalicOff()
+            property.SetFontSize(3)
+            property.ShadowOff()
+
+            self._pps_caption_actors[name] = caption_actor
+            self._vtk_renderer.AddViewProp(caption_actor)
+
+    def onLoadFinished(self):
+        self._file_name = self._load_thread.getFileName()
+        self.updateWindowTitle()
+        self.__buildComponents()
+        self.__buildPPS()
 
         self._bnds = self._computeBounds()
         self.boundsChanged.emit(self._bnds)
@@ -611,3 +672,22 @@ class ModelWindow(PluginWindowBase):
             return True
         else:
             return super().event(e)
+
+    def onShowPPS(self, checked):
+        if checked:
+            opacity = 0.2
+        else:
+            opacity = 1.0
+
+        for comp_name, actor in self._actors.items():
+            property = actor.GetProperty()
+            property.SetOpacity(opacity)
+
+            sil_actor = self._getComponentSilhouetteActor(comp_name)
+            property = sil_actor.GetProperty()
+            property.SetOpacity(opacity)
+
+        for name, actor in self._pps_actors.items():
+            actor.SetVisibility(checked)
+        for name, actor in self._pps_caption_actors.items():
+            actor.SetVisibility(checked)

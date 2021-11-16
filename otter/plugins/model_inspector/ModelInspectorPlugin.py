@@ -53,6 +53,8 @@ class ModelInspectorPlugin(Plugin):
             self.model_window.onOrientationmarkerVisibilityChanged)
         self.info_window.showLabels.connect(
             self.model_window.onShowLabels)
+        self.info_window.showPPS.connect(
+            self.model_window.onShowPPS)
 
     def onClose(self):
         self.info_window.close()

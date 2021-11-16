@@ -18,6 +18,7 @@ class InfoWindow(QtWidgets.QScrollArea):
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
     orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
     showLabels = QtCore.pyqtSignal(bool)
+    showPPS = QtCore.pyqtSignal(bool)
 
     def __init__(self, plugin):
         super().__init__()
@@ -102,6 +103,10 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._z_range = QtWidgets.QTreeWidgetItem(["Z", "0"])
         self._range.addTopLevelItem(self._z_range)
         self._layout.addWidget(self._range)
+
+        self._show_pps = QtWidgets.QCheckBox("Show postprocessors")
+        self._show_pps.stateChanged.connect(self.onPPSLocationsStateChanged)
+        self._layout.addWidget(self._show_pps)
 
         self._dimensions = QtWidgets.QCheckBox("Show dimensions")
         self._dimensions.stateChanged.connect(self.onDimensionsStateChanged)
@@ -232,3 +237,6 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     def onShowLabelsStateChanged(self, state):
         self.showLabels.emit(state == QtCore.Qt.Checked)
+
+    def onPPSLocationsStateChanged(self, state):
+        self.showPPS.emit(state == QtCore.Qt.Checked)
