@@ -544,6 +544,7 @@ class MeshWindow(PluginWindowBase):
             property.SetOpacity(1.0)
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.SetLineWidth(2)
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property.SetColor([1, 1, 1])
             property.SetOpacity(1.0)
