@@ -66,17 +66,24 @@ class InputReader:
             node[in]: parameters read from the input file
         """
         if node.type() == 'Section':
-            node_name = node.path()
+            node_name = node.fullpath().split("Components/", 1)[1]
             # build a dictionary with parameters
             params = {}
             for child in node.children():
                 if child.type() == 'Field':
                     params[child.path()] = child.param()
 
-            ctype = params['type']
-            obj_type = getattr(components, self.COMPONENT_TYPES[ctype])
-            obj = obj_type(self, node_name, params)
-            return obj
+            if 'type' in params:
+                ctype = params['type']
+                obj_type = getattr(components, self.COMPONENT_TYPES[ctype])
+                obj = obj_type(self, node_name, params)
+                return obj
+            else:
+                # group syntax
+                for child in node.children():
+                    obj = self.__buildComponent(child)
+                    if obj is not None:
+                        self._components[obj.name] = obj
         else:
             return None
 
