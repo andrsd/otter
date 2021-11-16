@@ -438,6 +438,8 @@ class ModelWindow(PluginWindowBase):
         for actor in self._actors.values():
             property = actor.GetProperty()
             property.LightingOn()
+            property.SetAmbient(0.4)
+            property.SetDiffuse(0.6)
             comp_name = self._actor_to_comp_name[actor]
             qcolor = self._component_color[comp_name]
             self._setPropertyColor(property, qcolor)
@@ -451,6 +453,8 @@ class ModelWindow(PluginWindowBase):
         for actor in self._actors.values():
             property = actor.GetProperty()
             property.LightingOn()
+            property.SetAmbient(0.4)
+            property.SetDiffuse(0.6)
             comp_name = self._actor_to_comp_name[actor]
             qcolor = self._component_color[comp_name]
             self._setPropertyColor(property, qcolor)
