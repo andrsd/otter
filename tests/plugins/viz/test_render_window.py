@@ -5,8 +5,8 @@ from otter.plugins.viz.RenderWindow import RenderWindow
 
 
 @pytest.fixture
-def render_window(qtbot, movie_plugin):
-    wnd = RenderWindow(movie_plugin)
+def render_window(qtbot, viz_plugin):
+    wnd = RenderWindow(viz_plugin)
     qtbot.addWidget(wnd)
     yield wnd
 

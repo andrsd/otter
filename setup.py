@@ -79,7 +79,7 @@ setup(
         'cycler==0.10.0',
         'kiwisolver==1.1.0',
         'matplotlib==3.1.1',
-        'numpy==1.18.1',
+        'numpy>=1.18.1',
         'pandas==1.3.3',
         'pycparser==2.19',
         'pyparsing==2.4.7',

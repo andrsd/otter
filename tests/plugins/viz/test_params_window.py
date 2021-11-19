@@ -5,8 +5,9 @@ from otter.plugins.viz.ParamsWindow import ParamsWindow
 
 
 @pytest.fixture
-def params_window(qtbot, movie_plugin):
-    wnd = ParamsWindow(movie_plugin)
+def params_window(qtbot, viz_plugin):
+    renderer = MagicMock()
+    wnd = ParamsWindow(viz_plugin, renderer)
     qtbot.addWidget(wnd)
     yield wnd
 

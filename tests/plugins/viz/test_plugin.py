@@ -3,13 +3,13 @@ from PyQt5 import QtGui
 from otter.plugins.viz.VizPlugin import VizPlugin
 
 
-def test_init(movie_plugin):
-    assert movie_plugin._params_window is None
-    assert movie_plugin._result_window is None
+def test_init(viz_plugin):
+    assert viz_plugin._params_window is None
+    assert viz_plugin._render_window is None
 
 
 def test_name():
-    assert VizPlugin.name() == "Movie"
+    assert VizPlugin.name() == "Viz"
 
 
 def test_icon():
@@ -17,6 +17,6 @@ def test_icon():
 
 
 @patch('otter.plugins.Plugin.Plugin.registerWindow')
-def test_on_create(reg_wnd, movie_plugin):
-    movie_plugin.onCreate()
+def test_on_create(reg_wnd, viz_plugin):
+    viz_plugin.onCreate()
     assert reg_wnd.call_count == 1
