@@ -38,7 +38,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         w.setLayout(self._layout)
         self.setWidget(w)
         self.setWindowTitle("Info")
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(300)
         self.setWidgetResizable(True)
 
         self.show()
@@ -68,9 +68,9 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._blocks.setModel(self._block_model)
         self._blocks.setEditTriggers(
             QtWidgets.QAbstractItemView.NoEditTriggers)
-        self._blocks.setColumnWidth(0, 200)
+        self._blocks.setColumnWidth(0, 170)
         self._blocks.setColumnWidth(1, 20)
-        self._blocks.setColumnWidth(2, 50)
+        self._blocks.setColumnWidth(2, 40)
         self._blocks.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self._blocks.customContextMenuRequested.connect(
             self.onBlockCustomContextMenu)
@@ -89,8 +89,8 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._sidesets.setModel(self._sideset_model)
         self._sidesets.setEditTriggers(
             QtWidgets.QAbstractItemView.NoEditTriggers)
-        self._sidesets.setColumnWidth(0, 220)
-        self._sidesets.setColumnWidth(2, 50)
+        self._sidesets.setColumnWidth(0, 190)
+        self._sidesets.setColumnWidth(2, 40)
         self._sidesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._sidesets)
 
@@ -107,8 +107,8 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._nodesets.setModel(self._nodeset_model)
         self._nodesets.setEditTriggers(
             QtWidgets.QAbstractItemView.NoEditTriggers)
-        self._nodesets.setColumnWidth(0, 220)
-        self._nodesets.setColumnWidth(2, 50)
+        self._nodesets.setColumnWidth(0, 190)
+        self._nodesets.setColumnWidth(2, 40)
         self._nodesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._nodesets)
 
