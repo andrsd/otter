@@ -112,6 +112,10 @@ class MeshWindow(PluginWindowBase):
     def setupWidgets(self):
         self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
 
+        self._info_window = InfoWindow(self.plugin, self)
+        self._splitter.addWidget(self._info_window)
+        self._splitter.setCollapsible(0, True)
+
         frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
 
@@ -127,11 +131,7 @@ class MeshWindow(PluginWindowBase):
                             QtWidgets.QSizePolicy.Expanding)
 
         self._splitter.addWidget(frame)
-        self._splitter.setCollapsible(0, False)
-
-        self._info_window = InfoWindow(self.plugin, self)
-        self._splitter.addWidget(self._info_window)
-        self._splitter.setCollapsible(1, True)
+        self._splitter.setCollapsible(1, False)
 
         self.setCentralWidget(self._splitter)
 
@@ -189,11 +189,10 @@ class MeshWindow(PluginWindowBase):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # FIXME: first time through the width of widget #0 is non-sensical
         self._updateViewModeLocation()
 
     def _updateViewModeLocation(self):
-        width = self._splitter.sizes()[0]
+        width = self._splitter.sizes()[1]
         self._view_mode.move(width - 5 - self._view_mode.width(), 10)
 
     def onStartInteraction(self, obj, event):

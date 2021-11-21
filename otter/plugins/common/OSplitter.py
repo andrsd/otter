@@ -19,7 +19,7 @@ class OSplitter(QtWidgets.QSplitter):
                                         self.COLLAPSE_BTN_SIZE)
         self._collapse_btn.setFlat(True)
         self._collapse_btn.setStyleSheet("""
-            border-left: 1px solid #888;
+            border-right: 1px solid #888;
             border-top: 1px solid #888;
             border-bottom: 1px solid #888;
             background-color: #eee;
@@ -30,14 +30,14 @@ class OSplitter(QtWidgets.QSplitter):
         self.splitterMoved.connect(self.onSplitterMoved)
 
     def onCollapse(self):
-        geom = self.widget(1).geometry()
-        if geom.left() > 0:
-            geom = self.geometry()
-            self.setSizes([geom.width(), -1])
-        else:
+        geom = self.widget(0).geometry()
+        if geom.left() < 0:
             my_geom = self.geometry()
-            geom1 = self.widget(1).geometry()
-            self.setSizes([my_geom.width() - geom1.width(), geom1.width()])
+            geom0 = self.widget(0).geometry()
+            self.setSizes([geom0.width(), my_geom.width() - geom0.width()])
+        else:
+            geom = self.geometry()
+            self.setSizes([-1, geom.width()])
         self._setCollapseButtonGeometry()
         QtCore.QTimer.singleShot(1, self._collapse_btn.repaint)
 
@@ -46,9 +46,9 @@ class OSplitter(QtWidgets.QSplitter):
         self._setCollapseButtonGeometry()
 
     def _setCollapseButtonGeometry(self):
-        g = self.widget(0).geometry()
+        g = self.widget(1).geometry()
         len = self.COLLAPSE_BTN_SIZE
-        self._collapse_btn.move(g.right() - len + 1,
+        self._collapse_btn.move(g.left(),
                                 g.top() + (g.height() / 2) - (len / 2))
         self.parent()._updateViewModeLocation()
 
