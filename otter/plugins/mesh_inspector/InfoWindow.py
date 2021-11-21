@@ -55,11 +55,15 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._color_picker_widget._color_group.buttonClicked.connect(
             self._color_picker_menu.hide)
 
-        self._lbl_blocks = QtWidgets.QLabel("Blocks")
-        self._layout.addWidget(self._lbl_blocks)
+        self._lbl_info = QtWidgets.QLabel("Information")
+        fnt = self._lbl_info.font()
+        fnt.setBold(True)
+        self._lbl_info.setFont(fnt)
+        self._layout.addWidget(self._lbl_info)
+
         self._block_model = QtGui.QStandardItemModel()
         self._block_model.setHorizontalHeaderLabels([
-            "Name", "", "ID"
+            "Block", "", "ID"
         ])
         self._block_model.itemChanged.connect(self.onBlockChanged)
         self._blocks = QtWidgets.QTreeView()
@@ -76,11 +80,9 @@ class InfoWindow(QtWidgets.QScrollArea):
             self.onBlockCustomContextMenu)
         self._layout.addWidget(self._blocks)
 
-        self._lbl_sidesets = QtWidgets.QLabel("Side sets")
-        self._layout.addWidget(self._lbl_sidesets)
         self._sideset_model = QtGui.QStandardItemModel()
         self._sideset_model.setHorizontalHeaderLabels([
-            "Name", "", "ID"
+            "Side set", "", "ID"
         ])
         self._sideset_model.itemChanged.connect(self.onSidesetChanged)
         self._sidesets = QtWidgets.QTreeView()
@@ -94,12 +96,10 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._sidesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._sidesets)
 
-        self._lbl_nodesets = QtWidgets.QLabel("Node sets")
-        self._layout.addWidget(self._lbl_nodesets)
         self._nodesets = QtWidgets.QTreeView()
         self._nodeset_model = QtGui.QStandardItemModel()
         self._nodeset_model.setHorizontalHeaderLabels([
-            "Name", "", "ID"
+            "Node set", "", "ID"
         ])
         self._nodeset_model.itemChanged.connect(self.onNodesetChanged)
         self._nodesets.setFixedHeight(150)
@@ -122,13 +122,10 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._totals.addTopLevelItem(self._total_nodes)
         self._layout.addWidget(self._totals)
 
-        self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
-        self._layout.addWidget(self._lbl_dimensions)
-
         self._range = QtWidgets.QTreeWidget()
         self._range.setFixedHeight(80)
         self._range.setIndentation(0)
-        self._range.setHeaderLabels(["Direction", "Range"])
+        self._range.setHeaderLabels(["Dimension", "Range"])
         self._x_range = QtWidgets.QTreeWidgetItem(["X", ""])
         self._range.addTopLevelItem(self._x_range)
         self._y_range = QtWidgets.QTreeWidgetItem(["Y", ""])
