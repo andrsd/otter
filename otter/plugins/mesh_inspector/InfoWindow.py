@@ -18,8 +18,8 @@ class InfoWindow(QtWidgets.QScrollArea):
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
     orientationMarkerStateChanged = QtCore.pyqtSignal(bool)
 
-    def __init__(self, plugin):
-        super().__init__()
+    def __init__(self, plugin, parent=None):
+        super().__init__(parent)
         self.plugin = plugin
 
         self._colors = [
@@ -40,15 +40,6 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.setWindowTitle("Info")
         self.setMinimumWidth(350)
         self.setWidgetResizable(True)
-        self.setWindowFlags(QtCore.Qt.Tool)
-
-        geom = self.plugin.settings.value("info/geometry")
-        default_size = QtCore.QSize(350, 700)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
         self.show()
 
@@ -163,7 +154,6 @@ class InfoWindow(QtWidgets.QScrollArea):
         return super().event(event)
 
     def closeEvent(self, event):
-        self.plugin.settings.setValue("info/geometry", self.saveGeometry())
         event.accept()
 
     def _loadBlocks(self, blocks):

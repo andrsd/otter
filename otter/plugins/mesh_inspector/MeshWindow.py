@@ -7,6 +7,7 @@ from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 import otter.plugins.common as common
 from otter.assets import Assets
+from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 
 
 class LoadThread(QtCore.QThread):
@@ -51,7 +52,27 @@ class MeshWindow(PluginWindowBase):
         self.setupMenuBar()
         self.updateWindowTitle()
 
+        state = self.plugin.settings.value("splitter/state")
+        if state is not None:
+            self._splitter.restoreState(state)
+
         self.setAcceptDrops(True)
+
+        self.fileLoaded.connect(self._info_window.onFileLoaded)
+        self.boundsChanged.connect(
+            self._info_window.onBoundsChanged)
+        self._info_window.blockVisibilityChanged.connect(
+            self.onBlockVisibilityChanged)
+        self._info_window.blockColorChanged.connect(
+            self.onBlockColorChanged)
+        self._info_window.sidesetVisibilityChanged.connect(
+            self.onSidesetVisibilityChanged)
+        self._info_window.nodesetVisibilityChanged.connect(
+            self.onNodesetVisibilityChanged)
+        self._info_window.dimensionsStateChanged.connect(
+            self.onCubeAxisVisibilityChanged)
+        self._info_window.orientationMarkerStateChanged.connect(
+            self.onOrientationmarkerVisibilityChanged)
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -86,6 +107,9 @@ class MeshWindow(PluginWindowBase):
         self._update_timer.start(250)
 
     def setupWidgets(self):
+        self._splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
+        self._splitter.setHandleWidth(1)
+
         frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
 
@@ -97,6 +121,19 @@ class MeshWindow(PluginWindowBase):
         self._layout.addWidget(self._vtk_widget)
 
         frame.setLayout(self._layout)
+        frame.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
+                            QtWidgets.QSizePolicy.Expanding)
+
+        self._splitter.addWidget(frame)
+        self._splitter.setCollapsible(0, False)
+        self._splitter.setStretchFactor(0, 1)
+
+        self._info_window = InfoWindow(self.plugin, self)
+        self._splitter.addWidget(self._info_window)
+        self._splitter.setCollapsible(1, True)
+        self._splitter.setStretchFactor(1, 1)
+
+        self.setCentralWidget(self._splitter)
 
         # control layer
         self._view_menu = QtWidgets.QMenu()
@@ -141,8 +178,6 @@ class MeshWindow(PluginWindowBase):
         self._view_mode.setGeometry(10, 10, 80, 25)
         self._view_mode.show()
 
-        self.setCentralWidget(frame)
-
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
@@ -155,7 +190,11 @@ class MeshWindow(PluginWindowBase):
 
     def resizeEvent(self, event):
         len = 80
-        self._view_mode.setGeometry(self.width() - 5 - len, 10, len, 25)
+        # FIXME: first time through the width of widget #0 is zero, so
+        # the width has incorrect size
+        # width = self._splitter.sizes()[0]
+        # self._view_mode.setGeometry(width - 5 - len, 10, len, 25)
+        self._view_mode.setGeometry(10, 10, len, 25)
 
     def onStartInteraction(self, obj, event):
         pass
@@ -602,3 +641,8 @@ class MeshWindow(PluginWindowBase):
             return True
         else:
             return super().event(e)
+
+    def closeEvent(self, event):
+        self.plugin.settings.setValue(
+            "splitter/state", self._splitter.saveState())
+        super().closeEvent(event)
