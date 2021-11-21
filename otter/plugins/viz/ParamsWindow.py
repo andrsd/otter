@@ -11,7 +11,10 @@ class LoadThread(QtCore.QThread):
 
     def __init__(self, file_name):
         super().__init__()
-        self._reader = ExodusIIReader(file_name)
+        if file_name.endswith('.e') or file_name.endswith('.exo'):
+            self._reader = ExodusIIReader(file_name)
+        else:
+            self._reader = None
 
     def run(self):
         self._reader.load()
@@ -176,16 +179,25 @@ class ParamsWindow(QtWidgets.QScrollArea):
             self.loadFile(file_name)
 
     def loadFile(self, file_name):
-        self._progress = QtWidgets.QProgressDialog(
-            "Loading {}...".format(os.path.basename(file_name)),
-            None, 0, 0, self)
-        self._progress.setWindowModality(QtCore.Qt.WindowModal)
-        self._progress.setMinimumDuration(0)
-        self._progress.show()
-
         self._load_thread = LoadThread(file_name)
-        self._load_thread.finished.connect(self.onFileLoadFinished)
-        self._load_thread.start(QtCore.QThread.IdlePriority)
+        if self._load_thread.getReader() is not None:
+            self._progress = QtWidgets.QProgressDialog(
+                "Loading {}...".format(os.path.basename(file_name)),
+                None, 0, 0, self)
+            self._progress.setWindowModality(QtCore.Qt.WindowModal)
+            self._progress.setMinimumDuration(0)
+            self._progress.show()
+
+            self._load_thread.finished.connect(self.onFileLoadFinished)
+            self._load_thread.start(QtCore.QThread.IdlePriority)
+        else:
+            self._load_thread = None
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Unsupported file format",
+                "Selected file in not in a supported format.\n"
+                "We support the following formats:\n"
+                "  ExodusII")
 
     def onFileLoadFinished(self):
         reader = self._load_thread.getReader()

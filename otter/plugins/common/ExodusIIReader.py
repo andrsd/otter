@@ -1,6 +1,7 @@
 import vtk
 import collections
 import otter.plugins.common as common
+from otter.plugins.common.Reader import Reader
 
 
 BlockInformation = collections.namedtuple(
@@ -14,13 +15,13 @@ VariableInformation = collections.namedtuple(
     ])
 
 
-class ExodusIIReader:
+class ExodusIIReader(Reader):
     """
     ExodusII file reader
     """
 
     def __init__(self, file_name):
-        self._file_name = file_name
+        super().__init__(file_name)
         self._reader = None
         # BlockInformation objects
         self._block_info = dict()
@@ -127,9 +128,6 @@ class ExodusIIReader:
 
     def getNodeSets(self):
         return self._block_info[vtk.vtkExodusIIReader.NODE_SET].values()
-
-    def getFileName(self):
-        return self._file_name
 
     def getVariableInfo(self):
         return self._variable_info.values()
