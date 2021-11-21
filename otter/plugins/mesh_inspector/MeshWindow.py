@@ -5,6 +5,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
+from otter.plugins.common.OSplitter import OSplitter
 import otter.plugins.common as common
 from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
@@ -106,9 +107,10 @@ class MeshWindow(PluginWindowBase):
         self._update_timer.timeout.connect(self.onUpdateWindow)
         self._update_timer.start(250)
 
+        QtCore.QTimer.singleShot(1, self._updateViewModeLocation)
+
     def setupWidgets(self):
-        self._splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
-        self._splitter.setHandleWidth(1)
+        self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
 
         frame = QtWidgets.QFrame(self)
         self._vtk_widget = QVTKRenderWindowInteractor(frame)
@@ -126,12 +128,10 @@ class MeshWindow(PluginWindowBase):
 
         self._splitter.addWidget(frame)
         self._splitter.setCollapsible(0, False)
-        self._splitter.setStretchFactor(0, 1)
 
         self._info_window = InfoWindow(self.plugin, self)
         self._splitter.addWidget(self._info_window)
         self._splitter.setCollapsible(1, True)
-        self._splitter.setStretchFactor(1, 1)
 
         self.setCentralWidget(self._splitter)
 
@@ -175,7 +175,6 @@ class MeshWindow(PluginWindowBase):
         self._view_mode.setFixedSize(60, 32)
         self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
-        self._view_mode.setGeometry(10, 10, 80, 25)
         self._view_mode.show()
 
     def setupMenuBar(self):
@@ -189,12 +188,13 @@ class MeshWindow(PluginWindowBase):
             "Close", self.onClose, "Ctrl+W")
 
     def resizeEvent(self, event):
-        len = 80
-        # FIXME: first time through the width of widget #0 is zero, so
-        # the width has incorrect size
-        # width = self._splitter.sizes()[0]
-        # self._view_mode.setGeometry(width - 5 - len, 10, len, 25)
-        self._view_mode.setGeometry(10, 10, len, 25)
+        super().resizeEvent(event)
+        # FIXME: first time through the width of widget #0 is non-sensical
+        self._updateViewModeLocation()
+
+    def _updateViewModeLocation(self):
+        width = self._splitter.sizes()[0]
+        self._view_mode.move(width - 5 - self._view_mode.width(), 10)
 
     def onStartInteraction(self, obj, event):
         pass

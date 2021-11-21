@@ -44,7 +44,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         self.show()
 
     def setupWidgets(self):
-        self._layout = QtWidgets.QVBoxLayout(self)
+        self._layout = QtWidgets.QVBoxLayout()
         self._layout.setContentsMargins(20, 10, 20, 10)
 
         self._color_picker_widget = ColorPicker(self)
