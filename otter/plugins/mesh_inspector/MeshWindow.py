@@ -32,10 +32,10 @@ class MeshWindow(PluginWindowBase):
     fileLoaded = QtCore.pyqtSignal(object)
     boundsChanged = QtCore.pyqtSignal(list)
 
-    SIDESET_CLR = [247/255, 135/255, 3/255]
+    SIDESET_CLR = [255/255, 173/255, 79/255]
     SIDESET_EDGE_CLR = [0.1, 0.1, 0.4]
     SIDESET_EDGE_WIDTH = 5
-    NODESET_CLR = [0.1, 0.1, 0.1]
+    NODESET_CLR = [168/255, 91/255, 2/255]
 
     SHADED = 0
     SHADED_WITH_EDGES = 1
@@ -624,8 +624,12 @@ class MeshWindow(PluginWindowBase):
         property.SetRepresentationToPoints()
         property.SetRenderPointsAsSpheres(True)
         property.SetVertexVisibility(True)
+        property.SetEdgeVisibility(False)
         property.SetPointSize(10)
         property.SetColor(self.NODESET_CLR)
+        property.SetOpacity(1)
+        property.SetAmbient(1)
+        property.SetDiffuse(0)
 
     def _setSilhouetteActorProperties(self, actor):
         property = actor.GetProperty()
