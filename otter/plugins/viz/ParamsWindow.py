@@ -1,6 +1,7 @@
 import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
+from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.viz.RootProps import RootProps
 from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
@@ -13,6 +14,8 @@ class LoadThread(QtCore.QThread):
         super().__init__()
         if file_name.endswith('.e') or file_name.endswith('.exo'):
             self._reader = ExodusIIReader(file_name)
+        elif file_name.endswith('.vtk'):
+            self._reader = VTKReader(file_name)
         else:
             self._reader = None
 

@@ -92,17 +92,23 @@ class FileProps(PropsBase):
         self._block_model.setItem(row, self.IDX_ID, si_id)
 
     def _buildVtkBlocksActor(self, binfo):
-        eb = vtk.vtkExtractBlock()
-        eb.SetInputConnection(self._reader.getVtkOutputPort())
-        eb.AddIndex(binfo.multiblock_index)
-        eb.Update()
+        if binfo.multiblock_index is not None:
+            eb = vtk.vtkExtractBlock()
+            eb.SetInputConnection(self._reader.getVtkOutputPort())
+            eb.AddIndex(binfo.multiblock_index)
+            eb.Update()
 
-        geometry = vtk.vtkCompositeDataGeometryFilter()
-        geometry.SetInputConnection(0, eb.GetOutputPort(0))
-        geometry.Update()
+            geometry = vtk.vtkCompositeDataGeometryFilter()
+            geometry.SetInputConnection(0, eb.GetOutputPort(0))
+            geometry.Update()
 
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(geometry.GetOutputPort())
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(geometry.GetOutputPort())
+        else:
+            mapper = vtk.vtkDataSetMapper()
+            mapper.SetInputConnection(0, self._reader.getVtkOutputPort())
+            mapper.ScalarVisibilityOff()
+
         mapper.InterpolateScalarsBeforeMappingOn()
 
         actor = vtk.vtkActor()

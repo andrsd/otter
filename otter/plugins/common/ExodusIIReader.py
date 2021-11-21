@@ -1,18 +1,7 @@
 import vtk
-import collections
 import otter.plugins.common as common
 from otter.plugins.common.Reader import Reader
-
-
-BlockInformation = collections.namedtuple(
-    'BlockInformation', [
-        'name', 'object_type', 'object_index', 'number', 'multiblock_index'
-    ])
-
-VariableInformation = collections.namedtuple(
-    'VariableInformation', [
-        'name', 'object_type', 'num_components'
-    ])
+from otter.plugins.common.Reader import BlockInformation, VariableInformation
 
 
 class ExodusIIReader(Reader):
@@ -113,9 +102,6 @@ class ExodusIIReader(Reader):
         else:
             self._times = times
             self._time_steps = steps
-
-    def getReader(self):
-        return self._reader
 
     def getVtkOutputPort(self):
         return self._reader.GetOutputPort(0)
