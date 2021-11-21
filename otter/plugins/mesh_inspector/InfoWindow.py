@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.common.ColorPicker import ColorPicker
+from otter.OTreeView import OTreeView
 
 
 class InfoWindow(QtWidgets.QScrollArea):
@@ -66,7 +67,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             "Block", "", "ID"
         ])
         self._block_model.itemChanged.connect(self.onBlockChanged)
-        self._blocks = QtWidgets.QTreeView()
+        self._blocks = OTreeView()
         self._blocks.setFixedHeight(250)
         self._blocks.setRootIsDecorated(False)
         self._blocks.setModel(self._block_model)
@@ -85,7 +86,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             "Side set", "", "ID"
         ])
         self._sideset_model.itemChanged.connect(self.onSidesetChanged)
-        self._sidesets = QtWidgets.QTreeView()
+        self._sidesets = OTreeView()
         self._sidesets.setFixedHeight(150)
         self._sidesets.setRootIsDecorated(False)
         self._sidesets.setModel(self._sideset_model)
@@ -96,7 +97,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._sidesets.hideColumn(self.IDX_COLOR)
         self._layout.addWidget(self._sidesets)
 
-        self._nodesets = QtWidgets.QTreeView()
+        self._nodesets = OTreeView()
         self._nodeset_model = QtGui.QStandardItemModel()
         self._nodeset_model.setHorizontalHeaderLabels([
             "Node set", "", "ID"
