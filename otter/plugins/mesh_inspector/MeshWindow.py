@@ -183,6 +183,8 @@ class MeshWindow(PluginWindowBase):
             "New", self.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
+        self._recent_menu = file_menu.addMenu("Open Recent")
+        self.buildRecentFilesMenu()
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
@@ -277,6 +279,7 @@ class MeshWindow(PluginWindowBase):
 
         self._file_name = reader.getFileName()
         self.updateWindowTitle()
+        self.addToRecentFiles(self._file_name)
 
         self._progress.hide()
         self._progress = None
