@@ -19,6 +19,7 @@ class RenderWindow(PluginWindowBase):
 
         self.setupWidgets()
         self.setupMenuBar()
+        self.setupToolBar()
         self.updateWindowTitle()
 
         state = self.plugin.settings.value("splitter/state")
@@ -88,6 +89,18 @@ class RenderWindow(PluginWindowBase):
         file_menu.addSeparator()
         self._render_action = file_menu.addAction(
             "Render", self.onRender, "Ctrl+Shift+R")
+
+    def setupToolBar(self):
+        self._toolbar = QtWidgets.QToolBar()
+        self._toolbar.setMovable(False)
+        self._toolbar.setFloatable(False)
+        self._toolbar.setFixedHeight(32)
+        self._toolbar.setStyleSheet("""
+            border: none;
+            """)
+        self._toolbar.addAction("O", self.onOpenFile)
+
+        self.addToolBar(QtCore.Qt.TopToolBarArea, self._toolbar)
 
     def updateWindowTitle(self):
         title = "Viz"
