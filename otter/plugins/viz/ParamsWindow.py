@@ -31,9 +31,10 @@ class ParamsWindow(QtWidgets.QScrollArea):
     Window for entering parameters
     """
 
-    def __init__(self, renderer):
-        super().__init__()
-        self._vtk_renderer = renderer
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._main_wnd = parent
+        self._vtk_renderer = parent._vtk_renderer
         self._load_thread = None
         self._progress = None
 
@@ -49,6 +50,9 @@ class ParamsWindow(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)
 
         self.show()
+
+    def mainWnd(self):
+        return self._main_wnd
 
     def setupWidgets(self):
         layout = QtWidgets.QVBoxLayout()
@@ -189,11 +193,15 @@ class ParamsWindow(QtWidgets.QScrollArea):
             for act in actors:
                 self._vtk_renderer.AddViewProp(act)
 
-        file_name = os.path.basename(reader.getFileName())
-        self._addPipelineItem(file_props, file_name)
-
+        file_name = reader.getFileName()
+        self._addPipelineItem(file_props, os.path.basename(file_name))
         self._progress.hide()
         self._progress = None
+
+        # TODO: do this via a signal
+        self.mainWnd().addToRecentFiles(file_name)
+        self.mainWnd()._file_name = file_name
+        self.mainWnd().updateWindowTitle()
 
     def clear(self):
         for i in range(self._root.rowCount()):

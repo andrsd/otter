@@ -50,7 +50,7 @@ class RenderWindow(PluginWindowBase):
     def setupWidgets(self):
         self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
 
-        self._params_window = ParamsWindow(self._vtk_renderer)
+        self._params_window = ParamsWindow(self)
         self._params_window.show()
         self._splitter.addWidget(self._params_window)
         self._splitter.setCollapsible(0, True)
@@ -80,6 +80,8 @@ class RenderWindow(PluginWindowBase):
             "New", self.onNewFile, "Ctrl+N")
         self._open_action = file_menu.addAction(
             "Open", self.onOpenFile, "Ctrl+O")
+        self._recent_menu = file_menu.addMenu("Open Recent")
+        self.buildRecentFilesMenu()
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
@@ -139,7 +141,7 @@ class RenderWindow(PluginWindowBase):
 
     def onOpenFile(self):
         file_name, f = QtWidgets.QFileDialog.getOpenFileName(
-            self._render_window,
+            self,
             'Open File',
             "",
             "ExodusII files (*.e *.exo)")
