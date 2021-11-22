@@ -48,13 +48,8 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._layout = QtWidgets.QVBoxLayout()
         self._layout.setContentsMargins(20, 10, 20, 10)
 
-        self._color_picker_widget = ColorPicker(self)
-
-        self._color_picker_menu = QtWidgets.QMenu()
-        self._color_picker_menu.addAction(self._color_picker_widget)
-
-        self._color_picker_widget._color_group.buttonClicked.connect(
-            self._color_picker_menu.hide)
+        self._color_picker = ColorPicker(self)
+        self._color_picker.colorChanged.connect(self.onBlockColorPicked)
 
         self._lbl_info = QtWidgets.QLabel("Information")
         fnt = self._lbl_info.font()
@@ -172,7 +167,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             rgb = self._colors[clr_idx]
             color = QtGui.QColor(rgb[0], rgb[1], rgb[2])
             si_clr.setForeground(QtGui.QBrush(color))
-            si_clr.setData(clr_idx)
+            si_clr.setData(color)
             self._block_model.setItem(row, self.IDX_COLOR, si_clr)
 
             si_id = QtGui.QStandardItem()
@@ -242,26 +237,41 @@ class InfoWindow(QtWidgets.QScrollArea):
         else:
             menu.addAction("Show", self.onShowBlock)
             menu.addAction("Show all", self.onShowAllBlocks)
+        menu.addSeparator()
+        menu.addAction("Appearance...", self.onAppearance)
         menu.exec(point)
 
     def onBlockCustomContextMenu(self, point):
         index = self._blocks.indexAt(point)
-        if index.isValid() and index.column() == self.IDX_NAME:
+        if index.isValid():
             item = self._block_model.itemFromIndex(index)
             self._onNameContextMenu(
                 item, self._blocks.viewport().mapToGlobal(point))
-        elif index.isValid() and index.column() == self.IDX_COLOR:
-            item = self._block_model.itemFromIndex(index)
-            clr_idx = item.data()
 
-            self._color_picker_widget.setColorIndex(clr_idx)
-            self._color_picker_menu.exec(
-                self._blocks.viewport().mapToGlobal(point))
+    def onAppearance(self):
+        selection_model = self._blocks.selectionModel()
+        indexes = selection_model.selectedIndexes()
+        if len(indexes) == 0:
+            return
+        index = indexes[0]
+        clr_index = index.siblingAtColumn(self.IDX_COLOR)
+        qcolor = self._block_model.itemFromIndex(clr_index).data()
+        self._color_picker.setData(clr_index)
+        self._color_picker.setColor(qcolor)
+        self._color_picker.show()
 
-            clr_idx = self._color_picker_widget.colorIndex()
-            qcolor = self._color_picker_widget.color()
-            item.setForeground(QtGui.QBrush(qcolor))
-            item.setData(clr_idx)
+        geom = self.geometry()
+        low_right = QtCore.QPoint(geom.right(), geom.bottom())
+        lr = self.mapToGlobal(low_right)
+        lr.setY(lr.y() - self._color_picker.geometry().height() - 20)
+        lr.setX(lr.x() + 5)
+        self._color_picker.move(lr)
+
+    def onBlockColorPicked(self, qcolor):
+        index = self._color_picker.data()
+        item = self._block_model.itemFromIndex(index)
+        item.setForeground(QtGui.QBrush(qcolor))
+        item.setData(qcolor)
 
     def onSidesetChanged(self, item):
         if item.column() == self.IDX_NAME:
