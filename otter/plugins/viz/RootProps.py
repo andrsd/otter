@@ -29,18 +29,10 @@ class RootProps(PropsBase):
         lbl = QtWidgets.QLabel("Color")
         layout.addWidget(lbl)
 
-        self._color_idx = 3
-
         self._color_picker = ColorPicker(self)
-        self._color_picker.setColorIndex(self._color_idx)
 
-        self._color_menu = QtWidgets.QMenu()
-        self._color_menu.addAction(self._color_picker)
-
-        qcolor = [0.321, 0.3411, 0.4313]
         self._color_btn = ColorButton()
-        self._color_btn.setMenu(self._color_menu)
-        self._color_btn.setFixedWidth(64)
+        qcolor = [0.321, 0.3411, 0.4313]
         self._color_btn.setColor(
             QtGui.QColor.fromRgbF(qcolor[0], qcolor[1], qcolor[2]))
         self._vtk_renderer.SetBackground(qcolor)
@@ -54,18 +46,10 @@ class RootProps(PropsBase):
         lbl = QtWidgets.QLabel("Color 2")
         layout.addWidget(lbl)
 
-        self._color_2_idx = 3
-
-        qcolor = [0.321, 0.3411, 0.4313]
         self._color_2_picker = ColorPicker(self)
-        self._color_2_picker.setColorIndex(self._color_2_idx)
-
-        self._color_2_menu = QtWidgets.QMenu()
-        self._color_2_menu.addAction(self._color_2_picker)
 
         self._color_2_btn = ColorButton()
-        self._color_2_btn.setMenu(self._color_2_menu)
-        self._color_2_btn.setFixedWidth(64)
+        qcolor = [0.321, 0.3411, 0.4313]
         self._color_2_btn.setColor(
             QtGui.QColor.fromRgbF(qcolor[0], qcolor[1], qcolor[2]))
         self._vtk_renderer.SetBackground2(qcolor)
@@ -74,25 +58,35 @@ class RootProps(PropsBase):
         self._layout.addLayout(layout)
 
         self._gradient_bkgnd.stateChanged.connect(self.onGradientBkgndChanged)
-        self._color_picker._color_group.buttonClicked.connect(
-            self.onColorClicked)
-        self._color_2_picker._color_group.buttonClicked.connect(
-            self.onColor2Clicked)
+        self._color_btn.clicked.connect(self.onColorClicked)
+        self._color_picker.colorChanged.connect(self.onColorChanged)
+        self._color_2_btn.clicked.connect(self.onColor2Clicked)
+        self._color_2_picker.colorChanged.connect(self.onColor2Changed)
 
         self._layout.addStretch()
 
+        self.onGradientBkgndChanged(self._gradient_bkgnd.checkState())
+
     def onColorClicked(self):
-        qcolor = self._color_picker.color()
+        qcolor = self._color_btn.color()
+        self._color_picker.setColor(qcolor)
+        self._color_picker.show()
+
+    def onColorChanged(self, qcolor):
+        self._color_btn.setColor(qcolor)
         clr = [
             qcolor.redF(),
             qcolor.greenF(),
             qcolor.blueF()
         ]
-        self._color_btn.setColor(qcolor)
         self._vtk_renderer.SetBackground(clr)
 
     def onColor2Clicked(self):
-        qcolor = self._color_2_picker.color()
+        qcolor = self._color_2_btn.color()
+        self._color_2_picker.setColor(qcolor)
+        self._color_2_picker.show()
+
+    def onColor2Changed(self, qcolor):
         self._color_2_btn.setColor(qcolor)
         clr = [
             qcolor.redF(),

@@ -1,5 +1,5 @@
 import vtk
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.viz.PropsBase import PropsBase
 from otter.plugins.viz.FontPropertiesWidget import FontPropertiesWidget
 from otter.plugins.common.ColorPicker import ColorPicker
@@ -27,14 +27,7 @@ class TextProps(PropsBase):
         self._font_props = FontPropertiesWidget()
         self._layout.addWidget(self._font_props)
 
-        # whitish color in color picker
-        self._color_idx = 3
-
         self._color_picker = ColorPicker(self)
-        self._color_picker.setColorIndex(self._color_idx)
-
-        self._color_menu = QtWidgets.QMenu()
-        self._color_menu.addAction(self._color_picker)
 
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -43,8 +36,8 @@ class TextProps(PropsBase):
         layout.addWidget(lbl)
 
         self._color_btn = ColorButton()
-        self._color_btn.setMenu(self._color_menu)
         self._color_btn.setFixedWidth(64)
+        self._color_btn.setColor(QtGui.QColor("#eee"))
         layout.addWidget(self._color_btn)
 
         self._layout.addLayout(layout)
@@ -52,8 +45,8 @@ class TextProps(PropsBase):
         self._layout.addStretch()
 
         self._text.textChanged.connect(self.onTextChanged)
-        self._color_picker._color_group.buttonClicked.connect(
-            self.onColorClicked)
+        self._color_btn.clicked.connect(self.onColorClicked)
+        self._color_picker.colorChanged.connect(self.onColorChanged)
 
     def buildVtkActor(self):
         self._actor = vtk.vtkTextActor()
@@ -78,8 +71,11 @@ class TextProps(PropsBase):
         self._actor.SetInput(txt)
 
     def onColorClicked(self):
-        self._color_idx = self._color_picker.colorIndex()
-        qcolor = self._color_picker.color()
+        qcolor = self._color_btn.color()
+        self._color_picker.setColor(qcolor)
+        self._color_picker.show()
+
+    def onColorChanged(self, qcolor):
         clr = [
             qcolor.redF(),
             qcolor.greenF(),
