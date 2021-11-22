@@ -14,15 +14,20 @@ class OSplitter(QtWidgets.QSplitter):
             }
             """)
 
-        self._collapse_btn = QtWidgets.QPushButton(">", parent)
+        self._collapse_btn = QtWidgets.QPushButton("\u25C0\u25B6", parent)
         self._collapse_btn.setFixedSize(self.COLLAPSE_BTN_SIZE,
                                         self.COLLAPSE_BTN_SIZE)
         self._collapse_btn.setFlat(True)
         self._collapse_btn.setStyleSheet("""
-            border-right: 1px solid #888;
-            border-top: 1px solid #888;
-            border-bottom: 1px solid #888;
-            background-color: #eee;
+            QPushButton{
+                border-right: 1px solid #888;
+                border-top: 1px solid #888;
+                border-bottom: 1px solid #888;
+                background-color: #eee;
+            }
+            QPushButton:hover {
+                background-color: #ccc;
+            }
             """)
         self._collapse_btn.show()
 
