@@ -81,13 +81,8 @@ class InfoWindow(QtWidgets.QScrollArea):
         sel_model.currentChanged.connect(self.onComponentCurrentChanged)
         self._layout.addWidget(self._components)
 
-        self._color_picker_widget = ColorPicker(self)
-
-        self._color_picker_menu = QtWidgets.QMenu()
-        self._color_picker_menu.addAction(self._color_picker_widget)
-
-        self._color_picker_widget._color_group.buttonClicked.connect(
-            self._color_picker_menu.hide)
+        self._color_picker = ColorPicker(self)
+        self._color_picker.colorChanged.connect(self.onComponentColorPicked)
 
         self._lbl_dimensions = QtWidgets.QLabel("Dimensions")
         self._layout.addWidget(self._lbl_dimensions)
@@ -153,7 +148,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             rgb = self._colors[clr_idx]
             color = QtGui.QColor(rgb[0], rgb[1], rgb[2])
             si_clr.setForeground(QtGui.QBrush(color))
-            si_clr.setData(clr_idx)
+            si_clr.setData(color)
             self._component_model.setItem(row, self.IDX_COLOR, si_clr)
 
             si_type = QtGui.QStandardItem()
@@ -177,6 +172,12 @@ class InfoWindow(QtWidgets.QScrollArea):
             name_index = index.siblingAtColumn(self.IDX_NAME)
             comp = self._component_model.itemFromIndex(name_index).data()
             self.componentColorChanged.emit(comp.name, color)
+
+    def onComponentColorPicked(self, qcolor):
+        index = self._color_picker.data()
+        item = self._component_model.itemFromIndex(index)
+        item.setForeground(QtGui.QBrush(qcolor))
+        item.setData(qcolor)
 
     def onDimensionsStateChanged(self, state):
         self.dimensionsStateChanged.emit(state == QtCore.Qt.Checked)
@@ -217,23 +218,29 @@ class InfoWindow(QtWidgets.QScrollArea):
             comp_name = item.text()
             self.componentSelected.emit(comp_name)
 
+    def _onNameContextMenu(self, item, point):
+        menu = QtWidgets.QMenu()
+        menu.addAction("Appearance...", self.onAppearance)
+        menu.exec(point)
+
     def onComponentCustomContextMenu(self, point):
         index = self._components.indexAt(point)
-        if index.isValid() and index.column() == self.IDX_COLOR:
+        if index.isValid():
             item = self._component_model.itemFromIndex(index)
-            clr_idx = item.data()
+            self._onNameContextMenu(
+                item, self._components.viewport().mapToGlobal(point))
 
-            self._color_picker_widget.setColorIndex(clr_idx)
-            self._color_picker_menu.exec(
-                self._components.viewport().mapToGlobal(point))
-
-            clr_idx = self._color_picker_widget.colorIndex()
-            qcolor = self._color_picker_widget.color()
-            item.setForeground(QtGui.QBrush(qcolor))
-            item.setData(clr_idx)
-
-    def onColorPicked(self, id):
-        pass
+    def onAppearance(self):
+        selection_model = self._components.selectionModel()
+        indexes = selection_model.selectedIndexes()
+        if len(indexes) == 0:
+            return
+        index = indexes[0]
+        clr_index = index.siblingAtColumn(self.IDX_COLOR)
+        qcolor = self._component_model.itemFromIndex(clr_index).data()
+        self._color_picker.setData(clr_index)
+        self._color_picker.setColor(qcolor)
+        self._color_picker.show()
 
     def onShowLabelsStateChanged(self, state):
         self.showLabels.emit(state == QtCore.Qt.Checked)
