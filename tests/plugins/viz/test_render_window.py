@@ -29,8 +29,8 @@ def test_event_activate_window(event_mock, render_window):
 def test_update_window_title(render_window):
     render_window._file_name = None
     render_window.updateWindowTitle()
-    assert render_window.windowTitle() == "Result"
+    assert render_window.windowTitle() == "Viz"
 
     render_window._file_name = "/a/b.c"
     render_window.updateWindowTitle()
-    assert render_window.windowTitle() == "Result \u2014 b.c"
+    assert render_window.windowTitle() == "Viz \u2014 b.c"

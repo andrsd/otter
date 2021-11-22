@@ -31,9 +31,8 @@ class ParamsWindow(QtWidgets.QScrollArea):
     Window for entering parameters
     """
 
-    def __init__(self, plugin, renderer):
+    def __init__(self, renderer):
         super().__init__()
-        self.plugin = plugin
         self._vtk_renderer = renderer
         self._load_thread = None
         self._progress = None
@@ -48,15 +47,6 @@ class ParamsWindow(QtWidgets.QScrollArea):
         self.setWindowTitle("Parameters")
         self.setMinimumWidth(350)
         self.setWidgetResizable(True)
-        self.setWindowFlags(QtCore.Qt.Tool)
-
-        geom = self.plugin.settings.value("info/geometry")
-        default_size = QtCore.QSize(350, 700)
-        if geom is None:
-            self.resize(default_size)
-        else:
-            if not self.restoreGeometry(geom):
-                self.resize(default_size)
 
         self.show()
 
@@ -110,18 +100,6 @@ class ParamsWindow(QtWidgets.QScrollArea):
         self._pipeline_model.setItem(0, 0, self._root)
 
         return layout
-
-    def event(self, event):
-        """
-        Event callback
-        """
-        if event.type() == QtCore.QEvent.WindowActivate:
-            self.plugin.updateMenuBar()
-        return super().event(event)
-
-    def closeEvent(self, event):
-        self.plugin.settings.setValue("info/geometry", self.saveGeometry())
-        event.accept()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():

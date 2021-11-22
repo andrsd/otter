@@ -54,7 +54,7 @@ class OSplitter(QtWidgets.QSplitter):
         g = self.widget(1).geometry()
         len = self.COLLAPSE_BTN_SIZE
         self._collapse_btn.move(g.left(),
-                                g.top() + (g.height() / 2) - (len / 2))
+                                g.top() + int(g.height() / 2) - int(len / 2))
         self.parent()._updateViewModeLocation()
 
     def onSplitterMoved(self):

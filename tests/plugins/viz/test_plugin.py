@@ -4,7 +4,6 @@ from otter.plugins.viz.VizPlugin import VizPlugin
 
 
 def test_init(viz_plugin):
-    assert viz_plugin._params_window is None
     assert viz_plugin._render_window is None
 
 
