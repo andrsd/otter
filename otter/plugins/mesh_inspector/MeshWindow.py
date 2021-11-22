@@ -132,6 +132,7 @@ class MeshWindow(PluginWindowBase):
 
         self._splitter.addWidget(frame)
         self._splitter.setCollapsible(1, False)
+        self._splitter.setStretchFactor(1, 10)
 
         self.setCentralWidget(self._splitter)
 
