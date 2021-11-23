@@ -73,8 +73,9 @@ class FontPropertiesWidget(QtWidgets.QWidget):
         self._vtk_property.SetItalic(checked)
 
     def onFontSizeChanged(self, txt):
-        size = int(txt)
-        self._vtk_property.SetFontSize(size)
+        if len(txt) > 0:
+            size = int(txt)
+            self._vtk_property.SetFontSize(size)
 
     def onSetFontFamilyChanged(self, index):
         font_family = self._font_family.itemText(index)
