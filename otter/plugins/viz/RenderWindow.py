@@ -2,9 +2,32 @@ import os
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5 import QtWidgets, QtCore
+from otter.plugins.common.ExodusIIReader import ExodusIIReader
+from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.OSplitter import OSplitter
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
+from otter.plugins.viz.FileProps import FileProps
+from otter.plugins.viz.TextProps import TextProps
+
+
+class LoadThread(QtCore.QThread):
+    """ Worker thread for loading ExodusII files """
+
+    def __init__(self, file_name):
+        super().__init__()
+        if file_name.endswith('.e') or file_name.endswith('.exo'):
+            self._reader = ExodusIIReader(file_name)
+        elif file_name.endswith('.vtk'):
+            self._reader = VTKReader(file_name)
+        else:
+            self._reader = None
+
+    def run(self):
+        self._reader.load()
+
+    def getReader(self):
+        return self._reader
 
 
 class RenderWindow(PluginWindowBase):
@@ -14,8 +37,11 @@ class RenderWindow(PluginWindowBase):
 
     def __init__(self, plugin):
         super().__init__(plugin)
+        self._props = []
         self._file_name = None
         self._vtk_renderer = vtk.vtkRenderer()
+        self._load_thread = None
+        self._progress = None
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -99,6 +125,8 @@ class RenderWindow(PluginWindowBase):
             border: none;
             """)
         self._toolbar.addAction("O", self.onOpenFile)
+        self._toolbar.addSeparator()
+        self._toolbar.addAction("T", self.onAddText)
 
         self.addToolBar(QtCore.Qt.TopToolBarArea, self._toolbar)
 
@@ -138,13 +166,52 @@ class RenderWindow(PluginWindowBase):
         super().closeEvent(event)
 
     def clear(self):
+        # todo: remove actors and free them prop dialogs
         self._params_window.clear()
 
     def onUpdateWindow(self):
         self._vtk_render_window.Render()
 
     def loadFile(self, file_name):
-        self._params_window.loadFile(file_name)
+        self._load_thread = LoadThread(file_name)
+        if self._load_thread.getReader() is not None:
+            self._progress = QtWidgets.QProgressDialog(
+                "Loading {}...".format(os.path.basename(file_name)),
+                None, 0, 0, self)
+            self._progress.setWindowModality(QtCore.Qt.WindowModal)
+            self._progress.setMinimumDuration(0)
+            self._progress.show()
+
+            self._load_thread.finished.connect(self.onFileLoadFinished)
+            self._load_thread.start(QtCore.QThread.IdlePriority)
+        else:
+            self._load_thread = None
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Unsupported file format",
+                "Selected file in not in a supported format.\n"
+                "We support the following formats:\n"
+                "  ExodusII")
+
+    def onFileLoadFinished(self):
+        reader = self._load_thread.getReader()
+
+        file_name = reader.getFileName()
+        file_props = FileProps(reader, self)
+        self._params_window.addPipelineItem("File", file_props)
+        file_props.show()
+
+        actors = file_props.getVtkActor()
+        if isinstance(actors, list):
+            for act in actors:
+                self._vtk_renderer.AddViewProp(act)
+
+        self._progress.hide()
+        self._progress = None
+
+        self.addToRecentFiles(file_name)
+        self._file_name = file_name
+        self.updateWindowTitle()
 
     def onClose(self):
         self.close()
@@ -163,3 +230,21 @@ class RenderWindow(PluginWindowBase):
 
     def onRender(self):
         pass
+
+    def onAddText(self):
+        props = TextProps(self)
+        self._params_window.addPipelineItem("Text", props)
+        props.show()
+
+        actor = props.getVtkActor()
+        if actor is not None:
+            self._vtk_renderer.AddViewProp(actor)
+
+    def onAddFile(self):
+        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            "",
+            "ExodusII files (*.e *.exo)")
+        if file_name:
+            self.loadFile(file_name)

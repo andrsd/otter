@@ -14,7 +14,7 @@ class FileProps(PropsBase):
 
     def __init__(self, reader, parent=None):
         super().__init__(parent)
-        self._title.setText("File properties")
+        self.setWindowTitle("File")
         self._reader = reader
         self._block_actors = {}
 

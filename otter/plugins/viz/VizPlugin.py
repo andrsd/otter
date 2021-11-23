@@ -27,3 +27,6 @@ class VizPlugin(Plugin):
         if self.parent is not None and hasattr(self.parent, 'window_menu'):
             if hasattr(self._render_window, 'menuBar'):
                 self._render_window.menuBar().addMenu(self.parent.window_menu)
+
+    def onClose(self):
+        self._render_window.close()

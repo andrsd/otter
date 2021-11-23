@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 
 class PropsBase(QtWidgets.QWidget):
@@ -11,17 +11,28 @@ class PropsBase(QtWidgets.QWidget):
         self._actor = None
 
         self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setContentsMargins(6, 6, 6, 6)
+        self._layout.setSpacing(2)
         self.setLayout(self._layout)
 
-        self._title = QtWidgets.QLabel("Properties")
-        font = self._title.font()
-        font.setBold(True)
-        self._title.setFont(font)
-        self._layout.addWidget(self._title)
-
-    def setFocus(self):
-        pass
+        self.setWindowFlag(QtCore.Qt.Tool)
+        self.setWindowFlag(QtCore.Qt.CustomizeWindowHint)
+        self.setWindowFlag(QtCore.Qt.WindowMinMaxButtonsHint, False)
+        self.setWindowFlag(QtCore.Qt.WindowFullscreenButtonHint, False)
 
     def buildVtkActor(self):
         return self._actor
+
+    def closeEvent(self, event):
+        self.hide()
+        event.ignore()
+
+    def show(self):
+        parent = self.parentWidget()
+        render_wnd = parent._splitter.widget(1)
+        geom = render_wnd.geometry()
+        pt = QtCore.QPoint(geom.left() + 1, geom.top() + 1)
+        pt = parent.mapToGlobal(pt)
+        # TODO factor in the toolbar heigh programatically
+        self.move(pt.x(), pt.y() + 32)
+        super().show()
