@@ -196,22 +196,23 @@ class RenderWindow(PluginWindowBase):
     def onFileLoadFinished(self):
         reader = self._load_thread.getReader()
 
+        self._progress.hide()
+        self._progress = None
+
         file_name = reader.getFileName()
+        self.addToRecentFiles(file_name)
+        self._file_name = file_name
+        self.updateWindowTitle()
+
         file_props = FileProps(reader, self)
-        self._params_window.addPipelineItem("File", file_props)
+        file_props.setWindowTitle("File")
+        self._params_window.addPipelineItem(file_props)
         file_props.show()
 
         actors = file_props.getVtkActor()
         if isinstance(actors, list):
             for act in actors:
                 self._vtk_renderer.AddViewProp(act)
-
-        self._progress.hide()
-        self._progress = None
-
-        self.addToRecentFiles(file_name)
-        self._file_name = file_name
-        self.updateWindowTitle()
 
     def onClose(self):
         self.close()
@@ -233,7 +234,8 @@ class RenderWindow(PluginWindowBase):
 
     def onAddText(self):
         props = TextProps(self)
-        self._params_window.addPipelineItem("Text", props)
+        props.setWindowTitle("Text")
+        self._params_window.addPipelineItem(props)
         props.show()
 
         actor = props.getVtkActor()

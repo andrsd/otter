@@ -1,5 +1,5 @@
 import vtk
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets
 from otter.plugins.viz.PropsBase import PropsBase
 from otter.plugins.viz.FontPropertiesWidget import FontPropertiesWidget
 from otter.plugins.common.ColorPicker import ColorPicker
@@ -13,7 +13,6 @@ class TextProps(PropsBase):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Text")
         self.setupWidgets()
         self.buildVtkActor()
 

@@ -1,4 +1,3 @@
-import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.OTreeView import OTreeView
 from otter.plugins.viz.RootProps import RootProps
@@ -86,7 +85,8 @@ class ParamsWindow(QtWidgets.QWidget):
         props = item.data()
         props.show()
 
-    def addPipelineItem(self, name, props):
+    def addPipelineItem(self, props):
+        name = props.windowTitle()
         rows = self._root.rowCount()
         si = QtGui.QStandardItem()
         si.setText(name)
