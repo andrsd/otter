@@ -51,5 +51,5 @@ class OTreeView(QtWidgets.QTreeView):
         rect = self.rect()
         rect.adjust(0, 10, 0, 0)
         painter.drawText(rect,
-                         QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop,
+                         int(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop),
                          self.empty_message)
