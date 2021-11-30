@@ -156,7 +156,7 @@ class RenderWindow(PluginWindowBase):
             for url in event.mimeData().urls():
                 file_names.append(url.toLocalFile())
             if len(file_names) > 0:
-                self.plugin.loadFile(file_names[0])
+                self.loadFile(file_names[0])
         else:
             event.ignore()
 
