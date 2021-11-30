@@ -28,6 +28,8 @@ class ExodusIIReader(Reader):
                 self._reader.SetTimeStep(self._time_steps[-1])
             self._reader.UpdateInformation()
             self._reader.SetAllArrayStatus(vtk.vtkExodusIIReader.NODAL, 1)
+            self._reader.SetAllArrayStatus(vtk.vtkExodusIIReader.ELEM_BLOCK, 1)
+            self._reader.SetAllArrayStatus(vtk.vtkExodusIIReader.GLOBAL, 1)
             self._reader.Update()
 
             self._readBlockInfo()
