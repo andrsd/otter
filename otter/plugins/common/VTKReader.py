@@ -42,7 +42,7 @@ class VTKReader(Reader):
         self._block_info[vtkid] = binfo
 
     def _readVariableInfo(self):
-        var_type = vtk.vtkExodusIIReader.NODAL
+        var_type = Reader.VAR_NODAL
         for i in range(self._reader.GetNumberOfScalarsInFile()):
             var_name = self._reader.GetScalarsNameInFile(i)
             vinfo = VariableInformation(name=var_name,

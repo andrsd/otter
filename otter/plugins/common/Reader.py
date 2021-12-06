@@ -16,6 +16,8 @@ class Reader:
     """
     Base class for readers
     """
+    VAR_NODAL = 1
+    VAR_CELL = 2
 
     def __init__(self, file_name):
         self._file_name = file_name

@@ -72,20 +72,19 @@ class ExodusIIReader(Reader):
                 self._block_info[obj_type][vtkid] = binfo
 
     def _readVariableInfo(self):
-        var_type = [
-            vtk.vtkExodusIIReader.NODAL,
-            vtk.vtkExodusIIReader.ELEM_BLOCK
-        ]
+        var_types = {
+            vtk.vtkExodusIIReader.NODAL: Reader.VAR_NODAL,
+            vtk.vtkExodusIIReader.ELEM_BLOCK: Reader.VAR_CELL
+        }
 
-        for variable_type in var_type:
-            for i in range(self._reader.GetNumberOfObjectArrays(
-                    variable_type)):
-                var_name = self._reader.GetObjectArrayName(variable_type, i)
+        for (ex_var_type, reader_var_type) in var_types.items():
+            for i in range(self._reader.GetNumberOfObjectArrays(ex_var_type)):
+                var_name = self._reader.GetObjectArrayName(ex_var_type, i)
                 if var_name is not None:
                     num = self._reader.GetNumberOfObjectArrayComponents(
-                        variable_type, i)
+                        ex_var_type, i)
                     vinfo = VariableInformation(name=var_name,
-                                                object_type=variable_type,
+                                                object_type=reader_var_type,
                                                 num_components=num)
                     self._variable_info[var_name] = vinfo
 

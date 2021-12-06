@@ -165,7 +165,7 @@ class PetscHDF5Reader(Reader):
     def _readVariableInfo(self):
         # TODO
         vinfo = VariableInformation(name="sln_u",
-                                    object_type=vtk.vtkExodusIIReader.NODAL,
+                                    object_type=Reader.VAR_NODAL,
                                     num_components=1)
         self._variable_info["sln_u"] = vinfo
 

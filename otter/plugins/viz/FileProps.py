@@ -1,6 +1,7 @@
 import vtk
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.viz.PropsBase import PropsBase
+from otter.plugins.common.Reader import Reader
 
 
 class FileProps(PropsBase):
@@ -157,8 +158,8 @@ class FileProps(PropsBase):
                 mapper.ScalarVisibilityOn()
                 mapper.SelectColorArray(vinfo.name)
                 mapper.UseLookupTableScalarRangeOn()
-                if vinfo.object_type == vtk.vtkExodusIIReader.NODAL:
+                if vinfo.object_type == Reader.VAR_NODAL:
                     mapper.SetScalarModeToUsePointFieldData()
-                elif vinfo.object_type == vtk.vtkExodusIIReader.ELEM_BLOCK:
+                elif vinfo.object_type == Reader.VAR_CELL:
                     mapper.SetScalarModeToUseCellFieldData()
                 mapper.InterpolateScalarsBeforeMappingOn()
