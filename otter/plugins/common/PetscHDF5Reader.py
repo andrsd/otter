@@ -3,7 +3,7 @@ import h5py
 from vtk.util.vtkAlgorithm import VTKPythonAlgorithmBase
 import otter.plugins.common as common
 from otter.plugins.common.Reader import Reader
-from otter.plugins.common.Reader import BlockInformation
+from otter.plugins.common.Reader import BlockInformation, VariableInformation
 
 
 class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
@@ -67,6 +67,9 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
                 cell_array = self._buildCells(cells, "vtkHexahedron", 8)
                 block.SetCells(vtk.VTK_HEXAHEDRON, cell_array)
 
+        self._readVertexFields(block, f['vertex_fields'])
+        # TODO: read cell fields
+
         self._output.SetBlock(0, block)
 
         return 1
@@ -83,6 +86,32 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
                 elem.GetPointIds().SetId(j, connectivity[j])
             cell_array.InsertNextCell(elem)
         return cell_array
+
+    def _readVertexFields(self, block, vertex_fields):
+        point_data = block.GetPointData()
+
+        for (fname, ds) in vertex_fields.items():
+            if ds.attrs['vector_field_type'] == b'scalar':
+                arr = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+                arr.SetName(fname)
+                arr.Allocate(ds.shape[0])
+                for val in list(ds):
+                    arr.InsertNextTuple1(val)
+                point_data.AddArray(arr)
+
+    def _readCellFields(self, block, cell_fields):
+        # cell_data = block.GetCellData()
+        #
+        # arr1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+        # arr1.SetName("cell1")
+        # arr1.SetNumberOfTuples(4)
+        # arr1.SetTuple1(0, 0.1)
+        # arr1.SetTuple1(1, 0.2)
+        # arr1.SetTuple1(2, 0.3)
+        # arr1.SetTuple1(3, 0.4)
+        #
+        # cell_data.AddArray(arr1)
+        pass
 
     def SetFileName(self, fname):
         if fname != self._file_name:
@@ -122,6 +151,7 @@ class PetscHDF5Reader(Reader):
             self._reader.Update()
 
         self._readBlockInfo()
+        self._readVariableInfo()
 
     def _readBlockInfo(self):
         vtkid = 0
@@ -131,6 +161,13 @@ class PetscHDF5Reader(Reader):
                                  object_index=0,
                                  multiblock_index=1)
         self._block_info[vtkid] = binfo
+
+    def _readVariableInfo(self):
+        # TODO
+        vinfo = VariableInformation(name="sln_u",
+                                    object_type=vtk.vtkExodusIIReader.NODAL,
+                                    num_components=1)
+        self._variable_info["sln_u"] = vinfo
 
     def getVtkOutputPort(self):
         return self._reader.GetOutputPort(0)

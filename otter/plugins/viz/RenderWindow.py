@@ -4,6 +4,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5 import QtWidgets, QtCore
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
+from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.OSplitter import OSplitter
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
@@ -12,7 +13,7 @@ from otter.plugins.viz.TextProps import TextProps
 
 
 class LoadThread(QtCore.QThread):
-    """ Worker thread for loading ExodusII files """
+    """ Worker thread for loading data set files """
 
     def __init__(self, file_name):
         super().__init__()
@@ -20,6 +21,8 @@ class LoadThread(QtCore.QThread):
             self._reader = ExodusIIReader(file_name)
         elif file_name.endswith('.vtk'):
             self._reader = VTKReader(file_name)
+        elif file_name.endswith('.h5'):
+            self._reader = PetscHDF5Reader(file_name)
         else:
             self._reader = None
 
@@ -191,7 +194,7 @@ class RenderWindow(PluginWindowBase):
                 "Unsupported file format",
                 "Selected file in not in a supported format.\n"
                 "We support the following formats:\n"
-                "  ExodusII")
+                "  ExodusII, VTK Unstructured Grid, HDF5 (PETSc)")
 
     def onFileLoadFinished(self):
         reader = self._load_thread.getReader()
@@ -225,7 +228,9 @@ class RenderWindow(PluginWindowBase):
             self,
             'Open File',
             "",
-            "ExodusII files (*.e *.exo)")
+            "ExodusII files (*.e *.exo)"
+            "HDF5 PETSc files (*.h5);;"
+            "VTK Unstructured Grid files (*.vtk)")
         if file_name:
             self.loadFile(file_name)
 
@@ -247,6 +252,8 @@ class RenderWindow(PluginWindowBase):
             self,
             'Open File',
             "",
-            "ExodusII files (*.e *.exo)")
+            "ExodusII files (*.e *.exo)"
+            "HDF5 PETSc files (*.h5);;"
+            "VTK Unstructured Grid files (*.vtk)")
         if file_name:
             self.loadFile(file_name)
