@@ -67,8 +67,10 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
                 cell_array = self._buildCells(cells, "vtkHexahedron", 8)
                 block.SetCells(vtk.VTK_HEXAHEDRON, cell_array)
 
-        self._readVertexFields(block, f['vertex_fields'])
-        # TODO: read cell fields
+        if 'vertex_fields' in f:
+            self._readVertexFields(block, f['vertex_fields'])
+        if 'cell_fields' in f:
+            self._readCellFields(block, f['cell_fields'])
 
         self._output.SetBlock(0, block)
 
@@ -100,18 +102,16 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
                 point_data.AddArray(arr)
 
     def _readCellFields(self, block, cell_fields):
-        # cell_data = block.GetCellData()
-        #
-        # arr1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
-        # arr1.SetName("cell1")
-        # arr1.SetNumberOfTuples(4)
-        # arr1.SetTuple1(0, 0.1)
-        # arr1.SetTuple1(1, 0.2)
-        # arr1.SetTuple1(2, 0.3)
-        # arr1.SetTuple1(3, 0.4)
-        #
-        # cell_data.AddArray(arr1)
-        pass
+        cell_data = block.GetCellData()
+
+        for (fname, ds) in cell_fields.items():
+            if ds.attrs['vector_field_type'] == b'scalar':
+                arr = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+                arr.SetName(fname)
+                arr.Allocate(ds.shape[0])
+                for val in list(ds):
+                    arr.InsertNextTuple1(val)
+                cell_data.AddArray(arr)
 
     def SetFileName(self, fname):
         if fname != self._file_name:
