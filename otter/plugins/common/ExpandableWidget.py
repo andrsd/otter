@@ -16,15 +16,17 @@ class ExpandableWidget(QtWidgets.QWidget):
         self._expand_button.setCheckable(True)
         self._expand_button.setChecked(False)
         self._expand_button.setFlat(True)
-        self._expand_button.setFixedSize(30, 20)
+        self._expand_button.setFixedSize(20, 20)
         self._expand_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                                           QtWidgets.QSizePolicy.Fixed)
         self._expand_button.setStyleSheet("""
             QPushButton {
                 border: none;
+                text-align: left;
             }
             QPushButton:checked {
                 border: none;
+                text-align: left;
             }
             """)
 
