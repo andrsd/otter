@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from otter.plugins.common.ColorPicker import ColorPicker
+from otter.plugins.common.ExpandableWidget import ExpandableWidget
+from otter.plugins.common.HLine import HLine
 from otter.OTreeView import OTreeView
 
 
@@ -47,19 +49,21 @@ class InfoWindow(QtWidgets.QScrollArea):
     def setupWidgets(self):
         self._layout = QtWidgets.QVBoxLayout()
         self._layout.setContentsMargins(20, 10, 20, 10)
+        self._layout.setSpacing(8)
 
         self._color_picker = ColorPicker(self)
         self._color_picker.colorChanged.connect(self.onBlockColorPicked)
 
-        self._lbl_info = QtWidgets.QLabel("Information")
-        fnt = self._lbl_info.font()
-        fnt.setBold(True)
-        self._lbl_info.setFont(fnt)
+        self._lbl_info = QtWidgets.QLabel("Blocks")
+        self._lbl_info.setStyleSheet("""
+            color: #444;
+            font-weight: bold;
+            """)
         self._layout.addWidget(self._lbl_info)
 
         self._block_model = QtGui.QStandardItemModel()
         self._block_model.setHorizontalHeaderLabels([
-            "Block", "", "ID"
+            "Name", "", "ID"
         ])
         self._block_model.itemChanged.connect(self.onBlockChanged)
         self._blocks = OTreeView()
@@ -76,9 +80,11 @@ class InfoWindow(QtWidgets.QScrollArea):
             self.onBlockCustomContextMenu)
         self._layout.addWidget(self._blocks)
 
+        self._layout.addWidget(HLine())
+
         self._sideset_model = QtGui.QStandardItemModel()
         self._sideset_model.setHorizontalHeaderLabels([
-            "Side set", "", "ID"
+            "Name", "", "ID"
         ])
         self._sideset_model.itemChanged.connect(self.onSidesetChanged)
         self._sidesets = OTreeView()
@@ -90,12 +96,17 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._sidesets.setColumnWidth(0, 190)
         self._sidesets.setColumnWidth(2, 40)
         self._sidesets.hideColumn(self.IDX_COLOR)
-        self._layout.addWidget(self._sidesets)
+
+        self._sidesets_expd = ExpandableWidget("Side sets")
+        self._sidesets_expd.setWidget(self._sidesets)
+        self._layout.addWidget(self._sidesets_expd)
+
+        self._layout.addWidget(HLine())
 
         self._nodesets = OTreeView()
         self._nodeset_model = QtGui.QStandardItemModel()
         self._nodeset_model.setHorizontalHeaderLabels([
-            "Node set", "", "ID"
+            "Name", "", "ID"
         ])
         self._nodeset_model.itemChanged.connect(self.onNodesetChanged)
         self._nodesets.setFixedHeight(150)
@@ -106,7 +117,12 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._nodesets.setColumnWidth(0, 190)
         self._nodesets.setColumnWidth(2, 40)
         self._nodesets.hideColumn(self.IDX_COLOR)
-        self._layout.addWidget(self._nodesets)
+
+        self._nodesets_expd = ExpandableWidget("Node sets")
+        self._nodesets_expd.setWidget(self._nodesets)
+        self._layout.addWidget(self._nodesets_expd)
+
+        self._layout.addWidget(HLine())
 
         self._totals = QtWidgets.QTreeWidget()
         self._totals.setFixedHeight(60)
@@ -116,8 +132,16 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._totals.addTopLevelItem(self._total_elements)
         self._total_nodes = QtWidgets.QTreeWidgetItem(["Nodes", ""])
         self._totals.addTopLevelItem(self._total_nodes)
-        self._layout.addWidget(self._totals)
 
+        self._totals_expd = ExpandableWidget("Summary")
+        self._totals_expd.setWidget(self._totals)
+        self._layout.addWidget(self._totals_expd)
+
+        self._layout.addWidget(HLine())
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
         self._range = QtWidgets.QTreeWidget()
         self._range.setFixedHeight(80)
         self._range.setIndentation(0)
@@ -128,11 +152,20 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._range.addTopLevelItem(self._y_range)
         self._z_range = QtWidgets.QTreeWidgetItem(["Z", ""])
         self._range.addTopLevelItem(self._z_range)
-        self._layout.addWidget(self._range)
+        layout.addWidget(self._range)
 
         self._dimensions = QtWidgets.QCheckBox("Show dimensions")
         self._dimensions.stateChanged.connect(self.onDimensionsStateChanged)
-        self._layout.addWidget(self._dimensions)
+        layout.addWidget(self._dimensions)
+
+        w = QtWidgets.QWidget()
+        w.setLayout(layout)
+
+        self._range_expd = ExpandableWidget("Dimensions")
+        self._range_expd.setWidget(w)
+        self._layout.addWidget(self._range_expd)
+
+        self._layout.addWidget(HLine())
 
         self._ori_marker = QtWidgets.QCheckBox("Orientation marker")
         self._ori_marker.stateChanged.connect(self.onOriMarkerStateChanged)
