@@ -72,8 +72,6 @@ class MeshWindow(PluginWindowBase):
             self.onNodesetVisibilityChanged)
         self._info_window.dimensionsStateChanged.connect(
             self.onCubeAxisVisibilityChanged)
-        self._info_window.orientationMarkerStateChanged.connect(
-            self.onOrientationmarkerVisibilityChanged)
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -164,6 +162,12 @@ class MeshWindow(PluginWindowBase):
         self._perspective_action.setCheckable(True)
         self._perspective_action.setChecked(True)
 
+        self._view_menu.addSeparator()
+        self._ori_marker_action = self._view_menu.addAction(
+            "Orientation marker")
+        self._ori_marker_action.setCheckable(True)
+        self._ori_marker_action.setChecked(True)
+
         self._shaded_action.triggered.connect(self.onShadedTriggered)
         self._shaded_w_edges_action.triggered.connect(
             self.onShadedWithEdgesTriggered)
@@ -171,6 +175,8 @@ class MeshWindow(PluginWindowBase):
             self.onHiddenEdgesRemovedTriggered)
         self._transluent_action.triggered.connect(self.onTransluentTriggered)
         self._perspective_action.toggled.connect(self.onPerspectiveToggled)
+        self._ori_marker_action.toggled.connect(
+            self.onOrientationmarkerVisibilityChanged)
 
         self._view_mode = QtWidgets.QPushButton(frame)
         self._view_mode.setFixedSize(60, 32)
