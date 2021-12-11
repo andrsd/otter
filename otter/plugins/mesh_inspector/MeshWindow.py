@@ -444,7 +444,8 @@ class MeshWindow(PluginWindowBase):
         else:
             actor.VisibilityOff()
 
-        if self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+        if (self.renderMode() == self.HIDDEN_EDGES_REMOVED or
+                self.renderMode() == self.TRANSLUENT):
             actor = self._getSilhouetteActor(block_id)
             if visible:
                 actor.VisibilityOn()
@@ -555,21 +556,21 @@ class MeshWindow(PluginWindowBase):
         self._render_mode = self.HIDDEN_EDGES_REMOVED
         for block_id, actor in self._block_actors.items():
             self._setBlockActorProperties(block_id, actor)
+            sil_act = self._getSilhouetteActor(block_id)
+            self._setSilhouetteActorProperties(sil_act)
+            sil_act.SetVisibility(actor.GetVisibility())
         for actor in self._sideset_actors.values():
             self._setSideSetActorProperties(actor)
-        for actor in self._silhouette_actors.values():
-            actor.VisibilityOn()
-            self._setSilhouetteActorProperties(actor)
 
     def onTransluentTriggered(self, checked):
         self._render_mode = self.TRANSLUENT
         for block_id, actor in self._block_actors.items():
             self._setBlockActorProperties(block_id, actor)
+            sil_act = self._getSilhouetteActor(block_id)
+            self._setSilhouetteActorProperties(sil_act)
+            sil_act.SetVisibility(actor.GetVisibility())
         for actor in self._sideset_actors.values():
             self._setSideSetActorProperties(actor)
-        for actor in self._silhouette_actors.values():
-            actor.VisibilityOn()
-            self._setSilhouetteActorProperties(actor)
 
     def onPerspectiveToggled(self, checked):
         if checked:
