@@ -287,12 +287,12 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._color_picker.setColor(qcolor)
         self._color_picker.show()
 
-        geom = self.geometry()
-        low_right = QtCore.QPoint(geom.right(), geom.bottom())
-        lr = self.mapToGlobal(low_right)
-        lr.setY(lr.y() - self._color_picker.geometry().height() - 20)
-        lr.setX(lr.x() + 5)
-        self._color_picker.move(lr)
+        geom = self.parent().geometry()
+        low_left = QtCore.QPoint(geom.left(), geom.bottom())
+        ll = self.mapToGlobal(low_left)
+        ll.setY(ll.y() - self._color_picker.geometry().height() - 20)
+        ll.setX(ll.x() - self._color_picker.geometry().width() - 5)
+        self._color_picker.move(ll)
 
     def onBlockColorPicked(self, qcolor):
         index = self._color_picker.data()
