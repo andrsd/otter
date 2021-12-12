@@ -62,6 +62,7 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
             self._graph[j] = lst
             j += 1
 
+        self._orientation = np.reshape(f['topology']['orientation'], -1)
         labels = f['labels']
 
         if 'celltype' in labels:
@@ -213,8 +214,58 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
 
             return block
         elif dim == 3:
-            # TODO
-            pass
+            block = vtk.vtkUnstructuredGrid()
+
+            face_ids = np.reshape(face_set, -1)
+
+            pt_ids = {}
+            for fid in face_ids:
+                edge_ids = self._graph[fid]
+                for eid in edge_ids:
+                    node_ids = self._graph[eid]
+                    for nid in node_ids:
+                        pt_ids[nid] = 1
+            point_array = vtk.vtkPoints()
+            point_array.Allocate(len(pt_ids))
+            for i in pt_ids:
+                vert_idx = self._vertex_idx[i]
+                pt = [0, 0, 0]
+                for j in range(dim):
+                    pt[j] = self._vertices[vert_idx][j]
+                point_array.InsertPoint(i, pt)
+            block.SetPoints(point_array)
+
+            # this assumes all cells in the cell array are of the same type
+            cell_array = vtk.vtkCellArray()
+            for fid in face_ids:
+                pt_idxs = []
+                # this works, weirdly
+                edge_ids = self._graph[fid]
+                for eid in edge_ids:
+                    node_ids = self._graph[eid]
+                    if node_ids[0] not in pt_idxs:
+                        pt_idxs.append(node_ids[0])
+                    if node_ids[1] not in pt_idxs:
+                        pt_idxs.append(node_ids[1])
+
+                if len(pt_idxs) == 3:
+                    elem = vtk.vtkTriangle()
+                    for i in range(3):
+                        elem.GetPointIds().SetId(i, pt_idxs[i])
+                    cell_array.InsertNextCell(elem)
+                    type = vtk.VTK_TRIANGLE
+                elif len(pt_idxs) == 4:
+                    elem = vtk.vtkQuad()
+                    for i in range(4):
+                        elem.GetPointIds().SetId(i, pt_idxs[i])
+                    cell_array.InsertNextCell(elem)
+                    type = vtk.VTK_QUAD
+
+            block.SetCells(type, cell_array)
+
+            return block
+        else:
+            return None
 
     def _readVertexFields(self, block, vertex_fields):
         point_data = block.GetPointData()
