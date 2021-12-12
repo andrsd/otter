@@ -1,5 +1,6 @@
 import vtk
 import h5py
+import numpy as np
 from vtk.util.vtkAlgorithm import VTKPythonAlgorithmBase
 import otter.plugins.common as common
 from otter.plugins.common.Reader import Reader
@@ -20,61 +21,134 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
 
         self._file_name = ""
         self._output = None
+        self._cell_dim = None
+        self._labels = {}
+        self._graph = {}
+        self._multi_idx = 0
+        self._cell_connectivity = None
+        self._block_info = None
+        self._sideset_info = None
 
     def RequestData(self, request, in_info, out_info):
-        self._output = vtk.vtkMultiBlockDataSet.GetData(out_info)
+        self._block_info = {}
+        self._sideset_info = {}
 
+        self._output = vtk.vtkMultiBlockDataSet.GetData(out_info)
+        self._readFile()
+
+        self._block_idx = 0
+        self._multi_idx = 0
+        self._buildBlocks()
+        self._buildFaceSets()
+
+        return 1
+
+    def _readFile(self):
         f = h5py.File(self._file_name, 'r')
 
+        self._labels = {}
+        self._vertices = f['geometry']['vertices']
+
+        cells = np.reshape(f['topology']['cells'], -1)
+        cones = np.reshape(f['topology']['cones'], -1)
+        self._graph = {}
+        i = 0
+        j = 0
+        for c in cones:
+            lst = []
+            for k in range(c):
+                lst.append(cells[i])
+                i += 1
+            self._graph[j] = lst
+            j += 1
+
+        labels = f['labels']
+
+        if 'celltype' in labels:
+            celltypes = labels['celltype']
+            self._cell_types = {}
+            self._dim_of_cell = {}
+            for ct in celltypes.keys():
+                indices = np.reshape(celltypes[ct]['indices'], -1)
+                for i in indices:
+                    self._dim_of_cell[i] = ct
+                self._cell_types[int(ct)] = indices
+
+            self._vertex_idx = {}
+            for i, val in enumerate(self._cell_types[0]):
+                self._vertex_idx[val] = i
+
+        if 'Face Sets' in labels:
+            face_sets = labels['Face Sets']
+            self._labels['face_sets'] = {}
+            for fs in face_sets.keys():
+                indices = face_sets[fs]['indices']
+                self._labels['face_sets'][fs] = indices
+
+        if 'vertex_fields' in f:
+            self._vertex_fields = f['vertex_fields']
+        else:
+            self._vertex_fields = {}
+        if 'cell_fields' in f:
+            self._cell_fields = f['cell_fields']
+        else:
+            self._cell_fields = {}
+
+        self._cell_connectivity = f['viz']['topology']['cells']
+
+    def _buildBlocks(self):
         block = vtk.vtkUnstructuredGrid()
 
-        points = f['geometry']['vertices']
-        n_points = points.shape[0]
-        dim = points.shape[1]
-
+        dim = self._vertices.shape[1]
+        verts = self._cell_types[0]
+        n_points = len(verts)
         point_array = vtk.vtkPoints()
         point_array.Allocate(n_points)
         for i in range(n_points):
             pt = [0, 0, 0]
             for j in range(dim):
-                pt[j] = points[i][j]
+                pt[j] = self._vertices[i][j]
             point_array.InsertPoint(i, pt)
         block.SetPoints(point_array)
 
-        cells = f['viz']['topology']['cells']
-        n_cell_corners = cells.attrs['cell_corners']
-        cell_dim = cells.attrs['cell_dim']
+        # FIXME: build this from cells and cones
+        n_cell_corners = self._cell_connectivity.attrs['cell_corners']
+        self._cell_dim = self._cell_connectivity.attrs['cell_dim']
 
-        if cell_dim == 1:
+        c_conn = self._cell_connectivity
+        if self._cell_dim == 1:
             if n_cell_corners == 2:
-                cell_array = self._buildCells(cells, "vtkLine", 2)
+                cell_array = self._buildCells(c_conn, "vtkLine", 2)
                 block.SetCells(vtk.VTK_LINE, cell_array)
-        elif cell_dim == 2:
+        elif self._cell_dim == 2:
             if n_cell_corners == 3:
-                cell_array = self._buildCells(cells, "vtkTriangle", 3)
+                cell_array = self._buildCells(c_conn, "vtkTriangle", 3)
                 block.SetCells(vtk.VTK_TRIANGLE, cell_array)
             elif n_cell_corners == 4:
-                cell_array = self._buildCells(cells, "vtkQuad", 4)
+                cell_array = self._buildCells(c_conn, "vtkQuad", 4)
                 block.SetCells(vtk.VTK_QUAD, cell_array)
-        elif cell_dim == 3:
+        elif self._cell_dim == 3:
             if n_cell_corners == 4:
-                cell_array = self._buildCells(cells, "vtkTetra", 4)
+                cell_array = self._buildCells(c_conn, "vtkTetra", 4)
                 block.SetCells(vtk.VTK_TETRA, cell_array)
             elif n_cell_corners == 6:
-                cell_array = self._buildCells(cells, "vtkWedge", 6)
+                cell_array = self._buildCells(c_conn, "vtkWedge", 6)
                 block.SetCells(vtk.VTK_WEDGE, cell_array)
             elif n_cell_corners == 8:
-                cell_array = self._buildCells(cells, "vtkHexahedron", 8)
+                cell_array = self._buildCells(c_conn, "vtkHexahedron", 8)
                 block.SetCells(vtk.VTK_HEXAHEDRON, cell_array)
 
-        if 'vertex_fields' in f:
-            self._readVertexFields(block, f['vertex_fields'])
-        if 'cell_fields' in f:
-            self._readCellFields(block, f['cell_fields'])
+        self._readVertexFields(block, self._vertex_fields)
+        self._readCellFields(block, self._cell_fields)
 
-        self._output.SetBlock(0, block)
-
-        return 1
+        self._output.SetBlock(self._block_idx, block)
+        self._block_idx += 1
+        binfo = BlockInformation(object_type=0,
+                                 name="block",
+                                 number=self._multi_idx,
+                                 object_index=0,
+                                 multiblock_index=self._multi_idx)
+        self._block_info[0] = binfo
 
     def _buildCells(self, cells, class_name, n_vertices):
         n_cells = cells.shape[0]
@@ -88,6 +162,59 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
                 elem.GetPointIds().SetId(j, connectivity[j])
             cell_array.InsertNextCell(elem)
         return cell_array
+
+    def _buildFaceSets(self):
+        self._multi_idx += 1
+        j = 0
+        for (id, fs) in self._labels['face_sets'].items():
+            self._multi_idx += 1
+            block = self._buildFaceSet(fs)
+            self._output.SetBlock(self._block_idx, block)
+            self._block_idx += 1
+            binfo = BlockInformation(object_type=1,
+                                     name=str(id),
+                                     number=self._multi_idx,
+                                     object_index=j,
+                                     multiblock_index=self._multi_idx)
+            self._sideset_info[id] = binfo
+            j += 1
+
+    def _buildFaceSet(self, face_set):
+        dim = self._vertices.shape[1]
+
+        if dim == 2:
+            block = vtk.vtkUnstructuredGrid()
+
+            edge_ids = np.reshape(face_set, -1)
+            pt_ids = {}
+            for eid in edge_ids:
+                node_ids = self._graph[eid]
+                for nid in node_ids:
+                    pt_ids[nid] = 1
+
+            point_array = vtk.vtkPoints()
+            point_array.Allocate(len(pt_ids))
+            for i in pt_ids:
+                vert_idx = self._vertex_idx[i]
+                pt = [0, 0, 0]
+                for j in range(dim):
+                    pt[j] = self._vertices[vert_idx][j]
+                point_array.InsertPoint(i, pt)
+            block.SetPoints(point_array)
+
+            cell_array = vtk.vtkCellArray()
+            for eid in edge_ids:
+                node_ids = self._graph[eid]
+                elem = vtk.vtkLine()
+                elem.GetPointIds().SetId(0, node_ids[0])
+                elem.GetPointIds().SetId(1, node_ids[1])
+                cell_array.InsertNextCell(elem)
+            block.SetCells(vtk.VTK_LINE, cell_array)
+
+            return block
+        elif dim == 3:
+            # TODO
+            pass
 
     def _readVertexFields(self, block, vertex_fields):
         point_data = block.GetPointData()
@@ -127,6 +254,12 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
     def GetTotalNumberOfNodes(self):
         return self._output.GetNumberOfPoints()
 
+    def getBlockInfo(self):
+        return self._block_info
+
+    def getSideSetInfo(self):
+        return self._sideset_info
+
 
 class PetscHDF5Reader(Reader):
     """
@@ -137,6 +270,7 @@ class PetscHDF5Reader(Reader):
         super().__init__(file_name)
         self._reader = None
         self._block_info = dict()
+        self._sideset_info = dict()
         self._variable_info = dict()
 
     def isValid(self):
@@ -151,16 +285,14 @@ class PetscHDF5Reader(Reader):
             self._reader.Update()
 
         self._readBlockInfo()
+        self._readSidesetInfo()
         self._readVariableInfo()
 
     def _readBlockInfo(self):
-        vtkid = 0
-        binfo = BlockInformation(object_type=0,
-                                 name="block",
-                                 number=vtkid,
-                                 object_index=0,
-                                 multiblock_index=1)
-        self._block_info[vtkid] = binfo
+        self._block_info = self._reader.getBlockInfo()
+
+    def _readSidesetInfo(self):
+        self._sideset_info = self._reader.getSideSetInfo()
 
     def _readVariableInfo(self):
         # TODO
@@ -176,7 +308,7 @@ class PetscHDF5Reader(Reader):
         return self._block_info.values()
 
     def getSideSets(self):
-        return []
+        return self._sideset_info.values()
 
     def getNodeSets(self):
         return []
