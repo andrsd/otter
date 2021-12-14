@@ -27,3 +27,11 @@ def point_max(pt1, pt2):
     y = max(pt1.y(), pt2.y())
     z = max(pt1.z(), pt2.z())
     return QtGui.QVector3D(x, y, z)
+
+
+def qcolor2vtk(qcolor):
+    return [
+        qcolor.redF(),
+        qcolor.greenF(),
+        qcolor.blueF()
+    ]

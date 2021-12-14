@@ -44,10 +44,10 @@ class MeshWindow(PluginWindowBase):
     fileLoaded = QtCore.pyqtSignal(object)
     boundsChanged = QtCore.pyqtSignal(list)
 
-    SIDESET_CLR = [255/255, 173/255, 79/255]
-    SIDESET_EDGE_CLR = [0.1, 0.1, 0.4]
+    SIDESET_CLR = QtGui.QColor(255, 173, 79)
+    SIDESET_EDGE_CLR = QtGui.QColor(26, 26, 102)
     SIDESET_EDGE_WIDTH = 5
-    NODESET_CLR = [168/255, 91/255, 2/255]
+    NODESET_CLR = QtGui.QColor(168, 91, 2)
 
     SHADED = 0
     SHADED_WITH_EDGES = 1
@@ -94,8 +94,9 @@ class MeshWindow(PluginWindowBase):
 
         # TODO: set background from preferences/templates
         self._vtk_renderer.SetGradientBackground(True)
-        self._vtk_renderer.SetBackground([0.321, 0.3411, 0.4313])
-        self._vtk_renderer.SetBackground2([0.321, 0.3411, 0.4313])
+        bkgnd = common.qcolor2vtk(QtGui.QColor(82, 87, 110))
+        self._vtk_renderer.SetBackground(bkgnd)
+        self._vtk_renderer.SetBackground2(bkgnd)
         # set anti-aliasing on
         self._vtk_renderer.SetUseFXAA(True)
         self._vtk_render_window.SetMultiSamples(1)
@@ -621,7 +622,7 @@ class MeshWindow(PluginWindowBase):
             property.SetColor(self._block_color[block_id])
             property.SetOpacity(1.0)
             property.SetEdgeVisibility(True)
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
             property.SetLineWidth(2)
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property.SetColor([1, 1, 1])
@@ -635,26 +636,26 @@ class MeshWindow(PluginWindowBase):
     def _setSideSetActorProperties(self, actor):
         property = actor.GetProperty()
         if self.renderMode() == self.SHADED:
-            property.SetColor(self.SIDESET_CLR)
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
             property.SetLineWidth(self.SIDESET_EDGE_WIDTH)
             property.LightingOff()
         elif self.renderMode() == self.SHADED_WITH_EDGES:
             property = actor.GetProperty()
-            property.SetColor(self.SIDESET_CLR)
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
-            property.SetEdgeColor(self.SIDESET_EDGE_CLR)
+            property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
             property.SetLineWidth(self.SIDESET_EDGE_WIDTH)
             property.LightingOff()
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property = actor.GetProperty()
-            property.SetColor(self.SIDESET_CLR)
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
             property.LightingOff()
         elif self.renderMode() == self.TRANSLUENT:
             property = actor.GetProperty()
-            property.SetColor(self.SIDESET_CLR)
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
             property.LightingOff()
 
@@ -665,7 +666,7 @@ class MeshWindow(PluginWindowBase):
         property.SetVertexVisibility(True)
         property.SetEdgeVisibility(False)
         property.SetPointSize(10)
-        property.SetColor(self.NODESET_CLR)
+        property.SetColor(common.qcolor2vtk(self.NODESET_CLR))
         property.SetOpacity(1)
         property.SetAmbient(1)
         property.SetDiffuse(0)
