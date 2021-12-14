@@ -8,6 +8,8 @@ from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.OSplitter import OSplitter
+from otter.plugins.common.FileChangedNotificationWidget import \
+    FileChangedNotificationWidget
 import otter.plugins.common as common
 from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
@@ -57,6 +59,7 @@ class MeshWindow(PluginWindowBase):
         self._load_thread = None
         self._progress = None
         self._file_name = None
+        self._file_watcher = QtCore.QFileSystemWatcher()
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -81,6 +84,7 @@ class MeshWindow(PluginWindowBase):
             self.onNodesetVisibilityChanged)
         self._info_window.dimensionsStateChanged.connect(
             self.onCubeAxisVisibilityChanged)
+        self._file_watcher.fileChanged.connect(self.onFileChanged)
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
@@ -194,6 +198,13 @@ class MeshWindow(PluginWindowBase):
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.show()
 
+        self.setupFileChangedNotificationWidget()
+
+    def setupFileChangedNotificationWidget(self):
+        self._file_changed_notification = FileChangedNotificationWidget(self)
+        self._file_changed_notification.setVisible(False)
+        self._file_changed_notification.reload.connect(self.onReloadFile)
+
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
         self._new_action = file_menu.addAction(
@@ -248,6 +259,10 @@ class MeshWindow(PluginWindowBase):
         self._block_bounds = {}
         self._vtk_renderer.RemoveAllViewProps()
 
+        watched_files = self._file_watcher.files()
+        for file in watched_files:
+            self._file_watcher.removePath(file)
+
     def loadFile(self, file_name):
         self.clear()
 
@@ -297,6 +312,8 @@ class MeshWindow(PluginWindowBase):
         self._file_name = reader.getFileName()
         self.updateWindowTitle()
         self.addToRecentFiles(self._file_name)
+        self._file_watcher.addPath(self._file_name)
+        self._file_changed_notification.setFileName(self._file_name)
 
         self._progress.hide()
         self._progress = None
@@ -672,3 +689,24 @@ class MeshWindow(PluginWindowBase):
         self.plugin.settings.setValue(
             "splitter/state", self._splitter.saveState())
         super().closeEvent(event)
+
+    def onFileChanged(self, path):
+        if path not in self._file_watcher.files():
+            self._file_watcher.addPath(path)
+        self.showFileChangedNotification()
+
+    def showFileChangedNotification(self):
+        self._file_changed_notification.adjustSize()
+
+        width = self._splitter.sizes()[0]
+
+        left = (width - self._file_changed_notification.width()) / 2
+        top = 10
+        self._file_changed_notification.setGeometry(
+            left, top,
+            self._file_changed_notification.width(),
+            self._file_changed_notification.height())
+        self._file_changed_notification.show()
+
+    def onReloadFile(self):
+        self.loadFile(self._file_name)
