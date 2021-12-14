@@ -149,7 +149,10 @@ class MeshWindow(PluginWindowBase):
 
         self.setCentralWidget(self._splitter)
 
-        # control layer
+        self.setupViewModeWidget(frame)
+        self.setupFileChangedNotificationWidget()
+
+    def setupViewModeWidget(self, frame):
         self._view_menu = QtWidgets.QMenu()
         self._shaded_action = self._view_menu.addAction("Shaded")
         self._shaded_action.setCheckable(True)
@@ -198,8 +201,6 @@ class MeshWindow(PluginWindowBase):
         self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.show()
-
-        self.setupFileChangedNotificationWidget()
 
     def setupFileChangedNotificationWidget(self):
         self._file_changed_notification = FileChangedNotificationWidget(self)
