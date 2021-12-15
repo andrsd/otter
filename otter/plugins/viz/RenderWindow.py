@@ -2,6 +2,7 @@ import os
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5 import QtWidgets, QtCore
+from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
@@ -162,6 +163,13 @@ class RenderWindow(PluginWindowBase):
                 self.loadFile(file_names[0])
         else:
             event.ignore()
+
+    def event(self, e):
+        if e.type() == LoadFileEvent.TYPE:
+            self.loadFile(e.fileName())
+            return True
+        else:
+            return super().event(e)
 
     def closeEvent(self, event):
         self.plugin.settings.setValue(

@@ -1,8 +1,18 @@
 import sys
 import signal
+import argparse
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
 from otter.plugins.viz.VizPlugin import VizPlugin
+
+parser = argparse.ArgumentParser(description='Visualizer')
+parser.add_argument(
+    'file',
+    metavar='file',
+    type=str,
+    nargs='?',
+    help='File to open')
+args = parser.parse_args()
 
 
 def safe_timer(timeout, func, *args, **kwargs):
@@ -39,6 +49,8 @@ def main():
     # handle signals
     safe_timer(50, lambda: None)
 
+    if args.file is not None:
+        plugin.loadFile(args.file)
     app.exec()
 
     del app

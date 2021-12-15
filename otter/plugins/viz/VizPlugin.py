@@ -1,5 +1,7 @@
+from PyQt5 import QtCore
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
+from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.viz.RenderWindow import RenderWindow
 
 
@@ -30,3 +32,7 @@ class VizPlugin(Plugin):
 
     def onClose(self):
         self._render_window.close()
+
+    def loadFile(self, file_name):
+        event = LoadFileEvent(file_name)
+        QtCore.QCoreApplication.postEvent(self._render_window, event)
