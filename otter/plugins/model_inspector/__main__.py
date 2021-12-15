@@ -3,7 +3,8 @@ import signal
 import argparse
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
-from model_inspector.ModelInspectorPlugin import ModelInspectorPlugin
+from otter.plugins.model_inspector.ModelInspectorPlugin import \
+    ModelInspectorPlugin
 
 parser = argparse.ArgumentParser(description='Model inspector')
 parser.add_argument(

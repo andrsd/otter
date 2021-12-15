@@ -3,7 +3,8 @@ import signal
 import argparse
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
-from mesh_inspector.MeshInspectorPlugin import MeshInspectorPlugin
+from otter.plugins.mesh_inspector.MeshInspectorPlugin import \
+    MeshInspectorPlugin
 
 parser = argparse.ArgumentParser(description='Mesh inspector')
 parser.add_argument(
@@ -32,7 +33,7 @@ def handle_sigint(signum, frame):
     QtWidgets.QApplication.quit()
 
 
-def main(args):
+def main():
     QtCore.QCoreApplication.setAttribute(
         QtCore.Qt.AA_EnableHighDpiScaling, True)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
@@ -57,4 +58,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(args)
+    main()

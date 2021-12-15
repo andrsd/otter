@@ -2,7 +2,7 @@ import sys
 import signal
 from PyQt5 import QtWidgets, QtCore
 from otter.assets import Assets
-from viz.VizPlugin import VizPlugin
+from otter.plugins.viz.VizPlugin import VizPlugin
 
 
 def safe_timer(timeout, func, *args, **kwargs):

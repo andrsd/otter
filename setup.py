@@ -94,10 +94,18 @@ setup(
     packages=[
         'otter',
         'otter.assets',
+        'otter.plugins',
+        'otter.plugins.common',
+        'otter.plugins.model_inspector',
+        'otter.plugins.mesh_inspector',
+        'otter.plugins.viz',
     ],
     entry_points={
         'gui_scripts': [
-            'otter = otter.__main__:main'
+            'otter = otter.__main__:main',
+            'model-inspector = otter.plugins.model_inspector.__main__:main',
+            'mesh-inspector = otter.plugins.mesh_inspector.__main__:main',
+            'viz = otter.plugins.viz.__main__:main'
         ]
     },
     include_package_data=True,
