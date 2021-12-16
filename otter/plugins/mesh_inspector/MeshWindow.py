@@ -7,7 +7,6 @@ from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
-from otter.plugins.common.OSplitter import OSplitter
 from otter.plugins.common.FileChangedNotificationWidget import \
     FileChangedNotificationWidget
 import otter.plugins.common as common
@@ -65,10 +64,6 @@ class MeshWindow(PluginWindowBase):
         self.setupMenuBar()
         self.updateWindowTitle()
 
-        state = self.plugin.settings.value("splitter/state")
-        if state is not None:
-            self._splitter.restoreState(state)
-
         self.setAcceptDrops(True)
 
         self.fileLoaded.connect(self._info_window.onFileLoaded)
@@ -122,34 +117,16 @@ class MeshWindow(PluginWindowBase):
         QtCore.QTimer.singleShot(1, self._updateViewModeLocation)
 
     def setupWidgets(self):
-        self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
-        self._splitter.setHandleSide(OSplitter.COLLAPSE_BTN_SIDE_LEFT)
-
-        frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(frame)
-
+        self._vtk_widget = QVTKRenderWindowInteractor(self)
         self._vtk_renderer = vtk.vtkRenderer()
         self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
 
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        frame.setLayout(self._layout)
-        frame.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
-                            QtWidgets.QSizePolicy.Expanding)
-
-        self._splitter.addWidget(frame)
-        self._splitter.setCollapsible(0, False)
-        self._splitter.setStretchFactor(0, 10)
+        self.setCentralWidget(self._vtk_widget)
 
         self._info_window = InfoWindow(self.plugin, self)
-        self._splitter.addWidget(self._info_window)
-        self._splitter.setCollapsible(1, True)
+        self._info_window.show()
 
-        self.setCentralWidget(self._splitter)
-
-        self.setupViewModeWidget(frame)
+        self.setupViewModeWidget(self)
         self.setupFileChangedNotificationWidget()
 
     def setupViewModeWidget(self, frame):
@@ -223,8 +200,11 @@ class MeshWindow(PluginWindowBase):
         super().resizeEvent(event)
         self._updateViewModeLocation()
 
+    def getRenderWindowWidth(self):
+        return self.geometry().width()
+
     def _updateViewModeLocation(self):
-        width = self._splitter.sizes()[0]
+        width = self.getRenderWindowWidth()
         self._view_mode.move(width - 5 - self._view_mode.width(), 10)
 
     def onStartInteraction(self, obj, event):
@@ -688,8 +668,6 @@ class MeshWindow(PluginWindowBase):
             return super().event(e)
 
     def closeEvent(self, event):
-        self.plugin.settings.setValue(
-            "splitter/state", self._splitter.saveState())
         super().closeEvent(event)
 
     def onFileChanged(self, path):
@@ -699,9 +677,7 @@ class MeshWindow(PluginWindowBase):
 
     def showFileChangedNotification(self):
         self._file_changed_notification.adjustSize()
-
-        width = self._splitter.sizes()[0]
-
+        width = self.getRenderWindowWidth()
         left = (width - self._file_changed_notification.width()) / 2
         top = 10
         self._file_changed_notification.setGeometry(

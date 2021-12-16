@@ -40,8 +40,17 @@ class InfoWindow(QtWidgets.QScrollArea):
         w.setLayout(self._layout)
         self.setWidget(w)
         self.setWindowTitle("Info")
-        self.setMinimumWidth(300)
+        self.setFixedWidth(300)
         self.setWidgetResizable(True)
+        self.setWindowFlag(QtCore.Qt.Tool)
+
+        geom = self.plugin.settings.value("info/geometry")
+        default_size = QtCore.QSize(300, 700)
+        if geom is None:
+            self.resize(default_size)
+        else:
+            if not self.restoreGeometry(geom):
+                self.resize(default_size)
 
         self.show()
 
@@ -174,6 +183,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         return super().event(event)
 
     def closeEvent(self, event):
+        self.plugin.settings.setValue("info/geometry", self.saveGeometry())
         event.accept()
 
     def _loadBlocks(self, blocks):
@@ -286,13 +296,6 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._color_picker.setData(clr_index)
         self._color_picker.setColor(qcolor)
         self._color_picker.show()
-
-        geom = self.parent().geometry()
-        low_left = QtCore.QPoint(geom.left(), geom.bottom())
-        ll = self.mapToGlobal(low_left)
-        ll.setY(ll.y() - self._color_picker.geometry().height() - 20)
-        ll.setX(ll.x() - self._color_picker.geometry().width() - 5)
-        self._color_picker.move(ll)
 
     def onBlockColorPicked(self, qcolor):
         index = self._color_picker.data()
