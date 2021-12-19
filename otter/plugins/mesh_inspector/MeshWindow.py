@@ -12,6 +12,8 @@ from otter.plugins.common.FileChangedNotificationWidget import \
 import otter.plugins.common as common
 from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
+from otter.plugins.mesh_inspector.SelectedMeshEntityInfoWidget import \
+    SelectedMeshEntityInfoWidget
 
 
 class LoadThread(QtCore.QThread):
@@ -73,10 +75,16 @@ class MeshWindow(PluginWindowBase):
             self.onBlockVisibilityChanged)
         self._info_window.blockColorChanged.connect(
             self.onBlockColorChanged)
+        self._info_window.blockSelectionChanged.connect(
+            self.onBlockSelectionChanged)
         self._info_window.sidesetVisibilityChanged.connect(
             self.onSidesetVisibilityChanged)
+        self._info_window.sidesetSelectionChanged.connect(
+            self.onSidesetSelectionChanged)
         self._info_window.nodesetVisibilityChanged.connect(
             self.onNodesetVisibilityChanged)
+        self._info_window.nodesetSelectionChanged.connect(
+            self.onNodesetSelectionChanged)
         self._info_window.dimensionsStateChanged.connect(
             self.onCubeAxisVisibilityChanged)
         self._file_watcher.fileChanged.connect(self.onFileChanged)
@@ -128,6 +136,8 @@ class MeshWindow(PluginWindowBase):
 
         self.setupViewModeWidget(self)
         self.setupFileChangedNotificationWidget()
+        self._selected_mesh_ent_info = SelectedMeshEntityInfoWidget(self)
+        self._selected_mesh_ent_info.setVisible(False)
 
     def setupViewModeWidget(self, frame):
         self._view_menu = QtWidgets.QMenu()
@@ -235,10 +245,12 @@ class MeshWindow(PluginWindowBase):
     def clear(self):
         self._block_actors = {}
         self._block_color = {}
+        self._block_info = {}
         self._silhouette_actors = {}
         self._sideset_actors = {}
+        self._sideset_info = {}
         self._nodeset_actors = {}
-        self._block_bounds = {}
+        self._nodeset_info = {}
         self._vtk_renderer.RemoveAllViewProps()
 
         watched_files = self._file_watcher.files()
@@ -268,8 +280,8 @@ class MeshWindow(PluginWindowBase):
 
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        for bnd in self._block_bounds.values():
-            bmin, bmax = bnd
+        for nfo in self._block_info.values():
+            bmin, bmax = nfo['bounds']
             gmin = common.point_min(bmin, gmin)
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
@@ -309,9 +321,14 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(binfo.multiblock_index)
             eb.Update()
-
+            do = eb.GetOutput()
             bounds = self._getBlocksBounds(eb)
-            self._block_bounds[binfo.number] = bounds
+
+            self._block_info[binfo.number] = {
+                'cells': do.GetNumberOfCells(),
+                'points': do.GetNumberOfPoints(),
+                'bounds': bounds
+            }
 
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
@@ -359,6 +376,11 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(finfo.multiblock_index)
             eb.Update()
+            do = eb.GetOutput()
+            self._sideset_info[finfo.number] = {
+                'cells': do.GetNumberOfCells(),
+                'points': do.GetNumberOfPoints()
+            }
 
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
@@ -388,6 +410,10 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(ninfo.multiblock_index)
             eb.Update()
+            do = eb.GetOutput()
+            self._nodeset_info[ninfo.number] = {
+                'points': do.GetNumberOfPoints()
+            }
 
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
@@ -688,3 +714,38 @@ class MeshWindow(PluginWindowBase):
 
     def onReloadFile(self):
         self.loadFile(self._file_name)
+
+    def _showSelectedMeshEntity(self):
+        self._selected_mesh_ent_info.adjustSize()
+
+        wnd_geom = self.geometry()
+        widget_geom = self._selected_mesh_ent_info.geometry()
+
+        self._selected_mesh_ent_info.move(
+            wnd_geom.width() - widget_geom.width() - 10,
+            wnd_geom.height() - widget_geom.height() - 5)
+        self._selected_mesh_ent_info.show()
+
+    def onBlockSelectionChanged(self, block_id):
+        if block_id in self._block_info:
+            nfo = self._block_info[block_id]
+            self._selected_mesh_ent_info.setBlockInfo(block_id, nfo)
+            self._showSelectedMeshEntity()
+        else:
+            self._selected_mesh_ent_info.hide()
+
+    def onSidesetSelectionChanged(self, sideset_id):
+        if sideset_id in self._sideset_info:
+            nfo = self._sideset_info[sideset_id]
+            self._selected_mesh_ent_info.setSidesetInfo(sideset_id, nfo)
+            self._showSelectedMeshEntity()
+        else:
+            self._selected_mesh_ent_info.hide()
+
+    def onNodesetSelectionChanged(self, nodeset_id):
+        if nodeset_id in self._nodeset_info:
+            nfo = self._nodeset_info[nodeset_id]
+            self._selected_mesh_ent_info.setNodesetInfo(nodeset_id, nfo)
+            self._showSelectedMeshEntity()
+        else:
+            self._selected_mesh_ent_info.hide()

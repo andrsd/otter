@@ -53,3 +53,10 @@ class OTreeView(QtWidgets.QTreeView):
         painter.drawText(rect,
                          int(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop),
                          self.empty_message)
+
+    def mousePressEvent(self, event):
+        item = self.indexAt(event.pos())
+        if item.isValid():
+            super().mousePressEvent(event)
+        else:
+            self.clearSelection()

@@ -16,8 +16,11 @@ class InfoWindow(QtWidgets.QScrollArea):
 
     blockVisibilityChanged = QtCore.pyqtSignal(int, object)
     sidesetVisibilityChanged = QtCore.pyqtSignal(int, object)
+    sidesetSelectionChanged = QtCore.pyqtSignal(int)
     nodesetVisibilityChanged = QtCore.pyqtSignal(int, object)
+    nodesetSelectionChanged = QtCore.pyqtSignal(int)
     blockColorChanged = QtCore.pyqtSignal(int, object)
+    blockSelectionChanged = QtCore.pyqtSignal(int)
     dimensionsStateChanged = QtCore.pyqtSignal(bool)
 
     def __init__(self, plugin, parent=None):
@@ -54,14 +57,7 @@ class InfoWindow(QtWidgets.QScrollArea):
 
         self.show()
 
-    def setupWidgets(self):
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(20, 10, 20, 10)
-        self._layout.setSpacing(8)
-
-        self._color_picker = ColorPicker(self)
-        self._color_picker.colorChanged.connect(self.onBlockColorPicked)
-
+    def _setupBlocksWidgets(self):
         self._lbl_info = QtWidgets.QLabel("Blocks")
         self._lbl_info.setStyleSheet("""
             color: #444;
@@ -86,10 +82,11 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._blocks.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self._blocks.customContextMenuRequested.connect(
             self.onBlockCustomContextMenu)
+        sel_model = self._blocks.selectionModel()
+        sel_model.selectionChanged.connect(self.onBlockSelectionChanged)
         self._layout.addWidget(self._blocks)
 
-        self._layout.addWidget(HLine())
-
+    def _setupSidesetsWidgets(self):
         self._sideset_model = QtGui.QStandardItemModel()
         self._sideset_model.setHorizontalHeaderLabels([
             "Name", "", "ID"
@@ -104,13 +101,14 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._sidesets.setColumnWidth(0, 190)
         self._sidesets.setColumnWidth(2, 40)
         self._sidesets.hideColumn(self.IDX_COLOR)
+        sel_model = self._sidesets.selectionModel()
+        sel_model.selectionChanged.connect(self.onSidesetSelectionChanged)
 
         self._sidesets_expd = ExpandableWidget("Side sets")
         self._sidesets_expd.setWidget(self._sidesets)
         self._layout.addWidget(self._sidesets_expd)
 
-        self._layout.addWidget(HLine())
-
+    def _setupNodesetsWidgets(self):
         self._nodesets = OTreeView()
         self._nodeset_model = QtGui.QStandardItemModel()
         self._nodeset_model.setHorizontalHeaderLabels([
@@ -125,13 +123,14 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._nodesets.setColumnWidth(0, 190)
         self._nodesets.setColumnWidth(2, 40)
         self._nodesets.hideColumn(self.IDX_COLOR)
+        sel_model = self._nodesets.selectionModel()
+        sel_model.selectionChanged.connect(self.onNodesetSelectionChanged)
 
         self._nodesets_expd = ExpandableWidget("Node sets")
         self._nodesets_expd.setWidget(self._nodesets)
         self._layout.addWidget(self._nodesets_expd)
 
-        self._layout.addWidget(HLine())
-
+    def _setupSummaryWidgets(self):
         self._totals = QtWidgets.QTreeWidget()
         self._totals.setFixedHeight(60)
         self._totals.setIndentation(0)
@@ -145,8 +144,7 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._totals_expd.setWidget(self._totals)
         self._layout.addWidget(self._totals_expd)
 
-        self._layout.addWidget(HLine())
-
+    def _setupRangeWidgets(self):
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(8)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -173,6 +171,23 @@ class InfoWindow(QtWidgets.QScrollArea):
         self._range_expd.setWidget(w)
         self._layout.addWidget(self._range_expd)
 
+    def setupWidgets(self):
+        self._layout = QtWidgets.QVBoxLayout()
+        self._layout.setContentsMargins(20, 10, 20, 10)
+        self._layout.setSpacing(8)
+
+        self._color_picker = ColorPicker(self)
+        self._color_picker.colorChanged.connect(self.onBlockColorPicked)
+
+        self._setupBlocksWidgets()
+        self._layout.addWidget(HLine())
+        self._setupSidesetsWidgets()
+        self._layout.addWidget(HLine())
+        self._setupNodesetsWidgets()
+        self._layout.addWidget(HLine())
+        self._setupSummaryWidgets()
+        self._layout.addWidget(HLine())
+        self._setupRangeWidgets()
         self._layout.addWidget(HLine())
 
         self._layout.addStretch()
@@ -241,6 +256,12 @@ class InfoWindow(QtWidgets.QScrollArea):
             si_id.setText(str(ns.number))
             self._nodeset_model.setItem(row, self.IDX_ID, si_id)
 
+    def _fillSummary(self, params):
+        total_elems = params['total_elems']
+        self._total_elements.setText(1, "{:,}".format(total_elems))
+        total_nodes = params['total_nodes']
+        self._total_nodes.setText(1, "{:,}".format(total_nodes))
+
     def onFileLoaded(self, params):
         if params is None:
             self.clear()
@@ -248,10 +269,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             self._loadBlocks(params['blocks'])
             self._loadSideSets(params['sidesets'])
             self._loadNodeSets(params['nodesets'])
-            total_elems = params['total_elems']
-            self._total_elements.setText(1, "{:,}".format(total_elems))
-            total_nodes = params['total_nodes']
-            self._total_nodes.setText(1, "{:,}".format(total_nodes))
+            self._fillSummary(params)
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
@@ -374,3 +392,33 @@ class InfoWindow(QtWidgets.QScrollArea):
         for row in range(self._block_model.rowCount()):
             item = self._block_model.item(row, 0)
             item.setCheckState(QtCore.Qt.Checked)
+
+    def onBlockSelectionChanged(self, selected, deselected):
+        if len(selected.indexes()) > 0:
+            self._sidesets.clearSelection()
+            self._nodesets.clearSelection()
+            index = selected.indexes()[0]
+            info = self._block_model.itemFromIndex(index).data()
+            self.blockSelectionChanged.emit(info.number)
+        else:
+            self.blockSelectionChanged.emit(None)
+
+    def onSidesetSelectionChanged(self, selected, deselected):
+        if len(selected.indexes()) > 0:
+            self._blocks.clearSelection()
+            self._nodesets.clearSelection()
+            index = selected.indexes()[0]
+            info = self._sideset_model.itemFromIndex(index).data()
+            self.sidesetSelectionChanged.emit(info.number)
+        else:
+            self.sidesetSelectionChanged.emit(None)
+
+    def onNodesetSelectionChanged(self, selected, deselected):
+        if len(selected.indexes()) > 0:
+            self._blocks.clearSelection()
+            self._sidesets.clearSelection()
+            index = selected.indexes()[0]
+            info = self._nodeset_model.itemFromIndex(index).data()
+            self.nodesetSelectionChanged.emit(info.number)
+        else:
+            self.nodesetSelectionChanged.emit(None)
