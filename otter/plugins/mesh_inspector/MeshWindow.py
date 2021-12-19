@@ -61,6 +61,7 @@ class MeshWindow(PluginWindowBase):
         self._progress = None
         self._file_name = None
         self._file_watcher = QtCore.QFileSystemWatcher()
+        self._selected_block = None
 
         self.setupWidgets()
         self.setupMenuBar()
@@ -574,7 +575,8 @@ class MeshWindow(PluginWindowBase):
     def onShadedTriggered(self, checked):
         self._render_mode = self.SHADED
         for block_id, actor in self._block_actors.items():
-            self._setBlockActorProperties(block_id, actor)
+            selected = self._selected_block == block_id
+            self._setBlockActorProperties(block_id, actor, selected)
         for actor in self._sideset_actors.values():
             self._setSideSetActorProperties(actor)
         for actor in self._silhouette_actors.values():
@@ -583,7 +585,8 @@ class MeshWindow(PluginWindowBase):
     def onShadedWithEdgesTriggered(self, checked):
         self._render_mode = self.SHADED_WITH_EDGES
         for block_id, actor in self._block_actors.items():
-            self._setBlockActorProperties(block_id, actor)
+            selected = self._selected_block == block_id
+            self._setBlockActorProperties(block_id, actor, selected)
         for actor in self._sideset_actors.values():
             self._setSideSetActorProperties(actor)
         for actor in self._silhouette_actors.values():
@@ -592,7 +595,8 @@ class MeshWindow(PluginWindowBase):
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.HIDDEN_EDGES_REMOVED
         for block_id, actor in self._block_actors.items():
-            self._setBlockActorProperties(block_id, actor)
+            selected = self._selected_block == block_id
+            self._setBlockActorProperties(block_id, actor, selected)
             sil_act = self._getSilhouetteActor(block_id)
             self._setSilhouetteActorProperties(sil_act)
             sil_act.SetVisibility(actor.GetVisibility())
@@ -602,7 +606,8 @@ class MeshWindow(PluginWindowBase):
     def onTransluentTriggered(self, checked):
         self._render_mode = self.TRANSLUENT
         for block_id, actor in self._block_actors.items():
-            self._setBlockActorProperties(block_id, actor)
+            selected = self._selected_block == block_id
+            self._setBlockActorProperties(block_id, actor, selected)
             sil_act = self._getSilhouetteActor(block_id)
             self._setSilhouetteActorProperties(sil_act)
             sil_act.SetVisibility(actor.GetVisibility())
@@ -617,10 +622,27 @@ class MeshWindow(PluginWindowBase):
             camera = self._vtk_renderer.GetActiveCamera()
             camera.ParallelProjectionOn()
 
-    def _setBlockActorProperties(self, block_id, actor):
-        property = actor.GetProperty()
-        property.SetAmbient(0.4)
-        property.SetDiffuse(0.6)
+    def _setSelectedBlockActorProperties(self, block_id, property):
+        if self.renderMode() == self.SHADED:
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.SHADED_WITH_EDGES:
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(True)
+            property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
+            property.SetLineWidth(2)
+        elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
+            property.SetOpacity(1.0)
+            property.SetEdgeVisibility(False)
+        elif self.renderMode() == self.TRANSLUENT:
+            property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
+            property.SetOpacity(0.33)
+            property.SetEdgeVisibility(False)
+
+    def _setDeselectedBlockActorProperties(self, block_id, property):
         if self.renderMode() == self.SHADED:
             property.SetColor(self._block_color[block_id])
             property.SetOpacity(1.0)
@@ -639,6 +661,15 @@ class MeshWindow(PluginWindowBase):
             property.SetColor(self._block_color[block_id])
             property.SetOpacity(0.33)
             property.SetEdgeVisibility(False)
+
+    def _setBlockActorProperties(self, block_id, actor, selected=False):
+        property = actor.GetProperty()
+        property.SetAmbient(0.4)
+        property.SetDiffuse(0.6)
+        if selected:
+            self._setSelectedBlockActorProperties(block_id, property)
+        else:
+            self._setDeselectedBlockActorProperties(block_id, property)
 
     def _setSideSetActorProperties(self, actor):
         property = actor.GetProperty()
@@ -727,12 +758,24 @@ class MeshWindow(PluginWindowBase):
         self._selected_mesh_ent_info.show()
 
     def onBlockSelectionChanged(self, block_id):
+        self._deselectBlocks()
         if block_id in self._block_info:
             nfo = self._block_info[block_id]
             self._selected_mesh_ent_info.setBlockInfo(block_id, nfo)
             self._showSelectedMeshEntity()
+
+            self._selected_block = block_id
+            actor = self._block_actors[block_id]
+            self._setBlockActorProperties(block_id, actor, selected=True)
         else:
             self._selected_mesh_ent_info.hide()
+
+    def _deselectBlocks(self):
+        blk_id = self._selected_block
+        if blk_id is not None:
+            actor = self._block_actors[blk_id]
+            self._setBlockActorProperties(blk_id, actor, selected=False)
+            self._selected_block = None
 
     def onSidesetSelectionChanged(self, sideset_id):
         if sideset_id in self._sideset_info:
