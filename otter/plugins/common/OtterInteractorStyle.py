@@ -10,9 +10,8 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self._last_mouse_pos = None
         self._left_button_down = False
 
-        # self.AddObserver("LeftButtonPressEvent", self.onLeftButtonPress)
-        # self.AddObserver("LeftButtonReleaseEvent", self.onLeftButtonRelease)
-        # self.AddObserver("MouseMoveEvent", self.onMouseMove)
+        self.AddObserver("LeftButtonPressEvent", self.onLeftButtonPress)
+        self.AddObserver("LeftButtonReleaseEvent", self.onLeftButtonRelease)
         # self.AddObserver("KeyReleaseEvent", self.onKeyReleased, 1000)
         self.AddObserver("KeyPressEvent", self.onKeyPress)
         self.AddObserver("KeyReleaseEvent", self.onKeyRelease)
@@ -24,25 +23,16 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         click_pos = interactor.GetEventPosition()
         pt = QtCore.QPoint(click_pos[0], click_pos[1])
         self._last_mouse_pos = pt
+        super().OnLeftButtonDown()
 
     def onLeftButtonRelease(self, interactor_style, event):
         self._left_button_down = False
         interactor = interactor_style.GetInteractor()
         click_pos = interactor.GetEventPosition()
         pt = QtCore.QPoint(click_pos[0], click_pos[1])
-
         if self._last_mouse_pos == pt:
             self._widget.onClicked(pt)
-
-    def onMouseMove(self, interactor_style, event):
-        interactor = interactor_style.GetInteractor()
-        if self._left_button_down:
-            if interactor.GetShiftKey():
-                # do pan
-                pass
-            else:
-                # do rotate
-                pass
+        super().OnLeftButtonUp()
 
     def onKeyPress(self, interactor_style, event):
         interactor = interactor_style.GetInteractor()

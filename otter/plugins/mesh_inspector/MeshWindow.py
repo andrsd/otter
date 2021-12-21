@@ -3,6 +3,7 @@ import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
+from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
@@ -93,8 +94,7 @@ class MeshWindow(PluginWindowBase):
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
-        self._vtk_interactor.SetInteractorStyle(
-            vtk.vtkInteractorStyleTrackballCamera())
+        self._vtk_interactor.SetInteractorStyle(OtterInteractorStyle(self))
 
         # TODO: set background from preferences/templates
         self._vtk_renderer.SetGradientBackground(True)
@@ -792,3 +792,20 @@ class MeshWindow(PluginWindowBase):
             self._showSelectedMeshEntity()
         else:
             self._selected_mesh_ent_info.hide()
+
+    def _blockActorToId(self, actor):
+        # TODO: when we start to have 1000s of actors, this should be an
+        # inverse dictionary from 'actor' to 'block_id'
+        for blk_id, blk_actor in self._block_actors.items():
+            if blk_actor == actor:
+                return blk_id
+        return None
+
+    def onClicked(self, pt):
+        picker = vtk.vtkPropPicker()
+        if picker.PickProp(pt.x(), pt.y(), self._vtk_renderer):
+            actor = picker.GetViewProp()
+            blk_id = self._blockActorToId(actor)
+            self.onBlockSelectionChanged(blk_id)
+        else:
+            self.onBlockSelectionChanged(None)
