@@ -56,6 +56,10 @@ class MeshWindow(PluginWindowBase):
     HIDDEN_EDGES_REMOVED = 2
     TRANSLUENT = 3
 
+    MODE_SELECT_BLOCKS = 0
+    MODE_SELECT_CELLS = 1
+    MODE_SELECT_POINTS = 2
+
     def __init__(self, plugin):
         super().__init__(plugin)
         self._load_thread = None
@@ -175,6 +179,41 @@ class MeshWindow(PluginWindowBase):
         self._view_info_wnd_action = view_menu.addAction(
             "Info window", self.onViewInfoWindow)
         self._view_info_wnd_action.setCheckable(True)
+
+        tools_menu = self._menubar.addMenu("Tools")
+        self.setupSelectModeMenu(tools_menu)
+
+    def setupSelectModeMenu(self, tools_menu):
+        select_menu = tools_menu.addMenu("Select mode")
+        self._mode_select_action_group = QtWidgets.QActionGroup(self)
+        self._select_mode = self.plugin.settings.value(
+            "tools/select_mode", self.MODE_SELECT_BLOCKS)
+        mode_actions = [
+            {
+                'name': 'Blocks',
+                'mode': self.MODE_SELECT_BLOCKS
+            },
+            {
+                'name': 'Cells',
+                'mode': self.MODE_SELECT_CELLS
+            },
+            {
+                'name': 'Points',
+                'mode': self.MODE_SELECT_POINTS
+            }
+        ]
+        for ma in mode_actions:
+            name = ma['name']
+            mode = ma['mode']
+            action = select_menu.addAction(name)
+            action.setCheckable(True)
+            action.setData(mode)
+            self._mode_select_action_group.addAction(action)
+            if mode == self._select_mode:
+                action.setChecked(True)
+
+        self._mode_select_action_group.triggered.connect(
+            self.onSelectModeTriggered)
 
     def updateMenuBar(self):
         self._view_info_wnd_action.setChecked(self._info_window.isVisible())
@@ -739,6 +778,7 @@ class MeshWindow(PluginWindowBase):
             return super().event(e)
 
     def closeEvent(self, event):
+        self.plugin.settings.setValue("tools/select_mode", self._select_mode)
         super().closeEvent(event)
 
     def onFileChanged(self, path):
@@ -815,7 +855,7 @@ class MeshWindow(PluginWindowBase):
                 return blk_id
         return None
 
-    def onClicked(self, pt):
+    def _selectBlock(self, pt):
         picker = vtk.vtkPropPicker()
         if picker.PickProp(pt.x(), pt.y(), self._vtk_renderer):
             actor = picker.GetViewProp()
@@ -824,9 +864,27 @@ class MeshWindow(PluginWindowBase):
         else:
             self.onBlockSelectionChanged(None)
 
+    def _selectCell(self, pt):
+        pass
+
+    def _selectPoint(self, pt):
+        pass
+
+    def onClicked(self, pt):
+        if self._select_mode == self.MODE_SELECT_BLOCKS:
+            self._selectBlock(pt)
+        elif self._select_mode == self.MODE_SELECT_CELLS:
+            self._selectCell(pt)
+        elif self._select_mode == self.MODE_SELECT_POINTS:
+            self._selectPoint(pt)
+
     def onViewInfoWindow(self):
         if self._info_window.isVisible():
             self._info_window.hide()
         else:
             self._info_window.show()
         self.updateMenuBar()
+
+    def onSelectModeTriggered(self, action):
+        action.setChecked(True)
+        self._select_mode = action.data()
