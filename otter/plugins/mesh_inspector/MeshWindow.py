@@ -67,6 +67,7 @@ class MeshWindow(PluginWindowBase):
         self.setupWidgets()
         self.setupMenuBar()
         self.updateWindowTitle()
+        self.updateMenuBar()
 
         self.setAcceptDrops(True)
 
@@ -206,6 +207,14 @@ class MeshWindow(PluginWindowBase):
         file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
+
+        view_menu = self._menubar.addMenu("View")
+        self._view_info_wnd_action = view_menu.addAction(
+            "Info window", self.onViewInfoWindow)
+        self._view_info_wnd_action.setCheckable(True)
+
+    def updateMenuBar(self):
+        self._view_info_wnd_action.setChecked(self._info_window.isVisible())
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -809,3 +818,10 @@ class MeshWindow(PluginWindowBase):
             self.onBlockSelectionChanged(blk_id)
         else:
             self.onBlockSelectionChanged(None)
+
+    def onViewInfoWindow(self):
+        if self._info_window.isVisible():
+            self._info_window.hide()
+        else:
+            self._info_window.show()
+        self.updateMenuBar()
