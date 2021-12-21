@@ -869,10 +869,20 @@ class MeshWindow(PluginWindowBase):
             self.onBlockSelectionChanged(None)
 
     def _selectCell(self, pt):
-        pass
+        picker = vtk.vtkCellPicker()
+        if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
+            print("cell id =", picker.GetCellId())
+        else:
+            # unselect selected cell
+            pass
 
     def _selectPoint(self, pt):
-        pass
+        picker = vtk.vtkPointPicker()
+        if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
+            print("point id =", picker.GetPointId())
+        else:
+            # unselect selected point
+            pass
 
     def onClicked(self, pt):
         if self._select_mode == self.MODE_SELECT_BLOCKS:
