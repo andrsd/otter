@@ -71,45 +71,8 @@ class MeshWindow(PluginWindowBase):
 
         self.setAcceptDrops(True)
 
-        self.fileLoaded.connect(self._info_window.onFileLoaded)
-        self.boundsChanged.connect(
-            self._info_window.onBoundsChanged)
-        self._info_window.blockVisibilityChanged.connect(
-            self.onBlockVisibilityChanged)
-        self._info_window.blockColorChanged.connect(
-            self.onBlockColorChanged)
-        self._info_window.blockSelectionChanged.connect(
-            self.onBlockSelectionChanged)
-        self._info_window.sidesetVisibilityChanged.connect(
-            self.onSidesetVisibilityChanged)
-        self._info_window.sidesetSelectionChanged.connect(
-            self.onSidesetSelectionChanged)
-        self._info_window.nodesetVisibilityChanged.connect(
-            self.onNodesetVisibilityChanged)
-        self._info_window.nodesetSelectionChanged.connect(
-            self.onNodesetSelectionChanged)
-        self._info_window.dimensionsStateChanged.connect(
-            self.onCubeAxisVisibilityChanged)
-        self._file_watcher.fileChanged.connect(self.onFileChanged)
-
-        self._vtk_render_window = self._vtk_widget.GetRenderWindow()
-        self._vtk_interactor = self._vtk_render_window.GetInteractor()
-
-        self._vtk_interactor.SetInteractorStyle(OtterInteractorStyle(self))
-
-        # TODO: set background from preferences/templates
-        self._vtk_renderer.SetGradientBackground(True)
-        bkgnd = common.qcolor2vtk(QtGui.QColor(82, 87, 110))
-        self._vtk_renderer.SetBackground(bkgnd)
-        self._vtk_renderer.SetBackground2(bkgnd)
-        # set anti-aliasing on
-        self._vtk_renderer.SetUseFXAA(True)
-        self._vtk_render_window.SetMultiSamples(1)
-
-        self._vtk_widget.AddObserver('StartInteractionEvent',
-                                     self.onStartInteraction)
-        self._vtk_widget.AddObserver('EndInteractionEvent',
-                                     self.onEndInteraction)
+        self.connectSignals()
+        self.setupVtk()
 
         self._vtk_interactor.Initialize()
         self._vtk_interactor.Start()
@@ -215,6 +178,48 @@ class MeshWindow(PluginWindowBase):
 
     def updateMenuBar(self):
         self._view_info_wnd_action.setChecked(self._info_window.isVisible())
+
+    def connectSignals(self):
+        self.fileLoaded.connect(self._info_window.onFileLoaded)
+        self.boundsChanged.connect(
+            self._info_window.onBoundsChanged)
+        self._info_window.blockVisibilityChanged.connect(
+            self.onBlockVisibilityChanged)
+        self._info_window.blockColorChanged.connect(
+            self.onBlockColorChanged)
+        self._info_window.blockSelectionChanged.connect(
+            self.onBlockSelectionChanged)
+        self._info_window.sidesetVisibilityChanged.connect(
+            self.onSidesetVisibilityChanged)
+        self._info_window.sidesetSelectionChanged.connect(
+            self.onSidesetSelectionChanged)
+        self._info_window.nodesetVisibilityChanged.connect(
+            self.onNodesetVisibilityChanged)
+        self._info_window.nodesetSelectionChanged.connect(
+            self.onNodesetSelectionChanged)
+        self._info_window.dimensionsStateChanged.connect(
+            self.onCubeAxisVisibilityChanged)
+        self._file_watcher.fileChanged.connect(self.onFileChanged)
+
+    def setupVtk(self):
+        self._vtk_render_window = self._vtk_widget.GetRenderWindow()
+        self._vtk_interactor = self._vtk_render_window.GetInteractor()
+
+        self._vtk_interactor.SetInteractorStyle(OtterInteractorStyle(self))
+
+        # TODO: set background from preferences/templates
+        self._vtk_renderer.SetGradientBackground(True)
+        bkgnd = common.qcolor2vtk(QtGui.QColor(82, 87, 110))
+        self._vtk_renderer.SetBackground(bkgnd)
+        self._vtk_renderer.SetBackground2(bkgnd)
+        # set anti-aliasing on
+        self._vtk_renderer.SetUseFXAA(True)
+        self._vtk_render_window.SetMultiSamples(1)
+
+        self._vtk_widget.AddObserver('StartInteractionEvent',
+                                     self.onStartInteraction)
+        self._vtk_widget.AddObserver('EndInteractionEvent',
+                                     self.onEndInteraction)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
