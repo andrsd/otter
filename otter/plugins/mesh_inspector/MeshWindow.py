@@ -108,6 +108,10 @@ class MeshWindow(PluginWindowBase):
         self._selected_mesh_ent_info = SelectedMeshEntityInfoWidget(self)
         self._selected_mesh_ent_info.setVisible(False)
 
+        self.deselect_sc = QtWidgets.QShortcut(
+            QtGui.QKeySequence(QtCore.Qt.Key_Space), self)
+        self.deselect_sc.activated.connect(self.onDeselect)
+
     def setupViewModeWidget(self, frame):
         self._view_menu = QtWidgets.QMenu()
         self._shaded_action = self._view_menu.addAction("Shaded")
@@ -888,3 +892,6 @@ class MeshWindow(PluginWindowBase):
     def onSelectModeTriggered(self, action):
         action.setChecked(True)
         self._select_mode = action.data()
+
+    def onDeselect(self):
+        self.onBlockSelectionChanged(None)
