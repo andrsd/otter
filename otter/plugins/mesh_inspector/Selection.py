@@ -25,6 +25,9 @@ class Selection(object):
     def getActor(self):
         return self._actor
 
+    def get(self):
+        return self._selected
+
     def clear(self):
         self._selected.Initialize()
         self._mapper.SetInputData(self._selected)

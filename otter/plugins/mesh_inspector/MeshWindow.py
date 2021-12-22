@@ -904,17 +904,44 @@ class MeshWindow(PluginWindowBase):
             blk_id = self._blockActorToId(actor)
             self.onBlockSelectionChanged(blk_id)
 
+    def _buildCellInfo(self, cell):
+        nfo = {
+            'type': cell.GetCellType()
+        }
+        return nfo
+
     def _selectCell(self, pt):
         picker = vtk.vtkCellPicker()
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
-            self._selection.selectCell(picker.GetCellId())
+            cell_id = picker.GetCellId()
+            self._selection.selectCell(cell_id)
             self._setSelectionActorProperties(self._selection.getActor())
+
+            unstr_grid = self._selection.get()
+            cell = unstr_grid.GetCell(0)
+            nfo = self._buildCellInfo(cell)
+            self._selected_mesh_ent_info.setCellInfo(cell_id, nfo)
+            self._showSelectedMeshEntity()
+
+    def _buildPointInfo(self, points):
+        coords = points.GetPoint(0)
+        nfo = {
+            'coords': coords
+        }
+        return nfo
 
     def _selectPoint(self, pt):
         picker = vtk.vtkPointPicker()
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
-            self._selection.selectPoint(picker.GetPointId())
+            point_id = picker.GetPointId()
+            self._selection.selectPoint(point_id)
             self._setSelectionActorProperties(self._selection.getActor())
+
+            unstr_grid = self._selection.get()
+            points = unstr_grid.GetPoints()
+            nfo = self._buildPointInfo(points)
+            self._selected_mesh_ent_info.setPointInfo(point_id, nfo)
+            self._showSelectedMeshEntity()
 
     def onClicked(self, pt):
         self.onDeselect()
