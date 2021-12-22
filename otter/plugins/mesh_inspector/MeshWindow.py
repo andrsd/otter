@@ -15,6 +15,7 @@ from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 from otter.plugins.mesh_inspector.SelectedMeshEntityInfoWidget import \
     SelectedMeshEntityInfoWidget
+from otter.plugins.mesh_inspector.Selection import Selection
 
 
 class LoadThread(QtCore.QThread):
@@ -50,6 +51,9 @@ class MeshWindow(PluginWindowBase):
     SIDESET_EDGE_CLR = QtGui.QColor(26, 26, 102)
     SIDESET_EDGE_WIDTH = 5
     NODESET_CLR = QtGui.QColor(168, 91, 2)
+
+    SELECTION_CLR = QtGui.QColor(255, 173, 79)
+    SELECTION_EDGE_CLR = QtGui.QColor(179, 95, 0)
 
     SHADED = 0
     SHADED_WITH_EDGES = 1
@@ -315,6 +319,8 @@ class MeshWindow(PluginWindowBase):
         for file in watched_files:
             self._file_watcher.removePath(file)
 
+        self._selection = None
+
     def loadFile(self, file_name):
         self.clear()
 
@@ -367,6 +373,11 @@ class MeshWindow(PluginWindowBase):
         self._file_watcher.addPath(self._file_name)
         self._file_changed_notification.setFileName(self._file_name)
 
+        self._selection = Selection(self._geometry.GetOutput())
+        actor = self._selection.getActor()
+        self._vtk_renderer.AddActor(actor)
+        self._setSelectionActorProperties(actor)
+
         self._progress.hide()
         self._progress = None
 
@@ -391,6 +402,8 @@ class MeshWindow(PluginWindowBase):
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
             geometry.Update()
+            # FIXME: make this work with multiple blocks
+            self._geometry = geometry
 
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(geometry.GetOutputPort())
@@ -771,6 +784,31 @@ class MeshWindow(PluginWindowBase):
         property.SetColor([0, 0, 0])
         property.SetLineWidth(3)
 
+    def _setSelectionActorProperties(self, actor):
+        property = actor.GetProperty()
+        if self._select_mode == self.MODE_SELECT_CELLS:
+            property.SetRepresentationToSurface()
+            property.SetRenderPointsAsSpheres(False)
+            property.SetVertexVisibility(False)
+            property.SetPointSize(0)
+            property.EdgeVisibilityOn()
+            property.SetColor(common.qcolor2vtk(self.SELECTION_CLR))
+            property.SetLineWidth(7)
+            property.SetEdgeColor(common.qcolor2vtk(self.SELECTION_EDGE_CLR))
+            property.SetOpacity(0.5)
+            property.SetAmbient(1)
+            property.SetDiffuse(0)
+        elif self._select_mode == self.MODE_SELECT_POINTS:
+            property.SetRepresentationToPoints()
+            property.SetRenderPointsAsSpheres(True)
+            property.SetVertexVisibility(True)
+            property.SetEdgeVisibility(False)
+            property.SetPointSize(15)
+            property.SetColor(common.qcolor2vtk(self.SELECTION_CLR))
+            property.SetOpacity(1)
+            property.SetAmbient(1)
+            property.SetDiffuse(0)
+
     def onUpdateWindow(self):
         self._vtk_render_window.Render()
 
@@ -865,26 +903,21 @@ class MeshWindow(PluginWindowBase):
             actor = picker.GetViewProp()
             blk_id = self._blockActorToId(actor)
             self.onBlockSelectionChanged(blk_id)
-        else:
-            self.onBlockSelectionChanged(None)
 
     def _selectCell(self, pt):
         picker = vtk.vtkCellPicker()
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
-            print("cell id =", picker.GetCellId())
-        else:
-            # unselect selected cell
-            pass
+            self._selection.selectCell(picker.GetCellId())
+            self._setSelectionActorProperties(self._selection.getActor())
 
     def _selectPoint(self, pt):
         picker = vtk.vtkPointPicker()
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
-            print("point id =", picker.GetPointId())
-        else:
-            # unselect selected point
-            pass
+            self._selection.selectPoint(picker.GetPointId())
+            self._setSelectionActorProperties(self._selection.getActor())
 
     def onClicked(self, pt):
+        self.onDeselect()
         if self._select_mode == self.MODE_SELECT_BLOCKS:
             self._selectBlock(pt)
         elif self._select_mode == self.MODE_SELECT_CELLS:
@@ -905,3 +938,4 @@ class MeshWindow(PluginWindowBase):
 
     def onDeselect(self):
         self.onBlockSelectionChanged(None)
+        self._selection.clear()
