@@ -964,5 +964,6 @@ class MeshWindow(PluginWindowBase):
         self._select_mode = action.data()
 
     def onDeselect(self):
-        self.onBlockSelectionChanged(None)
-        self._selection.clear()
+        if self._selection is not None:
+            self.onBlockSelectionChanged(None)
+            self._selection.clear()
