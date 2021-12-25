@@ -16,6 +16,9 @@ from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 from otter.plugins.mesh_inspector.SelectedMeshEntityInfoWidget import \
     SelectedMeshEntityInfoWidget
 from otter.plugins.mesh_inspector.Selection import Selection
+from otter.plugins.mesh_inspector.color_profiles import default
+from otter.plugins.mesh_inspector.color_profiles import light
+from otter.plugins.mesh_inspector.color_profiles import dark
 
 
 class LoadThread(QtCore.QThread):
@@ -64,6 +67,10 @@ class MeshWindow(PluginWindowBase):
     MODE_SELECT_CELLS = 1
     MODE_SELECT_POINTS = 2
 
+    COLOR_PROFILE_DEFAULT = 0
+    COLOR_PROFILE_LIGHT = 1
+    COLOR_PROFILE_DARK = 2
+
     def __init__(self, plugin):
         super().__init__(plugin)
         self._load_thread = None
@@ -76,11 +83,13 @@ class MeshWindow(PluginWindowBase):
         self.setupMenuBar()
         self.updateWindowTitle()
         self.updateMenuBar()
+        self.loadColorProfiles()
 
         self.setAcceptDrops(True)
 
         self.connectSignals()
         self.setupVtk()
+        self.setColorProfile()
 
         self._vtk_interactor.Initialize()
         self._vtk_interactor.Start()
@@ -187,9 +196,42 @@ class MeshWindow(PluginWindowBase):
         self._view_info_wnd_action = view_menu.addAction(
             "Info window", self.onViewInfoWindow)
         self._view_info_wnd_action.setCheckable(True)
+        color_profile_menu = view_menu.addMenu("Color profile")
+        self.setupColorProfileMenu(color_profile_menu)
 
         tools_menu = self._menubar.addMenu("Tools")
         self.setupSelectModeMenu(tools_menu)
+
+    def setupColorProfileMenu(self, menu):
+        self._color_profile_action_group = QtWidgets.QActionGroup(self)
+        self._color_profile_id = self.plugin.settings.value(
+            "color_profile", self.COLOR_PROFILE_DEFAULT)
+        color_profiles = [
+            {
+                'name': 'Default',
+                'id': self.COLOR_PROFILE_DEFAULT
+            },
+            {
+                'name': 'Light',
+                'id': self.COLOR_PROFILE_LIGHT
+            },
+            {
+                'name': 'Dark',
+                'id': self.COLOR_PROFILE_DARK
+            }
+        ]
+        for cp in color_profiles:
+            name = cp['name']
+            id = cp['id']
+            action = menu.addAction(name)
+            action.setCheckable(True)
+            action.setData(id)
+            self._color_profile_action_group.addAction(action)
+            if id == self._color_profile_id:
+                action.setChecked(True)
+
+        self._color_profile_action_group.triggered.connect(
+            self.onColorProfileTriggered)
 
     def setupSelectModeMenu(self, tools_menu):
         select_menu = tools_menu.addMenu("Select mode")
@@ -256,9 +298,6 @@ class MeshWindow(PluginWindowBase):
 
         # TODO: set background from preferences/templates
         self._vtk_renderer.SetGradientBackground(True)
-        bkgnd = common.qcolor2vtk(QtGui.QColor(82, 87, 110))
-        self._vtk_renderer.SetBackground(bkgnd)
-        self._vtk_renderer.SetBackground2(bkgnd)
         # set anti-aliasing on
         self._vtk_renderer.SetUseFXAA(True)
         self._vtk_render_window.SetMultiSamples(1)
@@ -821,6 +860,7 @@ class MeshWindow(PluginWindowBase):
 
     def closeEvent(self, event):
         self.plugin.settings.setValue("tools/select_mode", self._select_mode)
+        self.plugin.settings.setValue("color_profile", self._color_profile_id)
         super().closeEvent(event)
 
     def onFileChanged(self, path):
@@ -967,3 +1007,27 @@ class MeshWindow(PluginWindowBase):
         if self._selection is not None:
             self.onBlockSelectionChanged(None)
             self._selection.clear()
+
+    def onColorProfileTriggered(self, action):
+        action.setChecked(True)
+        self._color_profile_id = action.data()
+        self.setColorProfile()
+
+    def setColorProfile(self):
+        if self._color_profile_id in self._color_profiles:
+            profile = self._color_profiles[self._color_profile_id]
+        else:
+            profile = self._color_profiles[self.COLOR_PROFILE_DEFAULT]
+
+        bkgnd = common.rgb2vtk(profile['bkgnd'])
+        self._vtk_renderer.SetBackground(bkgnd)
+        self._vtk_renderer.SetBackground2(bkgnd)
+
+    def loadColorProfiles(self):
+        # TODO: load the profiles via import and iterating over files in
+        # 'color_profile' folder
+
+        self._color_profiles = {}
+        self._color_profiles[self.COLOR_PROFILE_DEFAULT] = default.profile
+        self._color_profiles[self.COLOR_PROFILE_LIGHT] = light.profile
+        self._color_profiles[self.COLOR_PROFILE_DARK] = dark.profile

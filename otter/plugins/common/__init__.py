@@ -35,3 +35,7 @@ def qcolor2vtk(qcolor):
         qcolor.greenF(),
         qcolor.blueF()
     ]
+
+
+def rgb2vtk(rgb):
+    return [rgb[0] / 255., rgb[1] / 255., rgb[2] / 255.]
