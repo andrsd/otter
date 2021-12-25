@@ -39,3 +39,11 @@ def qcolor2vtk(qcolor):
 
 def rgb2vtk(rgb):
     return [rgb[0] / 255., rgb[1] / 255., rgb[2] / 255.]
+
+
+def centerOfBounds(bnds):
+    return [
+        -(bnds[0] + bnds[1]) / 2,
+        -(bnds[2] + bnds[3]) / 2,
+        -(bnds[4] + bnds[5]) / 2
+    ]

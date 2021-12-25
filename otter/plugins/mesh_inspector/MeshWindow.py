@@ -15,6 +15,7 @@ from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
 from otter.plugins.mesh_inspector.SelectedMeshEntityInfoWidget import \
     SelectedMeshEntityInfoWidget
+from otter.plugins.mesh_inspector.ExplodeWidget import ExplodeWidget
 from otter.plugins.mesh_inspector.Selection import Selection
 from otter.plugins.mesh_inspector.color_profiles import default
 from otter.plugins.mesh_inspector.color_profiles import light
@@ -125,6 +126,8 @@ class MeshWindow(PluginWindowBase):
             QtGui.QKeySequence(QtCore.Qt.Key_Space), self)
         self.deselect_sc.activated.connect(self.onDeselect)
 
+        self.setupExplodeWidgets()
+
     def setupViewModeWidget(self, frame):
         self._view_menu = QtWidgets.QMenu()
         self._shaded_action = self._view_menu.addAction("Shaded")
@@ -204,6 +207,8 @@ class MeshWindow(PluginWindowBase):
 
         tools_menu = self._menubar.addMenu("Tools")
         self.setupSelectModeMenu(tools_menu)
+        self._tools_explode_action = tools_menu.addAction(
+            "Explode", self.onToolsExplode)
 
     def setupExportMenu(self, menu):
         menu.addAction("PNG...", self.onExportAsPng)
@@ -272,8 +277,14 @@ class MeshWindow(PluginWindowBase):
         self._mode_select_action_group.triggered.connect(
             self.onSelectModeTriggered)
 
+    def setupExplodeWidgets(self):
+        self._explode = ExplodeWidget(self)
+        self._explode.valueChanged.connect(self.onExplodeValueChanged)
+        self._explode.setVisible(False)
+
     def updateMenuBar(self):
         self._view_info_wnd_action.setChecked(self._info_window.isVisible())
+        self._tools_explode_action.setEnabled(self._file_name is not None)
 
     def connectSignals(self):
         self.fileLoaded.connect(self._info_window.onFileLoaded)
@@ -354,6 +365,8 @@ class MeshWindow(PluginWindowBase):
         self._block_actors = {}
         self._block_color = {}
         self._block_info = {}
+        # geometrical center of blocks
+        self._block_cob = {}
         self._silhouette_actors = {}
         self._sideset_actors = {}
         self._sideset_info = {}
@@ -396,7 +409,7 @@ class MeshWindow(PluginWindowBase):
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
 
-        self._calcCenterOfMass(bnds)
+        self._com = common.centerOfBounds(bnds)
         self._cube_axes_actor.SetBounds(*bnds)
         self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
@@ -426,6 +439,8 @@ class MeshWindow(PluginWindowBase):
 
         self._progress.hide()
         self._progress = None
+
+        self.updateMenuBar()
 
     def _addBlockActors(self):
         camera = self._vtk_renderer.GetActiveCamera()
@@ -465,6 +480,8 @@ class MeshWindow(PluginWindowBase):
             self._block_color[binfo.number] = [1, 1, 1]
             self._setBlockActorProperties(binfo.number, actor)
             self._block_actors[binfo.number] = actor
+            bnds = actor.GetBounds()
+            self._block_cob[binfo.number] = common.centerOfBounds(bnds)
 
             silhouette = vtk.vtkPolyDataSilhouette()
             silhouette.SetInputData(mapper.GetInput())
@@ -548,13 +565,6 @@ class MeshWindow(PluginWindowBase):
             self._vtk_renderer.AddViewProp(actor)
 
             self._nodeset_actors[ninfo.number] = actor
-
-    def _calcCenterOfMass(self, bnds):
-        self._com = [
-            -(bnds[0] + bnds[1]) / 2,
-            -(bnds[2] + bnds[3]) / 2,
-            -(bnds[4] + bnds[5]) / 2
-        ]
 
     def _setupCubeAxesActor(self):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
@@ -1081,3 +1091,26 @@ class MeshWindow(PluginWindowBase):
             writer.SetFileName(file_name)
             writer.SetInputConnection(windowToImageFilter.GetOutputPort())
             writer.Write()
+
+    def onToolsExplode(self):
+        self._explode.adjustSize()
+        render_win_geom = self.geometry()
+        left = (render_win_geom.width() - self._explode.width()) / 2
+        top = render_win_geom.height() - self._explode.height() - 10
+        self._explode.setGeometry(
+            left, top,
+            self._explode.width(),
+            self._explode.height())
+        self._explode.show()
+
+    def onExplodeValueChanged(self, value):
+        dist = value / self._explode.range()
+        for blk_id, blk_com in self._block_cob.items():
+            cntr = QtGui.QVector3D(self._com[0], self._com[1], self._com[2])
+            blk_cntr = QtGui.QVector3D(blk_com[0], blk_com[1], blk_com[2])
+            dir = blk_cntr - cntr
+            dir.normalize()
+            dir = -dist * dir
+            pos = [dir.x(), dir.y(), dir.z()]
+            actor = self._getBlockActor(blk_id)
+            actor.SetPosition(pos)
