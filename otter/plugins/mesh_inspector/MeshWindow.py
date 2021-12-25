@@ -189,6 +189,9 @@ class MeshWindow(PluginWindowBase):
         self._recent_menu = file_menu.addMenu("Open Recent")
         self.buildRecentFilesMenu()
         file_menu.addSeparator()
+        export_menu = file_menu.addMenu("Export as...")
+        self.setupExportMenu(export_menu)
+        file_menu.addSeparator()
         self._close_action = file_menu.addAction(
             "Close", self.onClose, "Ctrl+W")
 
@@ -201,6 +204,10 @@ class MeshWindow(PluginWindowBase):
 
         tools_menu = self._menubar.addMenu("Tools")
         self.setupSelectModeMenu(tools_menu)
+
+    def setupExportMenu(self, menu):
+        menu.addAction("PNG...", self.onExportAsPng)
+        menu.addAction("JPG...", self.onExportAsJpg)
 
     def setupColorProfileMenu(self, menu):
         self._color_profile_action_group = QtWidgets.QActionGroup(self)
@@ -1031,3 +1038,46 @@ class MeshWindow(PluginWindowBase):
         self._color_profiles[self.COLOR_PROFILE_DEFAULT] = default.profile
         self._color_profiles[self.COLOR_PROFILE_LIGHT] = light.profile
         self._color_profiles[self.COLOR_PROFILE_DARK] = dark.profile
+
+    def getFileName(self, window_title, name_filter, default_suffix):
+        dialog = QtWidgets.QFileDialog()
+        dialog.setWindowTitle(window_title)
+        dialog.setNameFilter(name_filter)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+        dialog.setDefaultSuffix(default_suffix)
+
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            return str(dialog.selectedFiles()[0])
+        return None
+
+    def onExportAsPng(self):
+        file_name = self.getFileName('Export to PNG',
+                                     'PNG files (*.png)',
+                                     'png')
+        if file_name:
+            windowToImageFilter = vtk.vtkWindowToImageFilter()
+            windowToImageFilter.SetInput(self._vtk_render_window)
+            windowToImageFilter.SetInputBufferTypeToRGBA()
+            windowToImageFilter.ReadFrontBufferOff()
+            windowToImageFilter.Update()
+
+            writer = vtk.vtkPNGWriter()
+            writer.SetFileName(file_name)
+            writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+            writer.Write()
+
+    def onExportAsJpg(self):
+        file_name = self.getFileName('Export to JPG',
+                                     'JPG files (*.jpg)',
+                                     'jpg')
+        if file_name:
+            windowToImageFilter = vtk.vtkWindowToImageFilter()
+            windowToImageFilter.SetInput(self._vtk_render_window)
+            windowToImageFilter.ReadFrontBufferOff()
+            windowToImageFilter.Update()
+
+            writer = vtk.vtkJPEGWriter()
+            writer.SetFileName(file_name)
+            writer.SetInputConnection(windowToImageFilter.GetOutputPort())
+            writer.Write()
