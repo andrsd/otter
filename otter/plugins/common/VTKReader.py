@@ -70,3 +70,9 @@ class VTKReader(Reader):
 
     def getTotalNumberOfNodes(self):
         return self._reader.GetOutput().GetNumberOfPoints()
+
+    def getDimensionality(self):
+        # FIXME: get this from the cell type
+        # unstr_grid = self._reader.GetOutput()
+        # cells = unstr_grid.GetCells()
+        return None

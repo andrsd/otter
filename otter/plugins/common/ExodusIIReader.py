@@ -124,3 +124,6 @@ class ExodusIIReader(Reader):
 
     def getTotalNumberOfNodes(self):
         return self._reader.GetTotalNumberOfNodes()
+
+    def getDimensionality(self):
+        return self._reader.GetDimensionality()

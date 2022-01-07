@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
+from otter.plugins.common.OtterInteractorStyle2D import OtterInteractorStyle2D
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
@@ -413,9 +414,6 @@ class MeshWindow(PluginWindowBase):
         self._cube_axes_actor.SetBounds(*bnds)
         self._vtk_renderer.AddViewProp(self._cube_axes_actor)
 
-        self._vtk_renderer.ResetCamera()
-        self._vtk_renderer.GetActiveCamera().Zoom(1.5)
-
         params = {
             'blocks': reader.getBlocks(),
             'sidesets': reader.getSideSets(),
@@ -441,6 +439,18 @@ class MeshWindow(PluginWindowBase):
         self._progress = None
 
         self.updateMenuBar()
+
+        if reader.getDimensionality() == 3:
+            style = OtterInteractorStyle3D(self)
+        else:
+            style = OtterInteractorStyle2D(self)
+        self._vtk_interactor.SetInteractorStyle(style)
+
+        camera = self._vtk_renderer.GetActiveCamera()
+        focal_point = camera.GetFocalPoint()
+        camera.SetPosition(focal_point[0], focal_point[1], 1)
+        camera.SetRoll(0)
+        self._vtk_renderer.ResetCamera()
 
     def _addBlockActors(self):
         camera = self._vtk_renderer.GetActiveCamera()
