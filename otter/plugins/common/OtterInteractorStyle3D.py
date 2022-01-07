@@ -2,7 +2,7 @@ import vtk
 from PyQt5 import QtCore, QtGui
 
 
-class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
+class OtterInteractorStyle3D(vtk.vtkInteractorStyleTrackballCamera):
 
     def __init__(self, widget):
         super().__init__()

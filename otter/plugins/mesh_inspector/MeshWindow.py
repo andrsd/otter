@@ -3,7 +3,7 @@ import vtk
 from PyQt5 import QtCore, QtWidgets, QtGui
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from otter.plugins.PluginWindowBase import PluginWindowBase
-from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
+from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
@@ -312,7 +312,7 @@ class MeshWindow(PluginWindowBase):
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
-        self._vtk_interactor.SetInteractorStyle(OtterInteractorStyle(self))
+        self._vtk_interactor.SetInteractorStyle(OtterInteractorStyle3D(self))
 
         # TODO: set background from preferences/templates
         self._vtk_renderer.SetGradientBackground(True)
