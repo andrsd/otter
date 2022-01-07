@@ -311,6 +311,9 @@ class PetscHDF5DataSetReader(VTKPythonAlgorithmBase):
     def getSideSetInfo(self):
         return self._sideset_info
 
+    def getDimensionality(self):
+        return self._cell_dim
+
 
 class PetscHDF5Reader(Reader):
     """
@@ -372,3 +375,6 @@ class PetscHDF5Reader(Reader):
 
     def getTotalNumberOfNodes(self):
         return self._reader.GetTotalNumberOfNodes()
+
+    def getDimensionality(self):
+        return self._reader.getDimensionality()

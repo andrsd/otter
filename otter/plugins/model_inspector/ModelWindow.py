@@ -7,7 +7,7 @@ from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.model_inspector.InputReader import InputReader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 import otter.plugins.common as common
-from otter.plugins.common.OtterInteractorStyle import OtterInteractorStyle
+from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
 from otter.assets import Assets
 
 
@@ -75,7 +75,7 @@ class ModelWindow(PluginWindowBase):
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
         self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
-        self._style = OtterInteractorStyle(self)
+        self._style = OtterInteractorStyle3D(self)
         self._vtk_interactor.SetInteractorStyle(self._style)
 
         # TODO: set background from preferences/templates

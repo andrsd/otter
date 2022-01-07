@@ -1,11 +1,9 @@
-import vtk
 from PyQt5 import QtCore, QtGui
 
 
-class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
+class OtterInteractorInterface:
 
     def __init__(self, widget):
-        super().__init__()
         self._widget = widget
         self._last_mouse_pos = None
         self._left_button_down = False
@@ -23,7 +21,6 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         click_pos = interactor.GetEventPosition()
         pt = QtCore.QPoint(click_pos[0], click_pos[1])
         self._last_mouse_pos = pt
-        super().OnLeftButtonDown()
 
     def onLeftButtonRelease(self, interactor_style, event):
         self._left_button_down = False
@@ -32,7 +29,6 @@ class OtterInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         pt = QtCore.QPoint(click_pos[0], click_pos[1])
         if self._last_mouse_pos == pt:
             self._widget.onClicked(pt)
-        super().OnLeftButtonUp()
 
     def onKeyPress(self, interactor_style, event):
         interactor = interactor_style.GetInteractor()

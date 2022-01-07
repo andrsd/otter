@@ -48,3 +48,6 @@ class Reader:
 
     def getTotalNumberOfNodes(self):
         return None
+
+    def getDimensionality(self):
+        return None
