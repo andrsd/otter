@@ -89,7 +89,8 @@ setup(
         'terminaltables==3.1.0',
         'sphinx',
         'vtk==9.0.3',
-        'PyYAML==5.4.1'
+        'PyYAML==5.4.1',
+        'h5py>=3.6.0'
     ],
     packages=[
         'otter',
