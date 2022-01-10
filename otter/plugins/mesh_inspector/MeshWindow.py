@@ -12,6 +12,7 @@ from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.FileChangedNotificationWidget import \
     FileChangedNotificationWidget
 from otter.plugins.common.SideSetObject import SideSetObject
+from otter.plugins.common.NodeSetObject import NodeSetObject
 import otter.plugins.common as common
 from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
@@ -380,8 +381,7 @@ class MeshWindow(PluginWindowBase):
         self._block_cob = {}
         self._silhouette_actors = {}
         self._side_sets = {}
-        self._nodeset_actors = {}
-        self._nodeset_info = {}
+        self._node_sets = {}
         self._vtk_renderer.RemoveAllViewProps()
 
         watched_files = self._file_watcher.files()
@@ -409,7 +409,7 @@ class MeshWindow(PluginWindowBase):
 
         self._addBlockActors()
         self._addSidesets()
-        self._addNodesetActors()
+        self._addNodeSets()
 
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
@@ -535,7 +535,7 @@ class MeshWindow(PluginWindowBase):
             self._vtk_renderer.AddViewProp(sideset.actor)
             self._setSideSetProperties(sideset.property)
 
-    def _addNodesetActors(self):
+    def _addNodeSets(self):
         reader = self._load_thread.getReader()
 
         for index, ninfo in enumerate(reader.getNodeSets()):
@@ -543,27 +543,11 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(ninfo.multiblock_index)
             eb.Update()
-            do = eb.GetOutput()
-            self._nodeset_info[ninfo.number] = {
-                'points': do.GetNumberOfPoints()
-            }
 
-            geometry = vtk.vtkCompositeDataGeometryFilter()
-            geometry.SetInputConnection(0, eb.GetOutputPort(0))
-            geometry.Update()
-
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(geometry.GetOutputPort())
-            mapper.SetScalarModeToUsePointFieldData()
-            mapper.InterpolateScalarsBeforeMappingOn()
-
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
-            actor.VisibilityOff()
-            self._setNodeSetActorProperties(actor)
-            self._vtk_renderer.AddViewProp(actor)
-
-            self._nodeset_actors[ninfo.number] = actor
+            nodeset = NodeSetObject(eb)
+            self._node_sets[ninfo.number] = nodeset
+            self._vtk_renderer.AddViewProp(nodeset.actor)
+            self._setNodeSetProperties(nodeset.property)
 
     def _setupCubeAxesActor(self):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
@@ -580,8 +564,8 @@ class MeshWindow(PluginWindowBase):
     def _getSideSet(self, sideset_id):
         return self._side_sets[sideset_id]
 
-    def _getNodesetActor(self, nodeset_id):
-        return self._nodeset_actors[nodeset_id]
+    def _getNodeSet(self, nodeset_id):
+        return self._node_sets[nodeset_id]
 
     def _getSilhouetteActor(self, block_id):
         return self._silhouette_actors[block_id]
@@ -629,11 +613,8 @@ class MeshWindow(PluginWindowBase):
         sideset.setVisible(visible)
 
     def onNodesetVisibilityChanged(self, nodeset_id, visible):
-        actor = self._getNodesetActor(nodeset_id)
-        if visible:
-            actor.VisibilityOn()
-        else:
-            actor.VisibilityOff()
+        nodeset = self._getNodeSet(nodeset_id)
+        nodeset.setVisible(visible)
 
     def _getBlocksBounds(self, extract_block):
         glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
@@ -815,8 +796,7 @@ class MeshWindow(PluginWindowBase):
             property.SetEdgeVisibility(False)
             property.LightingOff()
 
-    def _setNodeSetActorProperties(self, actor):
-        property = actor.GetProperty()
+    def _setNodeSetProperties(self, property):
         property.SetRepresentationToPoints()
         property.SetRenderPointsAsSpheres(True)
         property.SetVertexVisibility(True)
@@ -931,9 +911,9 @@ class MeshWindow(PluginWindowBase):
             self._selected_mesh_ent_info.hide()
 
     def onNodesetSelectionChanged(self, nodeset_id):
-        if nodeset_id in self._nodeset_info:
-            nfo = self._nodeset_info[nodeset_id]
-            self._selected_mesh_ent_info.setNodesetInfo(nodeset_id, nfo)
+        if nodeset_id in self._node_sets:
+            ns = self._node_sets[nodeset_id]
+            self._selected_mesh_ent_info.setNodesetInfo(nodeset_id, ns.info)
             self._showSelectedMeshEntity()
         else:
             self._selected_mesh_ent_info.hide()
