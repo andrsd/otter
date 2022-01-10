@@ -11,6 +11,7 @@ from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.FileChangedNotificationWidget import \
     FileChangedNotificationWidget
+from otter.plugins.common.BlockObject import BlockObject
 from otter.plugins.common.SideSetObject import SideSetObject
 from otter.plugins.common.NodeSetObject import NodeSetObject
 import otter.plugins.common as common
@@ -374,12 +375,7 @@ class MeshWindow(PluginWindowBase):
             event.ignore()
 
     def clear(self):
-        self._block_actors = {}
-        self._block_color = {}
-        self._block_info = {}
-        # geometrical center of blocks
-        self._block_cob = {}
-        self._silhouette_actors = {}
+        self._blocks = {}
         self._side_sets = {}
         self._node_sets = {}
         self._vtk_renderer.RemoveAllViewProps()
@@ -407,14 +403,14 @@ class MeshWindow(PluginWindowBase):
     def onLoadFinished(self):
         reader = self._load_thread.getReader()
 
-        self._addBlockActors()
+        self._addBlocks()
         self._addSidesets()
         self._addNodeSets()
 
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
         gmax = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        for nfo in self._block_info.values():
-            bmin, bmax = nfo['bounds']
+        for block in self._blocks.values():
+            bmin, bmax = block.bounds
             gmin = common.point_min(bmin, gmin)
             gmax = common.point_max(bmax, gmax)
         bnds = [gmin.x(), gmax.x(), gmin.y(), gmax.y(), gmin.z(), gmax.z()]
@@ -461,7 +457,7 @@ class MeshWindow(PluginWindowBase):
         camera.SetRoll(0)
         self._vtk_renderer.ResetCamera()
 
-    def _addBlockActors(self):
+    def _addBlocks(self):
         camera = self._vtk_renderer.GetActiveCamera()
         reader = self._load_thread.getReader()
 
@@ -470,56 +466,15 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(binfo.multiblock_index)
             eb.Update()
-            do = eb.GetOutput()
-            bounds = self._getBlocksBounds(eb)
 
-            self._block_info[binfo.number] = {
-                'cells': do.GetNumberOfCells(),
-                'points': do.GetNumberOfPoints(),
-                'bounds': bounds
-            }
+            block = BlockObject(eb, camera)
+            self._setBlockProperties(block)
+            self._blocks[binfo.number] = block
 
-            geometry = vtk.vtkCompositeDataGeometryFilter()
-            geometry.SetInputConnection(0, eb.GetOutputPort(0))
-            geometry.Update()
+            self._vtk_renderer.AddViewProp(block.actor)
+            self._vtk_renderer.AddViewProp(block.silhouette_actor)
             # FIXME: make this work with multiple blocks
-            self._geometry = geometry
-
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(geometry.GetOutputPort())
-            mapper.SetScalarModeToUsePointFieldData()
-            mapper.InterpolateScalarsBeforeMappingOn()
-
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
-            actor.SetScale(0.99999)
-            actor.VisibilityOn()
-            self._vtk_renderer.AddViewProp(actor)
-
-            self._block_color[binfo.number] = [1, 1, 1]
-            self._setBlockActorProperties(binfo.number, actor)
-            self._block_actors[binfo.number] = actor
-            bnds = actor.GetBounds()
-            self._block_cob[binfo.number] = common.centerOfBounds(bnds)
-
-            silhouette = vtk.vtkPolyDataSilhouette()
-            silhouette.SetInputData(mapper.GetInput())
-            silhouette.SetCamera(camera)
-
-            silhouette_mapper = vtk.vtkPolyDataMapper()
-            silhouette_mapper.SetInputConnection(silhouette.GetOutputPort())
-
-            silhouette_actor = vtk.vtkActor()
-            silhouette_actor.SetMapper(silhouette_mapper)
-            if (self.renderMode() == self.HIDDEN_EDGES_REMOVED or
-                    self.renderMode() == self.TRANSLUENT):
-                silhouette_actor.VisibilityOn()
-                self._setSilhouetteActorProperties(silhouette_actor)
-            else:
-                silhouette_actor.VisibilityOff()
-            self._vtk_renderer.AddViewProp(silhouette_actor)
-
-            self._silhouette_actors[binfo.number] = silhouette_actor
+            self._geometry = block.geometry
 
     def _addSidesets(self):
         reader = self._load_thread.getReader()
@@ -558,17 +513,14 @@ class MeshWindow(PluginWindowBase):
         self._cube_axes_actor.SetFlyMode(
             vtk.vtkCubeAxesActor.VTK_FLY_OUTER_EDGES)
 
-    def _getBlockActor(self, block_id):
-        return self._block_actors[block_id]
+    def _getBlock(self, block_id):
+        return self._blocks[block_id]
 
     def _getSideSet(self, sideset_id):
         return self._side_sets[sideset_id]
 
     def _getNodeSet(self, nodeset_id):
         return self._node_sets[nodeset_id]
-
-    def _getSilhouetteActor(self, block_id):
-        return self._silhouette_actors[block_id]
 
     def renderMode(self):
         return self._render_mode
@@ -583,26 +535,20 @@ class MeshWindow(PluginWindowBase):
         self._ori_marker.SetInteractive(False)
 
     def onBlockVisibilityChanged(self, block_id, visible):
-        actor = self._getBlockActor(block_id)
-        if visible:
-            actor.VisibilityOn()
-        else:
-            actor.VisibilityOff()
-
+        block = self._getBlock(block_id)
+        block.setVisible(visible)
         if (self.renderMode() == self.HIDDEN_EDGES_REMOVED or
                 self.renderMode() == self.TRANSLUENT):
-            actor = self._getSilhouetteActor(block_id)
-            if visible:
-                actor.VisibilityOn()
-            else:
-                actor.VisibilityOff()
+            block.setSilhouetteVisible(block.visible)
+        else:
+            block.setSilhouetteVisible(False)
 
     def onBlockColorChanged(self, block_id, qcolor):
         clr = [qcolor.redF(), qcolor.greenF(), qcolor.blueF()]
-        self._block_color[block_id] = clr
+        block = self._getBlock(block_id)
+        block.setColor(clr)
 
-        actor = self._getBlockActor(block_id)
-        property = actor.GetProperty()
+        property = block.property
         if self.renderMode() == self.HIDDEN_EDGES_REMOVED:
             property.SetColor([1, 1, 1])
         else:
@@ -615,28 +561,6 @@ class MeshWindow(PluginWindowBase):
     def onNodesetVisibilityChanged(self, nodeset_id, visible):
         nodeset = self._getNodeSet(nodeset_id)
         nodeset.setVisible(visible)
-
-    def _getBlocksBounds(self, extract_block):
-        glob_min = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
-        glob_max = QtGui.QVector3D(float('-inf'), float('-inf'), float('-inf'))
-        for i in range(extract_block.GetOutput().GetNumberOfBlocks()):
-            current = extract_block.GetOutput().GetBlock(i)
-            if isinstance(current, vtk.vtkUnstructuredGrid):
-                bnd = current.GetBounds()
-                bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
-                bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-                glob_min = common.point_min(bnd_min, glob_min)
-                glob_max = common.point_max(bnd_max, glob_max)
-
-            elif isinstance(current, vtk.vtkMultiBlockDataSet):
-                for j in range(current.GetNumberOfBlocks()):
-                    bnd = current.GetBlock(j).GetBounds()
-                    bnd_min = QtGui.QVector3D(bnd[0], bnd[2], bnd[4])
-                    bnd_max = QtGui.QVector3D(bnd[1], bnd[3], bnd[5])
-                    glob_min = common.point_min(bnd_min, glob_min)
-                    glob_max = common.point_max(bnd_max, glob_max)
-
-        return (glob_min, glob_max)
 
     def onCubeAxisVisibilityChanged(self, visible):
         if visible:
@@ -677,43 +601,37 @@ class MeshWindow(PluginWindowBase):
 
     def onShadedTriggered(self, checked):
         self._render_mode = self.SHADED
-        for block_id, actor in self._block_actors.items():
+        for block_id, block in self._blocks.items():
             selected = self._selected_block == block_id
-            self._setBlockActorProperties(block_id, actor, selected)
+            self._setBlockProperties(block, selected)
+            block.setSilhouetteVisible(False)
         for sideset in self._side_sets.values():
             self._setSideSetProperties(sideset.property)
-        for actor in self._silhouette_actors.values():
-            actor.VisibilityOff()
 
     def onShadedWithEdgesTriggered(self, checked):
         self._render_mode = self.SHADED_WITH_EDGES
-        for block_id, actor in self._block_actors.items():
+        for block_id, block in self._blocks.items():
             selected = self._selected_block == block_id
-            self._setBlockActorProperties(block_id, actor, selected)
+            self._setBlockProperties(block, selected)
+            block.setSilhouetteVisible(False)
         for sideset in self._side_sets.values():
             self._setSideSetProperties(sideset.property)
-        for actor in self._silhouette_actors.values():
-            actor.VisibilityOff()
 
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.HIDDEN_EDGES_REMOVED
-        for block_id, actor in self._block_actors.items():
+        for block_id, block in self._blocks.items():
             selected = self._selected_block == block_id
-            self._setBlockActorProperties(block_id, actor, selected)
-            sil_act = self._getSilhouetteActor(block_id)
-            self._setSilhouetteActorProperties(sil_act)
-            sil_act.SetVisibility(actor.GetVisibility())
+            self._setBlockProperties(block, selected)
+            block.setSilhouetteVisible(block.visible)
         for sideset in self._side_sets.values():
             self._setSideSetProperties(sideset.property)
 
     def onTransluentTriggered(self, checked):
         self._render_mode = self.TRANSLUENT
-        for block_id, actor in self._block_actors.items():
+        for block_id, block in self._blocks.items():
             selected = self._selected_block == block_id
-            self._setBlockActorProperties(block_id, actor, selected)
-            sil_act = self._getSilhouetteActor(block_id)
-            self._setSilhouetteActorProperties(sil_act)
-            sil_act.SetVisibility(actor.GetVisibility())
+            self._setBlockProperties(block, selected)
+            block.setSilhouetteVisible(block.visible)
         for sideset in self._side_sets.values():
             self._setSideSetProperties(sideset.property)
 
@@ -725,7 +643,8 @@ class MeshWindow(PluginWindowBase):
             camera = self._vtk_renderer.GetActiveCamera()
             camera.ParallelProjectionOn()
 
-    def _setSelectedBlockActorProperties(self, block_id, property):
+    def _setSelectedBlockProperties(self, block):
+        property = block.property
         if self.renderMode() == self.SHADED:
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetOpacity(1.0)
@@ -745,13 +664,14 @@ class MeshWindow(PluginWindowBase):
             property.SetOpacity(0.33)
             property.SetEdgeVisibility(False)
 
-    def _setDeselectedBlockActorProperties(self, block_id, property):
+    def _setDeselectedBlockProperties(self, block):
+        property = block.property
         if self.renderMode() == self.SHADED:
-            property.SetColor(self._block_color[block_id])
+            property.SetColor(block.color)
             property.SetOpacity(1.0)
             property.SetEdgeVisibility(False)
         elif self.renderMode() == self.SHADED_WITH_EDGES:
-            property.SetColor(self._block_color[block_id])
+            property.SetColor(block.color)
             property.SetOpacity(1.0)
             property.SetEdgeVisibility(True)
             property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
@@ -761,18 +681,18 @@ class MeshWindow(PluginWindowBase):
             property.SetOpacity(1.0)
             property.SetEdgeVisibility(False)
         elif self.renderMode() == self.TRANSLUENT:
-            property.SetColor(self._block_color[block_id])
+            property.SetColor(block.color)
             property.SetOpacity(0.33)
             property.SetEdgeVisibility(False)
 
-    def _setBlockActorProperties(self, block_id, actor, selected=False):
-        property = actor.GetProperty()
+    def _setBlockProperties(self, block, selected=False):
+        property = block.property
         property.SetAmbient(0.4)
         property.SetDiffuse(0.6)
         if selected:
-            self._setSelectedBlockActorProperties(block_id, property)
+            self._setSelectedBlockProperties(block)
         else:
-            self._setDeselectedBlockActorProperties(block_id, property)
+            self._setDeselectedBlockProperties(block)
 
     def _setSideSetProperties(self, property):
         if self.renderMode() == self.SHADED:
@@ -806,11 +726,6 @@ class MeshWindow(PluginWindowBase):
         property.SetOpacity(1)
         property.SetAmbient(1)
         property.SetDiffuse(0)
-
-    def _setSilhouetteActorProperties(self, actor):
-        property = actor.GetProperty()
-        property.SetColor([0, 0, 0])
-        property.SetLineWidth(3)
 
     def _setSelectionActorProperties(self, actor):
         property = actor.GetProperty()
@@ -884,22 +799,20 @@ class MeshWindow(PluginWindowBase):
 
     def onBlockSelectionChanged(self, block_id):
         self._deselectBlocks()
-        if block_id in self._block_info:
-            nfo = self._block_info[block_id]
-            self._selected_mesh_ent_info.setBlockInfo(block_id, nfo)
+        if block_id in self._blocks:
+            block = self._getBlock(block_id)
+            self._selected_mesh_ent_info.setBlockInfo(block_id, block.info)
             self._showSelectedMeshEntity()
-
             self._selected_block = block_id
-            actor = self._block_actors[block_id]
-            self._setBlockActorProperties(block_id, actor, selected=True)
+            self._setBlockProperties(block, selected=True)
         else:
             self._selected_mesh_ent_info.hide()
 
     def _deselectBlocks(self):
         blk_id = self._selected_block
         if blk_id is not None:
-            actor = self._block_actors[blk_id]
-            self._setBlockActorProperties(blk_id, actor, selected=False)
+            block = self._getBlock(blk_id)
+            self._setBlockProperties(block, selected=False)
             self._selected_block = None
 
     def onSidesetSelectionChanged(self, sideset_id):
@@ -921,8 +834,8 @@ class MeshWindow(PluginWindowBase):
     def _blockActorToId(self, actor):
         # TODO: when we start to have 1000s of actors, this should be an
         # inverse dictionary from 'actor' to 'block_id'
-        for blk_id, blk_actor in self._block_actors.items():
-            if blk_actor == actor:
+        for blk_id, block in self._blocks.items():
+            if block.actor == actor:
                 return blk_id
         return None
 
@@ -1077,12 +990,12 @@ class MeshWindow(PluginWindowBase):
 
     def onExplodeValueChanged(self, value):
         dist = value / self._explode.range()
-        for blk_id, blk_com in self._block_cob.items():
+        for blk_id, block in self._blocks.items():
+            blk_com = block.cob
             cntr = QtGui.QVector3D(self._com[0], self._com[1], self._com[2])
             blk_cntr = QtGui.QVector3D(blk_com[0], blk_com[1], blk_com[2])
             dir = blk_cntr - cntr
             dir.normalize()
             dir = -dist * dir
             pos = [dir.x(), dir.y(), dir.z()]
-            actor = self._getBlockActor(blk_id)
-            actor.SetPosition(pos)
+            block.actor.SetPosition(pos)
