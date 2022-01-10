@@ -133,15 +133,19 @@ class MeshWindow(PluginWindowBase):
         self._view_menu = QtWidgets.QMenu()
         self._shaded_action = self._view_menu.addAction("Shaded")
         self._shaded_action.setCheckable(True)
+        self._shaded_action.setShortcut("Ctrl+1")
         self._shaded_w_edges_action = self._view_menu.addAction(
             "Shaded with edges")
         self._shaded_w_edges_action.setCheckable(True)
+        self._shaded_w_edges_action.setShortcut("Ctrl+2")
         self._hidden_edges_removed_action = self._view_menu.addAction(
             "Hidden edges removed")
         self._hidden_edges_removed_action.setCheckable(True)
+        self._hidden_edges_removed_action.setShortcut("Ctrl+3")
         self._transluent_action = self._view_menu.addAction(
             "Transluent")
         self._transluent_action.setCheckable(True)
+        self._transluent_action.setShortcut("Ctrl+4")
         self._shaded_w_edges_action.setChecked(True)
         self._render_mode = self.SHADED_WITH_EDGES
 
@@ -200,6 +204,11 @@ class MeshWindow(PluginWindowBase):
             "Close", self.onClose, "Ctrl+W")
 
         view_menu = self._menubar.addMenu("View")
+        view_menu.addAction(self._shaded_action)
+        view_menu.addAction(self._shaded_w_edges_action)
+        view_menu.addAction(self._hidden_edges_removed_action)
+        view_menu.addAction(self._transluent_action)
+        view_menu.addSeparator()
         self._view_info_wnd_action = view_menu.addAction(
             "Info window", self.onViewInfoWindow)
         self._view_info_wnd_action.setCheckable(True)
