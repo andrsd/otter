@@ -11,6 +11,7 @@ from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.FileChangedNotificationWidget import \
     FileChangedNotificationWidget
+from otter.plugins.common.SideSetObject import SideSetObject
 import otter.plugins.common as common
 from otter.assets import Assets
 from otter.plugins.mesh_inspector.InfoWindow import InfoWindow
@@ -378,8 +379,7 @@ class MeshWindow(PluginWindowBase):
         # geometrical center of blocks
         self._block_cob = {}
         self._silhouette_actors = {}
-        self._sideset_actors = {}
-        self._sideset_info = {}
+        self._side_sets = {}
         self._nodeset_actors = {}
         self._nodeset_info = {}
         self._vtk_renderer.RemoveAllViewProps()
@@ -408,7 +408,7 @@ class MeshWindow(PluginWindowBase):
         reader = self._load_thread.getReader()
 
         self._addBlockActors()
-        self._addSidesetActors()
+        self._addSidesets()
         self._addNodesetActors()
 
         gmin = QtGui.QVector3D(float('inf'), float('inf'), float('inf'))
@@ -521,7 +521,7 @@ class MeshWindow(PluginWindowBase):
 
             self._silhouette_actors[binfo.number] = silhouette_actor
 
-    def _addSidesetActors(self):
+    def _addSidesets(self):
         reader = self._load_thread.getReader()
 
         for index, finfo in enumerate(reader.getSideSets()):
@@ -529,31 +529,11 @@ class MeshWindow(PluginWindowBase):
             eb.SetInputConnection(reader.getVtkOutputPort())
             eb.AddIndex(finfo.multiblock_index)
             eb.Update()
-            do = eb.GetOutput()
-            self._sideset_info[finfo.number] = {
-                'cells': do.GetNumberOfCells(),
-                'points': do.GetNumberOfPoints()
-            }
 
-            geometry = vtk.vtkCompositeDataGeometryFilter()
-            geometry.SetInputConnection(0, eb.GetOutputPort(0))
-            geometry.Update()
-
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(geometry.GetOutputPort())
-            mapper.SetScalarModeToUsePointFieldData()
-            mapper.InterpolateScalarsBeforeMappingOn()
-
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
-            actor.VisibilityOff()
-            self._vtk_renderer.AddViewProp(actor)
-
-            property = actor.GetProperty()
-            property.SetRepresentationToSurface()
-            self._setSideSetActorProperties(actor)
-
-            self._sideset_actors[finfo.number] = actor
+            sideset = SideSetObject(eb)
+            self._side_sets[finfo.number] = sideset
+            self._vtk_renderer.AddViewProp(sideset.actor)
+            self._setSideSetProperties(sideset.property)
 
     def _addNodesetActors(self):
         reader = self._load_thread.getReader()
@@ -597,8 +577,8 @@ class MeshWindow(PluginWindowBase):
     def _getBlockActor(self, block_id):
         return self._block_actors[block_id]
 
-    def _getSidesetActor(self, sideset_id):
-        return self._sideset_actors[sideset_id]
+    def _getSideSet(self, sideset_id):
+        return self._side_sets[sideset_id]
 
     def _getNodesetActor(self, nodeset_id):
         return self._nodeset_actors[nodeset_id]
@@ -645,11 +625,8 @@ class MeshWindow(PluginWindowBase):
             property.SetColor(clr)
 
     def onSidesetVisibilityChanged(self, sideset_id, visible):
-        actor = self._getSidesetActor(sideset_id)
-        if visible:
-            actor.VisibilityOn()
-        else:
-            actor.VisibilityOff()
+        sideset = self._getSideSet(sideset_id)
+        sideset.setVisible(visible)
 
     def onNodesetVisibilityChanged(self, nodeset_id, visible):
         actor = self._getNodesetActor(nodeset_id)
@@ -722,8 +699,8 @@ class MeshWindow(PluginWindowBase):
         for block_id, actor in self._block_actors.items():
             selected = self._selected_block == block_id
             self._setBlockActorProperties(block_id, actor, selected)
-        for actor in self._sideset_actors.values():
-            self._setSideSetActorProperties(actor)
+        for sideset in self._side_sets.values():
+            self._setSideSetProperties(sideset.property)
         for actor in self._silhouette_actors.values():
             actor.VisibilityOff()
 
@@ -732,8 +709,8 @@ class MeshWindow(PluginWindowBase):
         for block_id, actor in self._block_actors.items():
             selected = self._selected_block == block_id
             self._setBlockActorProperties(block_id, actor, selected)
-        for actor in self._sideset_actors.values():
-            self._setSideSetActorProperties(actor)
+        for sideset in self._side_sets.values():
+            self._setSideSetProperties(sideset.property)
         for actor in self._silhouette_actors.values():
             actor.VisibilityOff()
 
@@ -745,8 +722,8 @@ class MeshWindow(PluginWindowBase):
             sil_act = self._getSilhouetteActor(block_id)
             self._setSilhouetteActorProperties(sil_act)
             sil_act.SetVisibility(actor.GetVisibility())
-        for actor in self._sideset_actors.values():
-            self._setSideSetActorProperties(actor)
+        for sideset in self._side_sets.values():
+            self._setSideSetProperties(sideset.property)
 
     def onTransluentTriggered(self, checked):
         self._render_mode = self.TRANSLUENT
@@ -756,8 +733,8 @@ class MeshWindow(PluginWindowBase):
             sil_act = self._getSilhouetteActor(block_id)
             self._setSilhouetteActorProperties(sil_act)
             sil_act.SetVisibility(actor.GetVisibility())
-        for actor in self._sideset_actors.values():
-            self._setSideSetActorProperties(actor)
+        for sideset in self._side_sets.values():
+            self._setSideSetProperties(sideset.property)
 
     def onPerspectiveToggled(self, checked):
         if checked:
@@ -816,8 +793,7 @@ class MeshWindow(PluginWindowBase):
         else:
             self._setDeselectedBlockActorProperties(block_id, property)
 
-    def _setSideSetActorProperties(self, actor):
-        property = actor.GetProperty()
+    def _setSideSetProperties(self, property):
         if self.renderMode() == self.SHADED:
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
@@ -825,19 +801,16 @@ class MeshWindow(PluginWindowBase):
             property.SetLineWidth(self.SIDESET_EDGE_WIDTH)
             property.LightingOff()
         elif self.renderMode() == self.SHADED_WITH_EDGES:
-            property = actor.GetProperty()
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
             property.SetEdgeColor(common.qcolor2vtk(self.SIDESET_EDGE_CLR))
             property.SetLineWidth(self.SIDESET_EDGE_WIDTH)
             property.LightingOff()
         elif self.renderMode() == self.HIDDEN_EDGES_REMOVED:
-            property = actor.GetProperty()
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
             property.LightingOff()
         elif self.renderMode() == self.TRANSLUENT:
-            property = actor.GetProperty()
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
             property.LightingOff()
@@ -950,9 +923,9 @@ class MeshWindow(PluginWindowBase):
             self._selected_block = None
 
     def onSidesetSelectionChanged(self, sideset_id):
-        if sideset_id in self._sideset_info:
-            nfo = self._sideset_info[sideset_id]
-            self._selected_mesh_ent_info.setSidesetInfo(sideset_id, nfo)
+        if sideset_id in self._side_sets:
+            ss = self._side_sets[sideset_id]
+            self._selected_mesh_ent_info.setSidesetInfo(sideset_id, ss.info)
             self._showSelectedMeshEntity()
         else:
             self._selected_mesh_ent_info.hide()
