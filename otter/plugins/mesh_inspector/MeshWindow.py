@@ -436,9 +436,8 @@ class MeshWindow(PluginWindowBase):
         self._file_changed_notification.setFileName(self._file_name)
 
         self._selection = Selection(self._geometry.GetOutput())
-        actor = self._selection.getActor()
-        self._vtk_renderer.AddActor(actor)
-        self._setSelectionActorProperties(actor)
+        self._setSelectionProperties(self._selection)
+        self._vtk_renderer.AddActor(self._selection.getActor())
 
         self._progress.hide()
         self._progress = None
@@ -488,7 +487,7 @@ class MeshWindow(PluginWindowBase):
             sideset = SideSetObject(eb)
             self._side_sets[finfo.number] = sideset
             self._vtk_renderer.AddViewProp(sideset.actor)
-            self._setSideSetProperties(sideset.property)
+            self._setSideSetProperties(sideset)
 
     def _addNodeSets(self):
         reader = self._load_thread.getReader()
@@ -502,7 +501,7 @@ class MeshWindow(PluginWindowBase):
             nodeset = NodeSetObject(eb)
             self._node_sets[ninfo.number] = nodeset
             self._vtk_renderer.AddViewProp(nodeset.actor)
-            self._setNodeSetProperties(nodeset.property)
+            self._setNodeSetProperties(nodeset)
 
     def _setupCubeAxesActor(self):
         self._cube_axes_actor = vtk.vtkCubeAxesActor()
@@ -606,7 +605,7 @@ class MeshWindow(PluginWindowBase):
             self._setBlockProperties(block, selected)
             block.setSilhouetteVisible(False)
         for sideset in self._side_sets.values():
-            self._setSideSetProperties(sideset.property)
+            self._setSideSetProperties(sideset)
 
     def onShadedWithEdgesTriggered(self, checked):
         self._render_mode = self.SHADED_WITH_EDGES
@@ -615,7 +614,7 @@ class MeshWindow(PluginWindowBase):
             self._setBlockProperties(block, selected)
             block.setSilhouetteVisible(False)
         for sideset in self._side_sets.values():
-            self._setSideSetProperties(sideset.property)
+            self._setSideSetProperties(sideset)
 
     def onHiddenEdgesRemovedTriggered(self, checked):
         self._render_mode = self.HIDDEN_EDGES_REMOVED
@@ -624,7 +623,7 @@ class MeshWindow(PluginWindowBase):
             self._setBlockProperties(block, selected)
             block.setSilhouetteVisible(block.visible)
         for sideset in self._side_sets.values():
-            self._setSideSetProperties(sideset.property)
+            self._setSideSetProperties(sideset)
 
     def onTransluentTriggered(self, checked):
         self._render_mode = self.TRANSLUENT
@@ -633,7 +632,7 @@ class MeshWindow(PluginWindowBase):
             self._setBlockProperties(block, selected)
             block.setSilhouetteVisible(block.visible)
         for sideset in self._side_sets.values():
-            self._setSideSetProperties(sideset.property)
+            self._setSideSetProperties(sideset)
 
     def onPerspectiveToggled(self, checked):
         if checked:
@@ -694,7 +693,8 @@ class MeshWindow(PluginWindowBase):
         else:
             self._setDeselectedBlockProperties(block)
 
-    def _setSideSetProperties(self, property):
+    def _setSideSetProperties(self, sideset):
+        property = sideset.property
         if self.renderMode() == self.SHADED:
             property.SetColor(common.qcolor2vtk(self.SIDESET_CLR))
             property.SetEdgeVisibility(False)
@@ -716,7 +716,8 @@ class MeshWindow(PluginWindowBase):
             property.SetEdgeVisibility(False)
             property.LightingOff()
 
-    def _setNodeSetProperties(self, property):
+    def _setNodeSetProperties(self, nodeset):
+        property = nodeset.property
         property.SetRepresentationToPoints()
         property.SetRenderPointsAsSpheres(True)
         property.SetVertexVisibility(True)
@@ -727,7 +728,8 @@ class MeshWindow(PluginWindowBase):
         property.SetAmbient(1)
         property.SetDiffuse(0)
 
-    def _setSelectionActorProperties(self, actor):
+    def _setSelectionProperties(self, selection):
+        actor = selection.getActor()
         property = actor.GetProperty()
         if self._select_mode == self.MODE_SELECT_CELLS:
             property.SetRepresentationToSurface()
@@ -857,7 +859,7 @@ class MeshWindow(PluginWindowBase):
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
             cell_id = picker.GetCellId()
             self._selection.selectCell(cell_id)
-            self._setSelectionActorProperties(self._selection.getActor())
+            self._setSelectionProperties(self._selection)
 
             unstr_grid = self._selection.get()
             cell = unstr_grid.GetCell(0)
@@ -877,7 +879,7 @@ class MeshWindow(PluginWindowBase):
         if picker.Pick(pt.x(), pt.y(), 0, self._vtk_renderer):
             point_id = picker.GetPointId()
             self._selection.selectPoint(point_id)
-            self._setSelectionActorProperties(self._selection.getActor())
+            self._setSelectionProperties(self._selection)
 
             unstr_grid = self._selection.get()
             points = unstr_grid.GetPoints()
