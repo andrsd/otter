@@ -30,6 +30,7 @@ component_types = {
     'InvisibleComponent': {
         'FormLossFromExternalApp1Phase',
         'FormLossFromFunction1Phase',
+        'JunctionOneToOne1Phase',
         'HeatGeneration',
         'HeatSourceFromTotalPower',
         'HeatTransferFromExternalAppHeatFlux1Phase',
@@ -37,9 +38,15 @@ component_types = {
         'HeatTransferFromHeatFlux1Phase',
         'HeatTransferFromHeatStructure1Phase',
         'HeatTransferFromSpecifiedTemperature1Phase',
+        'HSBoundaryAmbientConvection',
+        'HSBoundaryExternalAppConvection',
+        'HSBoundaryExternalAppTemperature',
+        'HSBoundaryHeatFlux',
+        'HSBoundaryRadiation',
+        'HSBoundarySpecifiedTemperature',
         'PrescribedReactorPower',
         'PointKineticsReactorPower',
         'ReactivityFeedback',
-        'TotalPower'
+        'TotalPower',
     }
 }
