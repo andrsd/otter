@@ -33,7 +33,7 @@ class Component(object):
         """
         Determine the component connections.
         """
-        m = re.match(r"([^\(]+):([^:]+)", str_in)
+        m = re.match(r"(.+):(in|out)", str_in)
         return {'name': m.group(1), 'type': m.group(2)}
 
     @property

@@ -1,4 +1,5 @@
 import vtk
+import re
 from .Component import Component
 
 
@@ -17,9 +18,10 @@ class Junction(Component):
         self._source = None
         self.__connections = []
 
-        connections = params['connections'].split(" ")
+        connections = re.split("\s+", params['connections'])
         for c in connections:
-            self.__connections.append(self.parseConnection(c))
+            if len(c) > 0:
+                self.__connections.append(self.parseConnection(c))
 
     @property
     def type(self):
