@@ -22,10 +22,12 @@ component_types = {
     'Junction': [
         'Branch',
         'FlowJunction',
+        'GateValve1Phase',
         'JunctionOneToOne',
         'Pump1Phase',
         'VolumeBranch',
-        'VolumeJunction1Phase'
+        'VolumeJunction1Phase',
+        'JunctionParallelChannels1Phase'
     ],
     'InvisibleComponent': {
         'FormLossFromExternalApp1Phase',
@@ -47,6 +49,6 @@ component_types = {
         'PrescribedReactorPower',
         'PointKineticsReactorPower',
         'ReactivityFeedback',
-        'TotalPower',
+        'TotalPower'
     }
 }
