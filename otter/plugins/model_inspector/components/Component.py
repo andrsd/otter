@@ -21,12 +21,17 @@ class Component(object):
         self._caption_actor = None
 
     @staticmethod
-    def toArray(str_in):
+    def toArray(param):
         """
         Convert input string into an array of items.
         """
-        str_in = re.sub(r' +', ' ', str_in)
-        return [float(s) for s in str_in.split(' ')]
+        if isinstance(param, str):
+            str_in = re.sub(r' +', ' ', param.strip())
+            return [float(s) for s in re.split('\s+', str_in)]
+        elif isinstance(param, float):
+            return [param]
+        else:
+            return param
 
     @staticmethod
     def parseConnection(str_in):
