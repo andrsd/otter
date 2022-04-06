@@ -1,5 +1,6 @@
 import math
 import vtk
+import re
 from .Component import Component
 
 
@@ -29,7 +30,7 @@ class FlowChannel(Component):
         # normalized orientation vector
         self._ori = [ori[0] / r, ori[1] / r, ori[2] / r]
 
-        self._length = float(params['length'])
+        self._length = self.toLength(params['length'])
         if 'offset' in params:
             position[0] += params['offset'][0]
             position[1] += params['offset'][1]

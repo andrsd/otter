@@ -34,6 +34,18 @@ class Component(object):
             return param
 
     @staticmethod
+    def toLength(param):
+        if isinstance(param, str):
+            str_len = param.strip()
+            larr = re.split('\s+', str_len)
+            if len(larr) > 1:
+                return sum([float(s) for s in larr])
+            else:
+                return float(str_len)
+        else:
+            return param
+
+    @staticmethod
     def parseConnection(str_in):
         """
         Determine the component connections.

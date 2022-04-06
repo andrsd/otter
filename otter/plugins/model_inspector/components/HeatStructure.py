@@ -27,7 +27,7 @@ class HeatStructure(Component):
         else:
             self._rotation = 0.
 
-        length = float(params['length'])
+        length = self.toLength(params['length'])
         if 'widths' in params:
             width = sum(self.toArray(params['widths']))
         else:
