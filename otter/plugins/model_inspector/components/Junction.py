@@ -18,7 +18,7 @@ class Junction(Component):
         self._source = None
         self.__connections = []
 
-        connections = re.split("\s+", params['connections'])
+        connections = re.split("\\s+", params['connections'])
         for c in connections:
             if len(c) > 0:
                 self.__connections.append(self.parseConnection(c))

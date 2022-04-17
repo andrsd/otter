@@ -27,7 +27,7 @@ class Component(object):
         """
         if isinstance(param, str):
             str_in = re.sub(r' +', ' ', param.strip())
-            return [float(s) for s in re.split('\s+', str_in)]
+            return [float(s) for s in re.split('\\s+', str_in)]
         elif isinstance(param, float):
             return [param]
         else:
@@ -37,7 +37,7 @@ class Component(object):
     def toLength(param):
         if isinstance(param, str):
             str_len = param.strip()
-            larr = re.split('\s+', str_len)
+            larr = re.split('\\s+', str_len)
             if len(larr) > 1:
                 return sum([float(s) for s in larr])
             else:

@@ -1,6 +1,5 @@
 import math
 import vtk
-import re
 from .Component import Component
 
 
