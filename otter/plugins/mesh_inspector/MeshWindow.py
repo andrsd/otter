@@ -9,6 +9,7 @@ from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
+from otter.plugins.common.NotificationWidget import NotificationWidget
 from otter.plugins.common.FileChangedNotificationWidget import \
     FileChangedNotificationWidget
 from otter.plugins.common.BlockObject import BlockObject
@@ -123,6 +124,7 @@ class MeshWindow(PluginWindowBase):
 
         self.setupViewModeWidget(self)
         self.setupFileChangedNotificationWidget()
+        self.setupNotificationWidget()
         self._selected_mesh_ent_info = SelectedMeshEntityInfoWidget(self)
         self._selected_mesh_ent_info.setVisible(False)
 
@@ -185,6 +187,10 @@ class MeshWindow(PluginWindowBase):
         self._view_mode.setIcon(Assets().icons['render-mode'])
         self._view_mode.setMenu(self._view_menu)
         self._view_mode.show()
+
+    def setupNotificationWidget(self):
+        self._notification = NotificationWidget(self)
+        self._notification.setVisible(False)
 
     def setupFileChangedNotificationWidget(self):
         self._file_changed_notification = FileChangedNotificationWidget(self)
@@ -386,8 +392,19 @@ class MeshWindow(PluginWindowBase):
 
         self._selection = None
 
+    def checkFileExists(self, file_name):
+        if os.path.exists(file_name):
+            return True
+        else:
+            base_file = os.path.basename(file_name)
+            self.showNotification(
+                "Unable to open '{}': File does not exist.".format(base_file))
+            return False
+
     def loadFile(self, file_name):
         self.clear()
+        if not self.checkFileExists(file_name):
+            return
 
         self._progress = QtWidgets.QProgressDialog(
             "Loading {}...".format(os.path.basename(file_name)),
@@ -773,6 +790,24 @@ class MeshWindow(PluginWindowBase):
         if path not in self._file_watcher.files():
             self._file_watcher.addPath(path)
         self.showFileChangedNotification()
+
+    def showNotification(self, text, ms=5000):
+        """
+        @param text Notification text
+        @param ms Timeout for fade out in milliseconds
+        """
+        self._notification.setText(text)
+        self._notification.adjustSize()
+        width = self.geometry().width()
+        left = (width - self._notification.width()) / 2
+        # top = 10
+        top = self.height() - self._notification.height() - 10
+        self._notification.setGeometry(
+            left, top,
+            self._notification.width(),
+            self._notification.height())
+        self._notification.setGraphicsEffect(None)
+        self._notification.show(ms)
 
     def showFileChangedNotification(self):
         self._file_changed_notification.adjustSize()
