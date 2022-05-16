@@ -10,7 +10,6 @@
 
 """Wrapper for hit parser."""
 import os
-import subprocess
 import otter.plugins.model_inspector.moosetree
 import otter.plugins.model_inspector.hit
 

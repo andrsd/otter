@@ -1,6 +1,5 @@
 # flake8: noqa
 """Tools for iterating and locating nodes."""
-import sys
 from enum import Enum
 
 class IterMethod(Enum):

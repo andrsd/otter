@@ -41,8 +41,6 @@ def main():
     safe_timer(50, lambda: None)
     app.exec()
 
-    del app
-
 
 if __name__ == '__main__':
     main()

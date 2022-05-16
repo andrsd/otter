@@ -2,5 +2,6 @@ __all__ = [
     "computed_vs_measured",
     "csvplotter",
     "mesh_inspector",
-    "movie"
+    "model_inspector",
+    "viz"
 ]
