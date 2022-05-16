@@ -54,8 +54,6 @@ def main():
         plugin.loadFile(args.mesh_file)
     app.exec()
 
-    del app
-
 
 if __name__ == '__main__':
     main()

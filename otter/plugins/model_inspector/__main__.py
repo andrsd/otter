@@ -54,8 +54,6 @@ def main(args):
         plugin.loadFile(args.model_file)
     app.exec()
 
-    del app
-
 
 if __name__ == '__main__':
     main(args)

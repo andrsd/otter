@@ -53,8 +53,6 @@ def main():
         plugin.loadFile(args.file)
     app.exec()
 
-    del app
-
 
 if __name__ == '__main__':
     main()
