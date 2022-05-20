@@ -6,6 +6,8 @@ from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
+from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
+from otter.plugins.common.OtterInteractorStyle2D import OtterInteractorStyle2D
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
 from otter.plugins.viz.FileProps import FileProps
@@ -194,6 +196,12 @@ class MainWindow(PluginWindowBase):
         self._progress.hide()
         self._progress = None
 
+        if reader.getDimensionality() == 3:
+            style = OtterInteractorStyle3D(self)
+        else:
+            style = OtterInteractorStyle2D(self)
+        self._vtk_interactor.SetInteractorStyle(style)
+
         file_name = reader.getFileName()
         self.addToRecentFiles(file_name)
         self._file_name = file_name
@@ -273,3 +281,6 @@ class MainWindow(PluginWindowBase):
         camera.SetPosition(focal_point[0], focal_point[1], 1)
         camera.SetRoll(0)
         self._vtk_renderer.ResetCamera()
+
+    def onClicked(self, pt):
+        pass
