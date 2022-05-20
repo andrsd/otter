@@ -34,7 +34,7 @@ class LoadThread(QtCore.QThread):
         return self._reader
 
 
-class RenderWindow(PluginWindowBase):
+class MainWindow(PluginWindowBase):
     """
     Window for displaying the result
     """

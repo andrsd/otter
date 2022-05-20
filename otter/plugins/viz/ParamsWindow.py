@@ -13,7 +13,7 @@ class ParamsWindow(QtWidgets.QWidget):
         self._main_wnd = parent
         self._vtk_renderer = parent._vtk_renderer
 
-        # TOOD: move to RenderWindow
+        # TOOD: move to MainWindow
         self._root_props = RootProps(self._vtk_renderer, parent)
 
         self.setAcceptDrops(True)
