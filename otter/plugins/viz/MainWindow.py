@@ -1,7 +1,9 @@
 import os
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QToolBar, QProgressDialog, QMessageBox, \
+    QFileDialog
+from PyQt5.QtCore import QThread, QTimer, Qt
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
@@ -15,7 +17,7 @@ from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
 
 
-class LoadThread(QtCore.QThread):
+class LoadThread(QThread):
     """ Worker thread for loading data set files """
 
     def __init__(self, file_name):
@@ -73,7 +75,7 @@ class MainWindow(PluginWindowBase):
         self.show()
         self.updateMenuBar()
 
-        self._update_timer = QtCore.QTimer()
+        self._update_timer = QTimer()
         self._update_timer.timeout.connect(self.onUpdateWindow)
         self._update_timer.start(250)
 
@@ -110,7 +112,7 @@ class MainWindow(PluginWindowBase):
         self._view_objects_action.setChecked(self._params_window.isVisible())
 
     def setupToolBar(self):
-        self._toolbar = QtWidgets.QToolBar()
+        self._toolbar = QToolBar()
         self._toolbar.setMovable(False)
         self._toolbar.setFloatable(False)
         self._toolbar.setFixedHeight(32)
@@ -144,7 +146,7 @@ class MainWindow(PluginWindowBase):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
-            event.setDropAction(QtCore.Qt.CopyAction)
+            event.setDropAction(Qt.CopyAction)
             event.accept()
 
             file_names = []
@@ -176,18 +178,18 @@ class MainWindow(PluginWindowBase):
     def loadFile(self, file_name):
         self._load_thread = LoadThread(file_name)
         if self._load_thread.getReader() is not None:
-            self._progress = QtWidgets.QProgressDialog(
+            self._progress = QProgressDialog(
                 "Loading {}...".format(os.path.basename(file_name)),
                 None, 0, 0, self)
-            self._progress.setWindowModality(QtCore.Qt.WindowModal)
+            self._progress.setWindowModality(Qt.WindowModal)
             self._progress.setMinimumDuration(0)
             self._progress.show()
 
             self._load_thread.finished.connect(self.onFileLoadFinished)
-            self._load_thread.start(QtCore.QThread.IdlePriority)
+            self._load_thread.start(QThread.IdlePriority)
         else:
             self._load_thread = None
-            QtWidgets.QMessageBox.critical(
+            QMessageBox.critical(
                 None,
                 "Unsupported file format",
                 "Selected file in not in a supported format.\n"
@@ -229,7 +231,7 @@ class MainWindow(PluginWindowBase):
         self.clear()
 
     def onOpenFile(self):
-        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+        file_name, f = QFileDialog.getOpenFileName(
             self,
             'Open File',
             "",
@@ -253,7 +255,7 @@ class MainWindow(PluginWindowBase):
             self._vtk_renderer.AddViewProp(actor)
 
     def onAddFile(self):
-        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+        file_name, f = QFileDialog.getOpenFileName(
             self,
             'Open File',
             "",
