@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSplitter, QTreeView, \
-    QAbstractItemView, QMenu, QGraphicsOpacityEffect, QHBoxLayout, QLabel, \
-    QSizePolicy, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QMenu, \
+    QGraphicsOpacityEffect, QHBoxLayout, QLabel, QSizePolicy, QPushButton
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from otter.OTreeView import OTreeView
@@ -52,7 +51,7 @@ class ParamsWindow(QWidget):
     def setupWidgets(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(12, 6, 12, 12)
-        layout.setSpacing(0)
+        layout.setSpacing(4)
 
         title_layout = QHBoxLayout()
         self.title = QLabel("Objects")
@@ -74,9 +73,6 @@ class ParamsWindow(QWidget):
 
         layout.addSpacing(4)
 
-        self._splitter = QSplitter(Qt.Vertical)
-        self._splitter.setHandleWidth(4)
-
         self._pipeline_model = QStandardItemModel()
         self._pipeline = OTreeView()
         self._pipeline.setRootIsDecorated(False)
@@ -88,17 +84,15 @@ class ParamsWindow(QWidget):
         self._pipeline.setContextMenuPolicy(Qt.CustomContextMenu)
         self._pipeline.setSelectionMode(QAbstractItemView.SingleSelection)
         self._pipeline.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self._splitter.addWidget(self._pipeline)
+        layout.addWidget(self._pipeline)
 
         self._blocks = OTreeView()
-        self._splitter.addWidget(self._blocks)
+        layout.addWidget(self._blocks)
 
         self._root = QStandardItem()
         self._root.setText("Background")
         self._root.setData(self._root_props)
         self._pipeline_model.setItem(0, 0, self._root)
-
-        layout.addWidget(self._splitter)
 
         self.setLayout(layout)
 
@@ -106,8 +100,7 @@ class ParamsWindow(QWidget):
         self._pipeline.doubleClicked.connect(self.onPipelineDoubleClicked)
         self._pipeline.customContextMenuRequested.connect(
             self.onPipelineCustomContextMenu)
-        self._pipeline_model.itemChanged.connect(
-            self.onPipelineItemChanged)
+        self._pipeline_model.itemChanged.connect(self.onPipelineItemChanged)
 
     def updateWidgets(self):
         pass

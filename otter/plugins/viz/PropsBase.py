@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout, QDialog
 from PyQt5.QtCore import Qt, QPoint
 
 
-class PropsBase(QWidget):
+class PropsBase(QDialog):
     """
     Base class for properties pages
     """
@@ -23,10 +23,6 @@ class PropsBase(QWidget):
 
     def buildVtkActor(self):
         return self._actor
-
-    def closeEvent(self, event):
-        self.hide()
-        event.ignore()
 
     def show(self):
         render_wnd = self.parentWidget()

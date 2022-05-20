@@ -15,6 +15,7 @@ class RootProps(PropsBase):
         super().__init__(parent)
         self._vtk_renderer = renderer
         self.setupWidgets()
+        self.connectSignals()
 
     def setupWidgets(self):
         self._gradient_bkgnd = QCheckBox("Gradient background")
@@ -57,13 +58,14 @@ class RootProps(PropsBase):
 
         self._layout.addLayout(layout)
 
+        self.setLayout(self._layout)
+
+    def connectSignals(self):
         self._gradient_bkgnd.stateChanged.connect(self.onGradientBkgndChanged)
         self._color_btn.clicked.connect(self.onColorClicked)
         self._color_picker.colorChanged.connect(self.onColorChanged)
         self._color_2_btn.clicked.connect(self.onColor2Clicked)
         self._color_2_picker.colorChanged.connect(self.onColor2Changed)
-
-        self._layout.addStretch()
 
         self.onGradientBkgndChanged(self._gradient_bkgnd.checkState())
 
