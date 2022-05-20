@@ -68,6 +68,7 @@ class MainWindow(PluginWindowBase):
 
         self.clear()
         self.show()
+        self.updateMenuBar()
 
         self._update_timer = QtCore.QTimer()
         self._update_timer.timeout.connect(self.onUpdateWindow)
@@ -94,6 +95,14 @@ class MainWindow(PluginWindowBase):
         file_menu.addSeparator()
         self._render_action = file_menu.addAction(
             "Render", self.onRender, "Ctrl+Shift+R")
+
+        view_menu = self._menubar.addMenu("View")
+        self._view_objects_action = view_menu.addAction(
+            "Objects", self.onViewObjects)
+        self._view_objects_action.setCheckable(True)
+
+    def updateMenuBar(self):
+        self._view_objects_action.setChecked(self._params_window.isVisible())
 
     def setupToolBar(self):
         self._toolbar = QtWidgets.QToolBar()
@@ -249,3 +258,10 @@ class MainWindow(PluginWindowBase):
         top = margin
         self._params_window.setGeometry(
             left, top, self._params_window.width(), height)
+
+    def onViewObjects(self):
+        if self._params_window.isVisible():
+            self._params_window.hide()
+        else:
+            self._params_window.show()
+        self.updateMenuBar()

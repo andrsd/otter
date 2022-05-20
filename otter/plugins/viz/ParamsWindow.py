@@ -54,20 +54,20 @@ class ParamsWindow(QWidget):
         layout.setSpacing(4)
 
         title_layout = QHBoxLayout()
-        self.title = QLabel("Objects")
-        self.title.setStyleSheet("""
+        self._title = QLabel("Objects")
+        self._title.setStyleSheet("""
             font-weight: bold;
             qproperty-alignment: AlignLeft;
             """)
-        self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        title_layout.addWidget(self.title)
+        self._title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        title_layout.addWidget(self._title)
 
-        self.close_button = QPushButton("\u2716")
-        self.close_button.setObjectName("closeButton")
-        self.close_button.setStyleSheet("""
+        self._close_button = QPushButton("\u2716")
+        self._close_button.setObjectName("closeButton")
+        self._close_button.setStyleSheet("""
             font-size: 20px;
             """)
-        title_layout.addWidget(self.close_button)
+        title_layout.addWidget(self._close_button)
 
         layout.addLayout(title_layout)
 
@@ -101,6 +101,7 @@ class ParamsWindow(QWidget):
         self._pipeline.customContextMenuRequested.connect(
             self.onPipelineCustomContextMenu)
         self._pipeline_model.itemChanged.connect(self.onPipelineItemChanged)
+        self._close_button.clicked.connect(self.hide)
 
     def updateWidgets(self):
         pass
@@ -187,3 +188,7 @@ class ParamsWindow(QWidget):
         name = item.text()
         props = item.data()
         props.setWindowTitle(name)
+
+    def hide(self):
+        super().hide()
+        self._main_wnd.updateMenuBar()
