@@ -143,7 +143,7 @@ pathNorm(const std::string & path)
     else
       norm += path[pos++];
   }
-  if (norm.find("./", 0) == 0)
+  if (norm.start_with("./"))
     return norm.substr(2, norm.size() - 2);
   return norm;
 }
@@ -685,7 +685,7 @@ Field::strVal()
 class Parser
 {
 public:
-  Parser(const std::string & name, const std::string & input, std::vector<Token> tokens)
+  Parser(const std::string & name, const std::string & input, const std::vector<Token> & tokens)
     : _name(name), _input(input), _tokens(tokens)
   {
   }
