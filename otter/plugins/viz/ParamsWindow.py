@@ -172,7 +172,13 @@ class ParamsWindow(QWidget):
             props.show()
 
     def onDelete(self):
-        pass
+        indexes = self._getSelectedPipelineItems()
+        if len(indexes) > 0:
+            index = indexes[0]
+            item = self._pipeline_model.itemFromIndex(index)
+            props = item.data()
+            self._main_wnd.remove(props)
+            self._pipeline_model.removeRow(index.row())
 
     def onPipelineItemChanged(self, item):
         name = item.text()

@@ -257,6 +257,11 @@ class MainWindow(PluginWindowBase):
         if file_name:
             self.loadFile(file_name)
 
+    def remove(self, props):
+        actor = props.getVtkActor()
+        if actor is not None:
+            self._vtk_renderer.RemoveViewProp(actor)
+
     def updateToolBarGeometry(self):
         self._toolbar.adjustSize()
         margin = 10
