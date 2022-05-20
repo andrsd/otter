@@ -208,6 +208,7 @@ class MainWindow(PluginWindowBase):
         if isinstance(actors, list):
             for act in actors:
                 self._vtk_renderer.AddViewProp(act)
+        self.resetCamera()
 
     def onClose(self):
         self.close()
@@ -265,3 +266,10 @@ class MainWindow(PluginWindowBase):
         else:
             self._params_window.show()
         self.updateMenuBar()
+
+    def resetCamera(self):
+        camera = self._vtk_renderer.GetActiveCamera()
+        focal_point = camera.GetFocalPoint()
+        camera.SetPosition(focal_point[0], focal_point[1], 1)
+        camera.SetRoll(0)
+        self._vtk_renderer.ResetCamera()
