@@ -168,7 +168,7 @@ class MainWindow(PluginWindowBase):
         super().closeEvent(event)
 
     def clear(self):
-        # todo: remove actors and free them prop dialogs
+        self._vtk_renderer.RemoveAllViewProps()
         self._params_window.clear()
         self._params_window.addPipelineItem(self._bkgnd_props)
 
