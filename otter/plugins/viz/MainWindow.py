@@ -1,8 +1,7 @@
 import os
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5.QtWidgets import QToolBar, QProgressDialog, QMessageBox, \
-    QFileDialog
+from PyQt5.QtWidgets import QProgressDialog, QMessageBox, QFileDialog
 from PyQt5.QtCore import QThread, QTimer, Qt
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
@@ -12,6 +11,7 @@ from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
 from otter.plugins.common.OtterInteractorStyle2D import OtterInteractorStyle2D
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
+from otter.plugins.viz.ToolBar import ToolBar
 from otter.plugins.viz.BackgroundProps import BackgroundProps
 from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
@@ -112,16 +112,7 @@ class MainWindow(PluginWindowBase):
         self._view_objects_action.setChecked(self._params_window.isVisible())
 
     def setupToolBar(self):
-        self._toolbar = QToolBar()
-        self._toolbar.setMovable(False)
-        self._toolbar.setFloatable(False)
-        self._toolbar.setFixedHeight(32)
-        self._toolbar.setStyleSheet("""
-            border: none;
-            """)
-        self._toolbar.addAction("O", self.onOpenFile)
-        self._toolbar.addSeparator()
-        self._toolbar.addAction("T", self.onAddText)
+        self._toolbar = ToolBar(self)
 
     def updateWindowTitle(self):
         title = "Viz"
@@ -136,6 +127,7 @@ class MainWindow(PluginWindowBase):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.updateToolBarGeometry()
         self.updateParamsWindowGeometry()
 
     def dragEnterEvent(self, event):
@@ -265,12 +257,23 @@ class MainWindow(PluginWindowBase):
         if file_name:
             self.loadFile(file_name)
 
-    def updateParamsWindowGeometry(self):
-        self._params_window.adjustSize()
+    def updateToolBarGeometry(self):
+        self._toolbar.adjustSize()
         margin = 10
-        height = self.geometry().height() - (2 * margin)
+        width = self.geometry().width() - (2 * margin)
+        height = 32
         left = margin
         top = margin
+        self._toolbar.setGeometry(left, top, width, height)
+
+    def updateParamsWindowGeometry(self):
+        toolbar_geom = self._toolbar.geometry()
+
+        self._params_window.adjustSize()
+        margin = 10
+        top = margin + toolbar_geom.height() + (margin / 2)
+        height = self.geometry().height() - top - margin
+        left = margin
         self._params_window.setGeometry(
             left, top, self._params_window.width(), height)
 
