@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QMenu, \
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from otter.OTreeView import OTreeView
-from otter.plugins.viz.RootProps import RootProps
 
 
 class ParamsWindow(QWidget):
@@ -14,10 +13,6 @@ class ParamsWindow(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self._main_wnd = parent
-        self._vtk_renderer = parent._vtk_renderer
-
-        # TOOD: move to MainWindow
-        self._root_props = RootProps(self._vtk_renderer, parent)
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setObjectName("options")
@@ -89,11 +84,6 @@ class ParamsWindow(QWidget):
         self._blocks = OTreeView()
         layout.addWidget(self._blocks)
 
-        self._root = QStandardItem()
-        self._root.setText("Background")
-        self._root.setData(self._root_props)
-        self._pipeline_model.setItem(0, 0, self._root)
-
         self.setLayout(layout)
 
     def connectSignals(self):
@@ -132,12 +122,12 @@ class ParamsWindow(QWidget):
 
     def addPipelineItem(self, props):
         name = props.windowTitle()
-        rows = self._root.rowCount()
+        rows = self._pipeline_model.rowCount()
         si = QStandardItem()
         si.setText(name)
         si.setData(props)
         si.setEditable(True)
-        self._root.insertRow(rows, si)
+        self._pipeline_model.insertRow(rows, si)
 
         index = self._pipeline_model.indexFromItem(si)
         sel_model = self._pipeline.selectionModel()
@@ -145,7 +135,7 @@ class ParamsWindow(QWidget):
         sel_model.setCurrentIndex(index, QItemSelectionModel.Select)
 
     def clear(self):
-        self._root.removeRows(0, self._root.rowCount())
+        self._pipeline_model.removeRows(0, self._pipeline_model.rowCount())
 
     def _onPipelineContextMenu(self, point):
         menu = QMenu()

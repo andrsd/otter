@@ -10,6 +10,7 @@ from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
 from otter.plugins.common.OtterInteractorStyle2D import OtterInteractorStyle2D
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
+from otter.plugins.viz.BackgroundProps import BackgroundProps
 from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
 
@@ -82,6 +83,8 @@ class MainWindow(PluginWindowBase):
         self.setCentralWidget(self._vtk_widget)
 
         self._params_window = ParamsWindow(self)
+
+        self._bkgnd_props = BackgroundProps(self._vtk_renderer, self)
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -165,6 +168,7 @@ class MainWindow(PluginWindowBase):
     def clear(self):
         # todo: remove actors and free them prop dialogs
         self._params_window.clear()
+        self._params_window.addPipelineItem(self._bkgnd_props)
 
     def onUpdateWindow(self):
         self._vtk_render_window.Render()

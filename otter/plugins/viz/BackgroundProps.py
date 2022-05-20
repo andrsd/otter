@@ -6,7 +6,7 @@ from otter.plugins.common.ColorPicker import ColorPicker
 from otter.plugins.common.ColorButton import ColorButton
 
 
-class RootProps(PropsBase):
+class BackgroundProps(PropsBase):
     """
     Properties page to display when root is selected
     """
@@ -14,6 +14,7 @@ class RootProps(PropsBase):
     def __init__(self, renderer, parent=None):
         super().__init__(parent)
         self._vtk_renderer = renderer
+        self.setWindowTitle("Background")
         self.setupWidgets()
         self.connectSignals()
 
