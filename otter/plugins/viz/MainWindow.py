@@ -223,7 +223,7 @@ class MainWindow(PluginWindowBase):
         self.clear()
 
     def onOpenFile(self):
-        file_name, f = QFileDialog.getOpenFileName(
+        file_name, _ = QFileDialog.getOpenFileName(
             self,
             'Open File',
             "",
