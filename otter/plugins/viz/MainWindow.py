@@ -6,7 +6,6 @@ from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
-from otter.plugins.common.OSplitter import OSplitter
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
 from otter.plugins.viz.FileProps import FileProps
@@ -52,10 +51,6 @@ class MainWindow(PluginWindowBase):
         self.setupToolBar()
         self.updateWindowTitle()
 
-        state = self.plugin.settings.value("splitter/state")
-        if state is not None:
-            self._splitter.restoreState(state)
-
         self.setAcceptDrops(True)
 
         self._vtk_render_window = self._vtk_widget.GetRenderWindow()
@@ -79,31 +74,12 @@ class MainWindow(PluginWindowBase):
         self._update_timer.start(250)
 
     def setupWidgets(self):
-        self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self)
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+        self.setCentralWidget(self._vtk_widget)
 
         self._params_window = ParamsWindow(self)
-        self._params_window.show()
-        self._splitter.addWidget(self._params_window)
-        self._splitter.setCollapsible(0, True)
-
-        frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(frame)
-
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        frame.setLayout(self._layout)
-        frame.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
-                            QtWidgets.QSizePolicy.Expanding)
-
-        self._splitter.addWidget(frame)
-        self._splitter.setCollapsible(1, False)
-        self._splitter.setStretchFactor(1, 10)
-
-        self.setCentralWidget(self._splitter)
+        self._params_window.hide()
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -131,8 +107,6 @@ class MainWindow(PluginWindowBase):
         self._toolbar.addAction("O", self.onOpenFile)
         self._toolbar.addSeparator()
         self._toolbar.addAction("T", self.onAddText)
-
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self._toolbar)
 
     def updateWindowTitle(self):
         title = "Viz"
@@ -172,8 +146,6 @@ class MainWindow(PluginWindowBase):
             return super().event(e)
 
     def closeEvent(self, event):
-        self.plugin.settings.setValue(
-            "splitter/state", self._splitter.saveState())
         super().closeEvent(event)
 
     def clear(self):

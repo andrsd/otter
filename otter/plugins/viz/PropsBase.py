@@ -28,11 +28,10 @@ class PropsBase(QtWidgets.QWidget):
         event.ignore()
 
     def show(self):
-        parent = self.parentWidget()
-        render_wnd = parent._splitter.widget(1)
+        render_wnd = self.parentWidget()
         geom = render_wnd.geometry()
         pt = QtCore.QPoint(geom.left() + 1, geom.top() + 1)
-        pt = parent.mapToGlobal(pt)
+        pt = render_wnd.mapToGlobal(pt)
         # TODO factor in the toolbar heigh programatically
         self.move(pt.x(), pt.y() + 32)
         super().show()
