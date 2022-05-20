@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt5.QtCore import QCoreApplication
 from otter.assets import Assets
 from otter.plugins.Plugin import Plugin
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
@@ -35,4 +35,4 @@ class VizPlugin(Plugin):
 
     def loadFile(self, file_name):
         event = LoadFileEvent(file_name)
-        QtCore.QCoreApplication.postEvent(self._main_window, event)
+        QCoreApplication.postEvent(self._main_window, event)
