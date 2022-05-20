@@ -1,7 +1,8 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QPushButton
+from PyQt5.QtGui import QIntValidator
 
 
-class FontPropertiesWidget(QtWidgets.QWidget):
+class FontPropertiesWidget(QWidget):
     """
     Widget for setting font properties
     """
@@ -10,17 +11,17 @@ class FontPropertiesWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self._vtk_property = None
 
-        self._layout = QtWidgets.QHBoxLayout()
+        self._layout = QHBoxLayout()
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(1)
 
-        self._font_family = QtWidgets.QComboBox()
+        self._font_family = QComboBox()
         self._font_family.addItem("Arial")
         self._font_family.addItem("Courier")
         self._font_family.addItem("Times")
         self._layout.addWidget(self._font_family)
 
-        self._font_size = QtWidgets.QComboBox()
+        self._font_size = QComboBox()
         self._font_size.addItem("9")
         self._font_size.addItem("10")
         self._font_size.addItem("11")
@@ -34,16 +35,16 @@ class FontPropertiesWidget(QtWidgets.QWidget):
         self._font_size.setFixedWidth(60)
         self._layout.addWidget(self._font_size)
 
-        validator = QtGui.QIntValidator()
+        validator = QIntValidator()
         validator.setBottom(1)
         self._font_size.setValidator(validator)
 
-        self._bold_button = QtWidgets.QPushButton("B")
+        self._bold_button = QPushButton("B")
         self._bold_button.setFixedSize(48, 32)
         self._bold_button.setCheckable(True)
         self._layout.addWidget(self._bold_button)
 
-        self._italics_button = QtWidgets.QPushButton("I")
+        self._italics_button = QPushButton("I")
         self._italics_button.setCheckable(True)
         self._italics_button.setFixedSize(48, 32)
         self._layout.addWidget(self._italics_button)

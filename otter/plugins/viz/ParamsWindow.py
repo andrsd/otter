@@ -1,9 +1,11 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAbstractItemView, QMenu, \
+    QGraphicsOpacityEffect, QHBoxLayout, QLabel, QSizePolicy, QPushButton
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtCore import Qt, QItemSelectionModel
 from otter.OTreeView import OTreeView
-from otter.plugins.viz.RootProps import RootProps
 
 
-class ParamsWindow(QtWidgets.QWidget):
+class ParamsWindow(QWidget):
     """
     Window for entering parameters
     """
@@ -11,61 +13,88 @@ class ParamsWindow(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self._main_wnd = parent
-        self._vtk_renderer = parent._vtk_renderer
 
-        # TOOD: move to RenderWindow
-        self._root_props = RootProps(self._vtk_renderer, parent)
-
-        self.setAcceptDrops(True)
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setObjectName("options")
+        self.setStyleSheet("""
+            #options, #closeButton {
+                border-radius: 6px;
+                background-color: rgb(0, 0, 0);
+                color: #fff;
+            }
+            QLabel, QCheckBox {
+                background-color: rgb(0, 0, 0);
+                color: #fff;
+            }
+            """)
 
         self.setupWidgets()
-        self.setMinimumWidth(220)
 
-        self.show()
+        effect = QGraphicsOpacityEffect()
+        effect.setOpacity(0.66)
+        self.setGraphicsEffect(effect)
+
+        self.setMinimumWidth(220)
+        self.updateWidgets()
+        self.connectSignals()
+
+        self.setAcceptDrops(True)
 
     def mainWnd(self):
         return self._main_wnd
 
     def setupWidgets(self):
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(12, 6, 12, 12)
+        layout.setSpacing(4)
 
-        self._splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        self._splitter.setHandleWidth(4)
+        title_layout = QHBoxLayout()
+        self._title = QLabel("Objects")
+        self._title.setStyleSheet("""
+            font-weight: bold;
+            qproperty-alignment: AlignLeft;
+            """)
+        self._title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        title_layout.addWidget(self._title)
 
-        self._pipeline_model = QtGui.QStandardItemModel()
-        self._pipeline = QtWidgets.QTreeView()
+        self._close_button = QPushButton("\u2716")
+        self._close_button.setObjectName("closeButton")
+        self._close_button.setStyleSheet("""
+            font-size: 20px;
+            """)
+        title_layout.addWidget(self._close_button)
+
+        layout.addLayout(title_layout)
+
+        layout.addSpacing(4)
+
+        self._pipeline_model = QStandardItemModel()
+        self._pipeline = OTreeView()
         self._pipeline.setRootIsDecorated(False)
         self._pipeline.setHeaderHidden(True)
         self._pipeline.setModel(self._pipeline_model)
         # self._pipeline.setItemsExpandable(False)
         self._pipeline.setRootIsDecorated(True)
         self._pipeline.setExpandsOnDoubleClick(False)
-        self._pipeline.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self._pipeline.setSelectionMode(
-            QtWidgets.QAbstractItemView.SingleSelection)
-        self._pipeline.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers)
-        self._splitter.addWidget(self._pipeline)
+        self._pipeline.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._pipeline.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._pipeline.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        layout.addWidget(self._pipeline)
 
         self._blocks = OTreeView()
-        self._splitter.addWidget(self._blocks)
-
-        self._root = QtGui.QStandardItem()
-        self._root.setText("Pipeline")
-        self._root.setData(self._root_props)
-        self._pipeline_model.setItem(0, 0, self._root)
-
-        layout.addWidget(self._splitter)
+        layout.addWidget(self._blocks)
 
         self.setLayout(layout)
 
+    def connectSignals(self):
         self._pipeline.doubleClicked.connect(self.onPipelineDoubleClicked)
         self._pipeline.customContextMenuRequested.connect(
             self.onPipelineCustomContextMenu)
-        self._pipeline_model.itemChanged.connect(
-            self.onPipelineItemChanged)
+        self._pipeline_model.itemChanged.connect(self.onPipelineItemChanged)
+        self._close_button.clicked.connect(self.hide)
+
+    def updateWidgets(self):
+        pass
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -75,7 +104,7 @@ class ParamsWindow(QtWidgets.QWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
-            event.setDropAction(QtCore.Qt.CopyAction)
+            event.setDropAction(Qt.CopyAction)
             event.accept()
 
             file_names = []
@@ -93,23 +122,23 @@ class ParamsWindow(QtWidgets.QWidget):
 
     def addPipelineItem(self, props):
         name = props.windowTitle()
-        rows = self._root.rowCount()
-        si = QtGui.QStandardItem()
+        rows = self._pipeline_model.rowCount()
+        si = QStandardItem()
         si.setText(name)
         si.setData(props)
         si.setEditable(True)
-        self._root.insertRow(rows, si)
+        self._pipeline_model.insertRow(rows, si)
 
         index = self._pipeline_model.indexFromItem(si)
         sel_model = self._pipeline.selectionModel()
         sel_model.clearSelection()
-        sel_model.setCurrentIndex(index, QtCore.QItemSelectionModel.Select)
+        sel_model.setCurrentIndex(index, QItemSelectionModel.Select)
 
     def clear(self):
-        self._root.removeRows(0, self._root.rowCount())
+        self._pipeline_model.removeRows(0, self._pipeline_model.rowCount())
 
     def _onPipelineContextMenu(self, point):
-        menu = QtWidgets.QMenu()
+        menu = QMenu()
         menu.addAction("Rename", self.onRename)
         menu.addSeparator()
         menu.addAction("Edit...", self.onEdit)
@@ -143,9 +172,19 @@ class ParamsWindow(QtWidgets.QWidget):
             props.show()
 
     def onDelete(self):
-        pass
+        indexes = self._getSelectedPipelineItems()
+        if len(indexes) > 0:
+            index = indexes[0]
+            item = self._pipeline_model.itemFromIndex(index)
+            props = item.data()
+            self._main_wnd.remove(props)
+            self._pipeline_model.removeRow(index.row())
 
     def onPipelineItemChanged(self, item):
         name = item.text()
         props = item.data()
         props.setWindowTitle(name)
+
+    def hide(self):
+        super().hide()
+        self._main_wnd.updateMenuBar()

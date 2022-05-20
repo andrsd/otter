@@ -1,19 +1,23 @@
 import os
 import vtk
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QProgressDialog, QMessageBox, QFileDialog
+from PyQt5.QtCore import QThread, QTimer, Qt
 from otter.plugins.common.LoadFileEvent import LoadFileEvent
 from otter.plugins.common.ExodusIIReader import ExodusIIReader
 from otter.plugins.common.VTKReader import VTKReader
 from otter.plugins.common.PetscHDF5Reader import PetscHDF5Reader
-from otter.plugins.common.OSplitter import OSplitter
+from otter.plugins.common.OtterInteractorStyle3D import OtterInteractorStyle3D
+from otter.plugins.common.OtterInteractorStyle2D import OtterInteractorStyle2D
 from otter.plugins.PluginWindowBase import PluginWindowBase
 from otter.plugins.viz.ParamsWindow import ParamsWindow
+from otter.plugins.viz.ToolBar import ToolBar
+from otter.plugins.viz.BackgroundProps import BackgroundProps
 from otter.plugins.viz.FileProps import FileProps
 from otter.plugins.viz.TextProps import TextProps
 
 
-class LoadThread(QtCore.QThread):
+class LoadThread(QThread):
     """ Worker thread for loading data set files """
 
     def __init__(self, file_name):
@@ -34,7 +38,7 @@ class LoadThread(QtCore.QThread):
         return self._reader
 
 
-class RenderWindow(PluginWindowBase):
+class MainWindow(PluginWindowBase):
     """
     Window for displaying the result
     """
@@ -51,10 +55,6 @@ class RenderWindow(PluginWindowBase):
         self.setupMenuBar()
         self.setupToolBar()
         self.updateWindowTitle()
-
-        state = self.plugin.settings.value("splitter/state")
-        if state is not None:
-            self._splitter.restoreState(state)
 
         self.setAcceptDrops(True)
 
@@ -73,37 +73,20 @@ class RenderWindow(PluginWindowBase):
 
         self.clear()
         self.show()
+        self.updateMenuBar()
 
-        self._update_timer = QtCore.QTimer()
+        self._update_timer = QTimer()
         self._update_timer.timeout.connect(self.onUpdateWindow)
         self._update_timer.start(250)
 
     def setupWidgets(self):
-        self._splitter = OSplitter(QtCore.Qt.Horizontal, self)
+        self._vtk_widget = QVTKRenderWindowInteractor(self)
+        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
+        self.setCentralWidget(self._vtk_widget)
 
         self._params_window = ParamsWindow(self)
-        self._params_window.show()
-        self._splitter.addWidget(self._params_window)
-        self._splitter.setCollapsible(0, True)
 
-        frame = QtWidgets.QFrame(self)
-        self._vtk_widget = QVTKRenderWindowInteractor(frame)
-
-        self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
-
-        self._layout = QtWidgets.QVBoxLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addWidget(self._vtk_widget)
-
-        frame.setLayout(self._layout)
-        frame.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
-                            QtWidgets.QSizePolicy.Expanding)
-
-        self._splitter.addWidget(frame)
-        self._splitter.setCollapsible(1, False)
-        self._splitter.setStretchFactor(1, 10)
-
-        self.setCentralWidget(self._splitter)
+        self._bkgnd_props = BackgroundProps(self._vtk_renderer, self)
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -120,19 +103,16 @@ class RenderWindow(PluginWindowBase):
         self._render_action = file_menu.addAction(
             "Render", self.onRender, "Ctrl+Shift+R")
 
-    def setupToolBar(self):
-        self._toolbar = QtWidgets.QToolBar()
-        self._toolbar.setMovable(False)
-        self._toolbar.setFloatable(False)
-        self._toolbar.setFixedHeight(32)
-        self._toolbar.setStyleSheet("""
-            border: none;
-            """)
-        self._toolbar.addAction("O", self.onOpenFile)
-        self._toolbar.addSeparator()
-        self._toolbar.addAction("T", self.onAddText)
+        view_menu = self._menubar.addMenu("View")
+        self._view_objects_action = view_menu.addAction(
+            "Objects", self.onViewObjects)
+        self._view_objects_action.setCheckable(True)
 
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self._toolbar)
+    def updateMenuBar(self):
+        self._view_objects_action.setChecked(self._params_window.isVisible())
+
+    def setupToolBar(self):
+        self._toolbar = ToolBar(self)
 
     def updateWindowTitle(self):
         title = "Viz"
@@ -145,6 +125,11 @@ class RenderWindow(PluginWindowBase):
     def _updateViewModeLocation(self):
         pass
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.updateToolBarGeometry()
+        self.updateParamsWindowGeometry()
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
@@ -153,7 +138,7 @@ class RenderWindow(PluginWindowBase):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
-            event.setDropAction(QtCore.Qt.CopyAction)
+            event.setDropAction(Qt.CopyAction)
             event.accept()
 
             file_names = []
@@ -172,13 +157,12 @@ class RenderWindow(PluginWindowBase):
             return super().event(e)
 
     def closeEvent(self, event):
-        self.plugin.settings.setValue(
-            "splitter/state", self._splitter.saveState())
         super().closeEvent(event)
 
     def clear(self):
-        # todo: remove actors and free them prop dialogs
+        self._vtk_renderer.RemoveAllViewProps()
         self._params_window.clear()
+        self._params_window.addPipelineItem(self._bkgnd_props)
 
     def onUpdateWindow(self):
         self._vtk_render_window.Render()
@@ -186,18 +170,18 @@ class RenderWindow(PluginWindowBase):
     def loadFile(self, file_name):
         self._load_thread = LoadThread(file_name)
         if self._load_thread.getReader() is not None:
-            self._progress = QtWidgets.QProgressDialog(
+            self._progress = QProgressDialog(
                 "Loading {}...".format(os.path.basename(file_name)),
                 None, 0, 0, self)
-            self._progress.setWindowModality(QtCore.Qt.WindowModal)
+            self._progress.setWindowModality(Qt.WindowModal)
             self._progress.setMinimumDuration(0)
             self._progress.show()
 
             self._load_thread.finished.connect(self.onFileLoadFinished)
-            self._load_thread.start(QtCore.QThread.IdlePriority)
+            self._load_thread.start(QThread.IdlePriority)
         else:
             self._load_thread = None
-            QtWidgets.QMessageBox.critical(
+            QMessageBox.critical(
                 None,
                 "Unsupported file format",
                 "Selected file in not in a supported format.\n"
@@ -209,6 +193,12 @@ class RenderWindow(PluginWindowBase):
 
         self._progress.hide()
         self._progress = None
+
+        if reader.getDimensionality() == 3:
+            style = OtterInteractorStyle3D(self)
+        else:
+            style = OtterInteractorStyle2D(self)
+        self._vtk_interactor.SetInteractorStyle(style)
 
         file_name = reader.getFileName()
         self.addToRecentFiles(file_name)
@@ -224,6 +214,7 @@ class RenderWindow(PluginWindowBase):
         if isinstance(actors, list):
             for act in actors:
                 self._vtk_renderer.AddViewProp(act)
+        self.resetCamera()
 
     def onClose(self):
         self.close()
@@ -232,7 +223,7 @@ class RenderWindow(PluginWindowBase):
         self.clear()
 
     def onOpenFile(self):
-        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+        file_name, _ = QFileDialog.getOpenFileName(
             self,
             'Open File',
             "",
@@ -256,7 +247,7 @@ class RenderWindow(PluginWindowBase):
             self._vtk_renderer.AddViewProp(actor)
 
     def onAddFile(self):
-        file_name, f = QtWidgets.QFileDialog.getOpenFileName(
+        file_name, f = QFileDialog.getOpenFileName(
             self,
             'Open File',
             "",
@@ -265,3 +256,45 @@ class RenderWindow(PluginWindowBase):
             "VTK Unstructured Grid files (*.vtk)")
         if file_name:
             self.loadFile(file_name)
+
+    def remove(self, props):
+        actor = props.getVtkActor()
+        if actor is not None:
+            self._vtk_renderer.RemoveViewProp(actor)
+
+    def updateToolBarGeometry(self):
+        self._toolbar.adjustSize()
+        margin = 10
+        width = self.geometry().width() - (2 * margin)
+        height = 32
+        left = margin
+        top = margin
+        self._toolbar.setGeometry(left, top, width, height)
+
+    def updateParamsWindowGeometry(self):
+        toolbar_geom = self._toolbar.geometry()
+
+        self._params_window.adjustSize()
+        margin = 10
+        top = margin + toolbar_geom.height() + (margin / 2)
+        height = self.geometry().height() - top - margin
+        left = margin
+        self._params_window.setGeometry(
+            left, top, self._params_window.width(), height)
+
+    def onViewObjects(self):
+        if self._params_window.isVisible():
+            self._params_window.hide()
+        else:
+            self._params_window.show()
+        self.updateMenuBar()
+
+    def resetCamera(self):
+        camera = self._vtk_renderer.GetActiveCamera()
+        focal_point = camera.GetFocalPoint()
+        camera.SetPosition(focal_point[0], focal_point[1], 1)
+        camera.SetRoll(0)
+        self._vtk_renderer.ResetCamera()
+
+    def onClicked(self, pt):
+        pass

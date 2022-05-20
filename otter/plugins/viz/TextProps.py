@@ -1,5 +1,5 @@
 import vtk
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QLabel
 from otter.plugins.viz.PropsBase import PropsBase
 from otter.plugins.viz.FontPropertiesWidget import FontPropertiesWidget
 from otter.plugins.common.ColorPicker import ColorPicker
@@ -20,7 +20,7 @@ class TextProps(PropsBase):
         return self._actor
 
     def setupWidgets(self):
-        self._text = QtWidgets.QLineEdit("Text")
+        self._text = QLineEdit("Text")
         self._layout.addWidget(self._text)
 
         self._font_props = FontPropertiesWidget(self)
@@ -28,10 +28,10 @@ class TextProps(PropsBase):
 
         self._color_picker = ColorPicker(self)
 
-        layout = QtWidgets.QHBoxLayout()
+        layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
-        lbl = QtWidgets.QLabel("Text color")
+        lbl = QLabel("Text color")
         layout.addWidget(lbl)
 
         self._color_btn = ColorButton()

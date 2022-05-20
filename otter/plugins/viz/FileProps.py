@@ -1,12 +1,15 @@
 import vtk
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QLineEdit, QComboBox, QLabel, QTreeView, \
+    QAbstractItemView
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QStandardItemModel, QStandardItem, QBrush
 from otter.plugins.viz.PropsBase import PropsBase
 from otter.plugins.common.Reader import Reader
 
 
 class FileProps(PropsBase):
     """
-    Properties page to display when root is selected
+    Properties page to display when file is selected
     """
 
     IDX_NAME = 0
@@ -19,13 +22,13 @@ class FileProps(PropsBase):
         self._block_actors = {}
 
         self._colors = [
-            QtGui.QColor(156, 207, 237),
-            QtGui.QColor(165, 165, 165),
-            QtGui.QColor(60, 97, 180),
-            QtGui.QColor(234, 234, 234),
-            QtGui.QColor(197, 226, 243),
-            QtGui.QColor(127, 127, 127),
-            QtGui.QColor(250, 182, 0)
+            QColor(156, 207, 237),
+            QColor(165, 165, 165),
+            QColor(60, 97, 180),
+            QColor(234, 234, 234),
+            QColor(197, 226, 243),
+            QColor(127, 127, 127),
+            QColor(250, 182, 0)
         ]
 
         self.setupWidgets()
@@ -35,7 +38,7 @@ class FileProps(PropsBase):
         return list(self._block_actors.values())
 
     def setupWidgets(self):
-        self._file_name = QtWidgets.QLineEdit(self._reader.getFileName())
+        self._file_name = QLineEdit(self._reader.getFileName())
         self._file_name.setReadOnly(True)
         self._layout.addWidget(self._file_name)
         self._setupVariableWidget()
@@ -47,47 +50,46 @@ class FileProps(PropsBase):
     def _setupVariableWidget(self):
         var_info = self._reader.getVariableInfo()
 
-        self._variable = QtWidgets.QComboBox()
+        self._variable = QComboBox()
         self._variable.addItem("Block colors", None)
         for vi in var_info:
             self._variable.addItem(vi.name, vi)
         self._layout.addWidget(self._variable)
 
     def _setupBlocksWidget(self):
-        self._lbl_blocks = QtWidgets.QLabel("Blocks")
+        self._lbl_blocks = QLabel("Blocks")
         self._layout.addWidget(self._lbl_blocks)
-        self._block_model = QtGui.QStandardItemModel()
+        self._block_model = QStandardItemModel()
         self._block_model.setHorizontalHeaderLabels([
             "Name", "", "ID"
         ])
         self._block_model.itemChanged.connect(self.onBlockChanged)
-        self._blocks = QtWidgets.QTreeView()
+        self._blocks = QTreeView()
         self._blocks.setFixedHeight(200)
         self._blocks.setRootIsDecorated(False)
         self._blocks.setModel(self._block_model)
-        self._blocks.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers)
+        self._blocks.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._blocks.setColumnWidth(0, 200)
         self._blocks.setColumnWidth(1, 20)
         self._blocks.setColumnWidth(2, 50)
         self._layout.addWidget(self._blocks)
 
     def _addBlock(self, row, binfo, clr_idx):
-        si_name = QtGui.QStandardItem()
+        si_name = QStandardItem()
         si_name.setText(binfo.name)
         si_name.setCheckable(True)
-        si_name.setCheckState(QtCore.Qt.Checked)
+        si_name.setCheckState(Qt.Checked)
         si_name.setData(binfo)
         self._block_model.setItem(row, self.IDX_NAME, si_name)
 
-        si_clr = QtGui.QStandardItem()
+        si_clr = QStandardItem()
         si_clr.setText('\u25a0')
         qcolor = self._colors[clr_idx]
-        si_clr.setForeground(QtGui.QBrush(qcolor))
+        si_clr.setForeground(QBrush(qcolor))
         si_clr.setData(clr_idx)
         self._block_model.setItem(row, self.IDX_COLOR, si_clr)
 
-        si_id = QtGui.QStandardItem()
+        si_id = QStandardItem()
         si_id.setText(str(binfo.number))
         self._block_model.setItem(row, self.IDX_ID, si_id)
 
@@ -141,7 +143,7 @@ class FileProps(PropsBase):
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
-            visible = item.checkState() == QtCore.Qt.Checked
+            visible = item.checkState() == Qt.Checked
             binfo = item.data()
             actor = self._block_actors[binfo.number]
             actor.SetVisibility(visible)
