@@ -79,7 +79,6 @@ class MainWindow(PluginWindowBase):
         self.setCentralWidget(self._vtk_widget)
 
         self._params_window = ParamsWindow(self)
-        self._params_window.hide()
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -118,6 +117,10 @@ class MainWindow(PluginWindowBase):
 
     def _updateViewModeLocation(self):
         pass
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.updateParamsWindowGeometry()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -237,3 +240,12 @@ class MainWindow(PluginWindowBase):
             "VTK Unstructured Grid files (*.vtk)")
         if file_name:
             self.loadFile(file_name)
+
+    def updateParamsWindowGeometry(self):
+        self._params_window.adjustSize()
+        margin = 10
+        height = self.geometry().height() - (2 * margin)
+        left = margin
+        top = margin
+        self._params_window.setGeometry(
+            left, top, self._params_window.width(), height)

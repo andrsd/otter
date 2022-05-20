@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSplitter, QTreeView, \
-    QAbstractItemView, QMenu
+    QAbstractItemView, QMenu, QGraphicsOpacityEffect, QHBoxLayout, QLabel, \
+    QSizePolicy, QPushButton
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QItemSelectionModel
 from otter.OTreeView import OTreeView
@@ -19,26 +20,65 @@ class ParamsWindow(QWidget):
         # TOOD: move to MainWindow
         self._root_props = RootProps(self._vtk_renderer, parent)
 
-        self.setAcceptDrops(True)
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setObjectName("options")
+        self.setStyleSheet("""
+            #options, #closeButton {
+                border-radius: 6px;
+                background-color: rgb(0, 0, 0);
+                color: #fff;
+            }
+            QLabel, QCheckBox {
+                background-color: rgb(0, 0, 0);
+                color: #fff;
+            }
+            """)
 
         self.setupWidgets()
-        self.setMinimumWidth(220)
 
-        self.show()
+        effect = QGraphicsOpacityEffect()
+        effect.setOpacity(0.66)
+        self.setGraphicsEffect(effect)
+
+        self.setMinimumWidth(220)
+        self.updateWidgets()
+        self.connectSignals()
+
+        self.setAcceptDrops(True)
 
     def mainWnd(self):
         return self._main_wnd
 
     def setupWidgets(self):
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(12, 6, 12, 12)
         layout.setSpacing(0)
+
+        title_layout = QHBoxLayout()
+        self.title = QLabel("Objects")
+        self.title.setStyleSheet("""
+            font-weight: bold;
+            qproperty-alignment: AlignLeft;
+            """)
+        self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        title_layout.addWidget(self.title)
+
+        self.close_button = QPushButton("\u2716")
+        self.close_button.setObjectName("closeButton")
+        self.close_button.setStyleSheet("""
+            font-size: 20px;
+            """)
+        title_layout.addWidget(self.close_button)
+
+        layout.addLayout(title_layout)
+
+        layout.addSpacing(4)
 
         self._splitter = QSplitter(Qt.Vertical)
         self._splitter.setHandleWidth(4)
 
         self._pipeline_model = QStandardItemModel()
-        self._pipeline = QTreeView()
+        self._pipeline = OTreeView()
         self._pipeline.setRootIsDecorated(False)
         self._pipeline.setHeaderHidden(True)
         self._pipeline.setModel(self._pipeline_model)
@@ -54,7 +94,7 @@ class ParamsWindow(QWidget):
         self._splitter.addWidget(self._blocks)
 
         self._root = QStandardItem()
-        self._root.setText("Pipeline")
+        self._root.setText("Background")
         self._root.setData(self._root_props)
         self._pipeline_model.setItem(0, 0, self._root)
 
@@ -62,11 +102,15 @@ class ParamsWindow(QWidget):
 
         self.setLayout(layout)
 
+    def connectSignals(self):
         self._pipeline.doubleClicked.connect(self.onPipelineDoubleClicked)
         self._pipeline.customContextMenuRequested.connect(
             self.onPipelineCustomContextMenu)
         self._pipeline_model.itemChanged.connect(
             self.onPipelineItemChanged)
+
+    def updateWidgets(self):
+        pass
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():

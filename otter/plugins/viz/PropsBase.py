@@ -30,9 +30,8 @@ class PropsBase(QWidget):
 
     def show(self):
         render_wnd = self.parentWidget()
-        geom = render_wnd.geometry()
-        pt = QPoint(geom.left() + 1, geom.top() + 1)
+        geom = render_wnd._params_window.geometry()
+        pt = QPoint(geom.right() + 8, geom.top() + 1)
         pt = render_wnd.mapToGlobal(pt)
-        # TODO factor in the toolbar heigh programatically
-        self.move(pt.x(), pt.y() + 32)
+        self.move(pt.x(), pt.y())
         super().show()
