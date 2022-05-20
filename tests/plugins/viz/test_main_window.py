@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from PyQt5 import QtWidgets, QtCore
-from otter.plugins.viz.RenderWindow import RenderWindow
+from otter.plugins.viz.MainWindow import MainWindow
 
 
 @pytest.fixture
 def render_window(qtbot, viz_plugin):
-    wnd = RenderWindow(viz_plugin)
+    wnd = MainWindow(viz_plugin)
     qtbot.addWidget(wnd)
     yield wnd
 
