@@ -33,6 +33,7 @@ class FileProps(PropsBase):
 
         self.setupWidgets()
         self.buildVtkActor()
+        self.onVariableChanged(self._variable.currentIndex())
 
     def getVtkActor(self):
         return list(self._block_actors.values())
@@ -51,9 +52,9 @@ class FileProps(PropsBase):
         var_info = self._reader.getVariableInfo()
 
         self._variable = QComboBox()
-        self._variable.addItem("Block colors", None)
         for vi in var_info:
             self._variable.addItem(vi.name, vi)
+        self._variable.addItem("Block colors", None)
         self._layout.addWidget(self._variable)
 
     def _setupBlocksWidget(self):

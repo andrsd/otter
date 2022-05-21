@@ -213,7 +213,6 @@ class MainWindow(PluginWindowBase):
         file_props = FileProps(reader, self)
         file_props.setWindowTitle("File")
         self._params_window.addPipelineItem(file_props)
-        file_props.show()
 
         actors = file_props.getVtkActor()
         if isinstance(actors, list):
