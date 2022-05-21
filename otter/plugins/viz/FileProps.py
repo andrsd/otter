@@ -20,6 +20,7 @@ class FileProps(PropsBase):
         super().__init__(parent)
         self._reader = reader
         self._block_actors = {}
+        self._vtk_extract_block = {}
 
         self._colors = [
             QColor(156, 207, 237),
@@ -100,6 +101,7 @@ class FileProps(PropsBase):
             eb.SetInputConnection(self._reader.getVtkOutputPort())
             eb.AddIndex(binfo.multiblock_index)
             eb.Update()
+            self._vtk_extract_block[binfo.number] = eb
 
             geometry = vtk.vtkCompositeDataGeometryFilter()
             geometry.SetInputConnection(0, eb.GetOutputPort(0))
@@ -108,20 +110,24 @@ class FileProps(PropsBase):
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(geometry.GetOutputPort())
         else:
+            self._vtk_extract_block[binfo.number] = None
+
             mapper = vtk.vtkDataSetMapper()
             mapper.SetInputConnection(0, self._reader.getVtkOutputPort())
             mapper.ScalarVisibilityOff()
 
         mapper.InterpolateScalarsBeforeMappingOn()
+        mapper.SetLookupTable(self._vtk_lut)
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.VisibilityOn()
+        self._block_actors[binfo.number] = actor
 
         return actor
 
     def buildVtkActor(self):
-        actors = []
+        self._buildLookupTable()
 
         blocks = self._reader.getBlocks()
         for index, binfo in enumerate(blocks):
@@ -136,11 +142,21 @@ class FileProps(PropsBase):
             actor = self._buildVtkBlocksActor(binfo)
             property = actor.GetProperty()
             property.SetColor(clr)
-            actors.append(actor)
-            self._block_actors[binfo.number] = actor
 
             row = self._block_model.rowCount()
             self._addBlock(row, binfo, clr_idx)
+
+    def _buildLookupTable(self):
+        self._vtk_lut = vtk.vtkLookupTable()
+        self._vtk_lut.SetTableRange(0, 1)
+        self._vtk_lut.SetHueRange(2. / 3., 0)
+        self._vtk_lut.SetSaturationRange(1, 1)
+        self._vtk_lut.SetValueRange(1, 1)
+        self._vtk_lut.SetNumberOfColors(256)
+        self._vtk_lut.Build()
+
+    def getLookupTable(self):
+        return self._vtk_lut
 
     def onBlockChanged(self, item):
         if item.column() == self.IDX_NAME:
@@ -156,13 +172,40 @@ class FileProps(PropsBase):
                 mapper = actor.GetMapper()
                 mapper.ScalarVisibilityOff()
         else:
+            range = self._getVariableValuesRange(vinfo)
             for actor in self._block_actors.values():
                 mapper = actor.GetMapper()
                 mapper.ScalarVisibilityOn()
                 mapper.SelectColorArray(vinfo.name)
-                mapper.UseLookupTableScalarRangeOn()
                 if vinfo.object_type == Reader.VAR_NODAL:
                     mapper.SetScalarModeToUsePointFieldData()
                 elif vinfo.object_type == Reader.VAR_CELL:
                     mapper.SetScalarModeToUseCellFieldData()
                 mapper.InterpolateScalarsBeforeMappingOn()
+                mapper.SetColorModeToMapScalars()
+                mapper.SetScalarRange(range)
+
+    def _getVariableValuesRange(self, vinfo):
+        # NOTE: IDK if the data obtained via mapper.GetInputAsDataSet()
+        # contains the full data set (i.e. interior values in 3D) or just
+        # surface values (in 2D this is good)
+        range = [None, None]
+        for actor in self._block_actors.values():
+            mapper = actor.GetMapper()
+            data_set = mapper.GetInputAsDataSet()
+            data = None
+            if vinfo.object_type == Reader.VAR_NODAL:
+                data = data_set.GetPointData()
+            elif vinfo.object_type == Reader.VAR_CELL:
+                data = data_set.GetCellData()
+            if data is not None:
+                r = data.GetScalars(vinfo.name).GetRange()
+                range = self._expandRange(range, r)
+        return range
+
+    def _expandRange(self, range, r):
+        if range[0] is None or r[0] < range[0]:
+            range[0] = r[0]
+        if range[1] is None or r[1] > range[1]:
+            range[1] = r[1]
+        return range
