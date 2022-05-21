@@ -11,9 +11,8 @@ class BackgroundProps(PropsBase):
     Properties page to display when root is selected
     """
 
-    def __init__(self, renderer, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
-        self._vtk_renderer = renderer
         self.setWindowTitle("Background")
         self.setupWidgets()
         self.connectSignals()

@@ -11,7 +11,7 @@ class TextProps(PropsBase):
     Properties page to display when nothing is selected
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setupWidgets()
         self.buildVtkActor()
@@ -47,20 +47,33 @@ class TextProps(PropsBase):
         self._color_picker.colorChanged.connect(self.onColorPicked)
 
     def buildVtkActor(self):
-        self._actor = vtk.vtkTextActor()
-        self._actor.SetInput(self._text.text())
-        self._actor.SetPickable(True)
-        self._actor.SetDragable(True)
-        self._text_property = self._actor.GetTextProperty()
         qcolor = self._color_picker.color()
         clr = [
             qcolor.redF(),
             qcolor.greenF(),
             qcolor.blueF()
         ]
+
+        self._actor = vtk.vtkTextActor()
+        self._actor.SetInput(self._text.text())
+        self._actor.SetPickable(True)
+        self._actor.SetDragable(True)
+        self._actor.SetTextScaleModeToNone()
+
+        self._text_property = self._actor.GetTextProperty()
         self._text_property.SetColor(clr)
         self._text_property.SetBold(False)
         self._text_property.SetItalic(False)
+
+        self._vtk_widget = vtk.vtkTextWidget()
+        self._vtk_widget.SetInteractor(self._vtk_interactor)
+        self._vtk_widget.SetTextActor(self._actor)
+        self._vtk_widget.SelectableOff()
+        self._vtk_widget.On()
+
+        repr = self._vtk_widget.GetRepresentation()
+        repr.SetPosition(0.5, 0.5)
+
         self._color_btn.setColor(qcolor)
         self._font_props.setVtkTextProperty(self._text_property)
 

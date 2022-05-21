@@ -16,7 +16,7 @@ class FileProps(PropsBase):
     IDX_COLOR = 1
     IDX_ID = 2
 
-    def __init__(self, reader, parent=None):
+    def __init__(self, reader, parent):
         super().__init__(parent)
         self._reader = reader
         self._block_actors = {}

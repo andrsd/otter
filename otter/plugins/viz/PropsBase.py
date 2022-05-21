@@ -7,8 +7,10 @@ class PropsBase(QDialog):
     Base class for properties pages
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
+        self._vtk_renderer = parent.getVtkRenderer()
+        self._vtk_interactor = parent.getVtkInteractor()
         self._actor = None
 
         self._layout = QVBoxLayout()
