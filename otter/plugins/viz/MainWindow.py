@@ -58,9 +58,6 @@ class MainWindow(PluginWindowBase):
 
         self.setAcceptDrops(True)
 
-        self._vtk_render_window = self._vtk_widget.GetRenderWindow()
-        self._vtk_interactor = self._vtk_render_window.GetInteractor()
-
         self._vtk_interactor.SetInteractorStyle(
             vtk.vtkInteractorStyleTrackballCamera())
 
@@ -83,10 +80,12 @@ class MainWindow(PluginWindowBase):
         self._vtk_widget = QVTKRenderWindowInteractor(self)
         self._vtk_widget.GetRenderWindow().AddRenderer(self._vtk_renderer)
         self.setCentralWidget(self._vtk_widget)
+        self._vtk_render_window = self._vtk_widget.GetRenderWindow()
+        self._vtk_interactor = self._vtk_render_window.GetInteractor()
 
         self._params_window = ParamsWindow(self)
 
-        self._bkgnd_props = BackgroundProps(self._vtk_renderer, self)
+        self._bkgnd_props = BackgroundProps(self)
 
     def setupMenuBar(self):
         file_menu = self._menubar.addMenu("File")
@@ -124,6 +123,12 @@ class MainWindow(PluginWindowBase):
 
     def _updateViewModeLocation(self):
         pass
+
+    def getVtkRenderer(self):
+        return self._vtk_renderer
+
+    def getVtkInteractor(self):
+        return self._vtk_interactor
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -208,7 +213,6 @@ class MainWindow(PluginWindowBase):
         file_props = FileProps(reader, self)
         file_props.setWindowTitle("File")
         self._params_window.addPipelineItem(file_props)
-        file_props.show()
 
         actors = file_props.getVtkActor()
         if isinstance(actors, list):
