@@ -89,7 +89,7 @@ setup(
         'six>=1.15.0',
         'terminaltables>=3.1.0',
         'sphinx',
-        'vtk==9.0.3',
+        'vtk>=9.0.0',
         'PyYAML>=5.4.1',
         'h5py>=3.6.0'
     ],
