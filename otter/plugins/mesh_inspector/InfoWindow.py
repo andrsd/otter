@@ -240,6 +240,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             si_id = QtGui.QStandardItem()
             si_id.setText(str(ss.number))
             self._sideset_model.setItem(row, self.IDX_ID, si_id)
+        self._sidesets_expd.setNumberOfItems(self._sideset_model.rowCount())
 
     def _loadNodeSets(self, nodesets):
         self._nodeset_model.removeRows(0, self._nodeset_model.rowCount())
@@ -255,6 +256,7 @@ class InfoWindow(QtWidgets.QScrollArea):
             si_id = QtGui.QStandardItem()
             si_id.setText(str(ns.number))
             self._nodeset_model.setItem(row, self.IDX_ID, si_id)
+        self._nodesets_expd.setNumberOfItems(self._nodeset_model.rowCount())
 
     def _fillSummary(self, params):
         total_elems = params['total_elems']

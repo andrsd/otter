@@ -8,6 +8,7 @@ class ExpandableWidget(QtWidgets.QWidget):
 
     def __init__(self, caption="", parent=None):
         super().__init__(parent)
+        self.caption = caption
 
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                            QtWidgets.QSizePolicy.Fixed)
@@ -31,7 +32,7 @@ class ExpandableWidget(QtWidgets.QWidget):
             """)
 
         self._label = QtWidgets.QLabel()
-        self._label.setText(caption)
+        self._label.setText(self.caption)
         self._label.setStyleSheet("""
             color: #444;
             font-weight: bold;
@@ -70,3 +71,9 @@ class ExpandableWidget(QtWidgets.QWidget):
             self._expand_button.setText("\u25BC")
         else:
             self._expand_button.setText("\u25B6")
+
+    def setNumberOfItems(self, num):
+        if num == 0:
+            self._label.setText(self.caption)
+        else:
+            self._label.setText("{} ({})".format(self.caption, num))
