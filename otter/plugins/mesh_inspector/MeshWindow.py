@@ -812,7 +812,7 @@ class MeshWindow(PluginWindowBase):
     def showFileChangedNotification(self):
         self._file_changed_notification.adjustSize()
         width = self.getRenderWindowWidth()
-        left = (width - self._file_changed_notification.width()) / 2
+        left = int((width - self._file_changed_notification.width()) / 2)
         top = 10
         self._file_changed_notification.setGeometry(
             left, top,
